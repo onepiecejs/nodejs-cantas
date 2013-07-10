@@ -1,0 +1,9 @@
+script#template-archived-items-view(type="text/template")
+    |- if (section == 'lists')
+    |  div.ar-list
+    |    p.item-name= item.title
+    |    a(href="#",class="js-reopen sent",data-listid="\#{item._id}",title="Send to board")
+    |- else if (section == 'cards')
+    |  div.card
+    |    p= item.title
+    |    a(href="#",class="js-cards-reopen sent",data-cardid="\#{item._id}",title="Send to board")

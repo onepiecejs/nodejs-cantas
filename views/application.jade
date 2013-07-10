@@ -1,0 +1,96 @@
+extends layout
+
+block content
+  //- board main content
+  div.process-loading
+    div.loader
+      div.top
+        div.bar
+        div.bar
+        div.bar
+        div.bar
+        div.bar
+      div.bottom
+        div.bar
+        div.bar
+        div.bar
+        div.bar
+        div.bar
+  div.content.clearfix
+  div#card-detail.modal.hide.fade
+  div.window-overlay.archived-window.modal.hide.fade
+  div.modal-backdrop.hide.fade
+  div.force-alert.hide.fade
+    div.alert-content
+      p This board is closed by board creator. Any further operation, please contact the creator.
+      a(href="#",onclick="window.location.reload()") Reload page
+
+block append scripts
+  script(type="text/javascript").
+    window.cantas = window.cantas || {};
+    cantas.user = {id: "#{user._id}", username: "#{user.username}"};
+
+  //- templates for backbone view
+  include backbone/help
+  include backbone/board-list
+  include backbone/board
+  include backbone/board-title
+  include backbone/label-assign
+  include backbone/list
+  include backbone/list-menu
+  include backbone/card
+  include backbone/card-menu
+  include backbone/card-add
+  include backbone/card-detail
+  include backbone/card-assign
+  include backbone/card-checklist
+  include backbone/card-checkitem
+  include backbone/card-labels-neonlights
+  include backbone/archived
+  include backbone/archived-item
+  include backbone/notification-item
+  include backbone/comment-item
+  include backbone/move-list
+  include backbone/move-list-item
+  include backbone/comment
+  include backbone/comment-item
+
+  - if (process.env.NODE_ENV == 'production')
+    script(type="text/javascript", src="/javascripts/dist/cantas-app.min.js")
+  - else
+    //- script section
+    script(type="text/javascript", src="/javascripts/constants.js")
+    script(type="text/javascript", src="/javascripts/sortable.js")
+    script(type="text/javascript", src="/javascripts/utils/utils.js")
+    script(type="text/javascript", src="/javascripts/utils/safe_string.js")
+    script(type="text/javascript", src="/javascripts/application.js")
+    //- models/views
+    script(type="text/javascript", src="/javascripts/models/base.js")
+    script(type="text/javascript", src="/javascripts/views/base.js")
+    script(type="text/javascript", src="/javascripts/models/activity.js")
+    script(type="text/javascript", src="/javascripts/views/activity.js")
+    script(type="text/javascript", src="/javascripts/models/notification.js")
+    script(type="text/javascript", src="/javascripts/views/notification.js")
+    script(type="text/javascript", src="/javascripts/models/boardMember.js")
+    script(type="text/javascript", src="/javascripts/views/boardMembers.js")
+    script(type="text/javascript", src="/javascripts/models/label.js")
+    script(type="text/javascript", src="/javascripts/models/board.js")
+    script(type="text/javascript", src="/javascripts/views/board.js")
+    script(type="text/javascript", src="/javascripts/models/list.js")
+    script(type="text/javascript", src="/javascripts/views/list.js")
+    script(type="text/javascript", src="/javascripts/models/checklist.js")
+    script(type="text/javascript", src="/javascripts/views/checklist.js")
+    script(type="text/javascript", src="/javascripts/models/card.js")
+    script(type="text/javascript", src="/javascripts/views/card.js")
+    script(type="text/javascript", src="/javascripts/models/comment.js")
+    script(type="text/javascript", src="/javascripts/views/comment.js")
+    script(type="text/javascript", src="/javascripts/views/boardlist.js")
+    script(type="text/javascript", src="/javascripts/views/help.js")
+    script(type="text/javascript", src="/javascripts/views/confirmDialog.js")
+
+    script(type="text/javascript", src="/javascripts/models/visitor.js")
+    script(type="text/javascript", src="/javascripts/views/boardActiveUsers.js")
+
+    //- router
+    script(type="text/javascript", src="/javascripts/router.js")
+

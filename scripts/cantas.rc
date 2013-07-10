@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# cantas - Startup script for Cantas web service
+#
+# This is script should run after all dependent services are launched.
+#
+
+# chkconfig: 35 95 05
+# description: script to control Cantas web service.
+#
+# processname: cantas
+# pidfile: /var/run/cantas.pid
+#
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+
+export NODE_ENV=${NODE_ENV:="production"}
+
+NAME=cantas
+INSTANCE_DIR=/usr/lib/node_modules/$NAME
+COMMAND=node
+SOURCE_NAME=app.js
+CANTAS_LOG_PATH=/var/log/$NAME
+
+user=cantas
+pidfile=/var/run/$NAME.pid
+forever_dir=/var/run/forever
+logfile=$CANTAS_LOG_PATH/$NAME.log
+errlogfile=$CANTAS_LOG_PATH/$NAME-err.log
+
+node=node
+forever=forever
+awk=awk
+sed=sed
+sudo=sudo
+
+start()
+{
+    echo "Starting $NAME node instance: "
+
+    if [ "$id" = "" ]; then
+        touch $logfile
+        chown $user $logfile
+        touch $errlogfile
+        chown $user $errlogfile
+
+        touch $pidfile
+        chown $user $pidfile
+
+        [ -d $forever_dir ] || (mkdir -p $forever_dir )
+
+        # Launch the application
+        daemon --user=$user \
+            $forever start -p $forever_dir --pidFile $pidfile -l $logfile -e $errlogfile -a --sourceDir $INSTANCE_DIR -c $COMMAND $SOURCE_NAME
+    else
+        echo "Instance already running"
+        RETVAL=0
+    fi
+}
+
+restart()
+{
+    echo -n "Restarting $NAME node instance : "
+    if [ "$id" != "" ]; then
+	$sudo -u $user \
+            $forever restart -p $forever_dir $id
+        RETVAL=$?
+    else
+        start
+    fi
+}
+
+stop()
+{
+    echo -n "Shutting down $NAME node instance : "
+    if [ "$id" != "" ]; then
+        $sudo -u $user \
+            $forever stop -p $forever_dir $id
+    else
+        echo "Instance is not running";
+    fi
+    RETVAL=$?
+}
+
+getForeverId() {
+  touch $pidfile
+  chown $user $pidfile
+
+  local pid=$(cat $pidfile)
+  $sudo -u $user \
+        $forever list |$sed -e '1,2d' | $sed -e 's/\x1b\[[0-9; ]*m//g' | $awk "\$7 && \$7 == \"$pid\" { gsub(/[\[\]]/, \"\", \$2); print \$2; }";
+}
+id=$(getForeverId)
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        $sudo -u $user \
+            $forever list
+        ;;
+    restart)
+        restart
+        ;;
+    *)
+        echo "Usage:  {start|stop|status|restart}"
+        exit 1
+        ;;
+esac
+exit $RETVAL

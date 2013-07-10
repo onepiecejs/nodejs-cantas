@@ -1,0 +1,30 @@
+<script id="template-card-view" type="text/template">
+div.card-container.ui-state-default.card-title
+  div.card.clearfix
+    a.setting.card-setting
+    p= title
+    section.card-items
+      - assignees.forEach(function(assignee){
+      span.card-assignee= assignee.username
+      - })
+      - if(typeof badges === "object"){
+      -   if(badges.comments !== 0){
+      span.card-comment(title="This card has \#{badges.comments} comment(s).")= badges.comments
+      -   }
+      -   if(badges.checkitems !== 0){
+      -     var checkitemsProgress = badges.checkitemsChecked + '/' + badges.checkitems;
+      span.card-checklist(title="This card has \#{checkitemsProgress} checklist items completed.")= checkitemsProgress
+      -   }
+      - }
+    div.card-index
+    span.order-number= index
+    div.card-filter.clearfix
+      div.clabel
+      div.clabel
+      div.clabel
+      div.clabel
+      div.clabel
+      div.clabel
+      div.clabel
+      div.clabel
+</script>

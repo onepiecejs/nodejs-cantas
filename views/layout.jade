@@ -1,0 +1,65 @@
+!!! 5
+html
+    head
+        title= title
+        meta(content="width=device-width, minimum-scale=1.0, maximum-scale=1.0", name="viewport")
+        link(href="/images/favicon.ico",type="image/x-icon",rel="shortcut icon")
+        - if (process.env.NODE_ENV == 'production')
+            link(rel='stylesheet', href='/stylesheets/eso-theme.min.css')
+            link(rel='stylesheet', href='/stylesheets/project.min.css')
+        - else
+            link(rel='stylesheet', href='/stylesheets/eso-theme.css')
+            link(rel='stylesheet', href='/stylesheets/project.css')
+
+    body
+        block header
+            header#eso-topbar.clearfix
+                a(onclick="cantas.navigateTo('')",title="go back home",class="logo")
+                ul(class="quick-menu unstyled clearfix")
+                    li(class="dropdown header-user")
+                        a(class="dropdown-toggle",data-toggle="dropdown") #{user.username}
+                        ul(class="dropdown-menu dropdown-board")
+                            li: a(href="/logout") Log Out
+                    li(class="dropdown header-user")
+                        a(class="dropdown-toggle",data-toggle="dropdown") Board
+                        ul(class="dropdown-menu dropdown-board")
+                            li: a(onclick="cantas.navigateTo('boards/new')") New
+                            li: a(onclick="cantas.navigateTo('boards/public')") Public Boards
+                            li: a(onclick="cantas.navigateTo('boards/mine')") My Boards
+                            li: a(onclick="cantas.navigateTo('boards/closed')") Closed Boards
+                    li(class="dropdown header-user")
+                        a(class="dropdown-toggle",data-toggle="dropdown") Notification
+                        a(class="reminder") 1
+                        ul(class="dropdown-menu dropdown-notification")
+                            li.all-read: a Mark All as Read
+                    li(class="dropdown header-user")
+                        a(class="dropdown-toggle", onclick="cantas.navigateTo('help')") Help
+                input(type="text",class="quick-search",placeholder="search")
+
+        block content
+
+        block footer
+            footer(class="footer")
+                div(class="copyright")
+                    | <p>Version #{version} <a href="#{links.bugzilla}" target="_blank">Report an Issue</a></p>
+
+        block scripts
+            script(type="text/javascript", src="/socket.io/socket.io.js")
+            script(type="text/javascript", src="/javascripts/vendor/jade.js")
+            - if (process.env.NODE_ENV == 'production')
+                script(type="text/javascript", src="/javascripts/dist/vendor.min.js")
+            - else
+                script(type="text/javascript", src="/javascripts/vendor/jquery-1.7.2.js")
+                script(type="text/javascript", src="/javascripts/vendor/jquery.slug.js")
+                script(type="text/javascript", src="/javascripts/vendor/async.js")
+                script(type="text/javascript", src="/javascripts/vendor/markdown.js")
+                script(type="text/javascript", src="/javascripts/vendor/jquery-ui.js")
+                script(type="text/javascript", src="/javascripts/vendor/bootstrap-dropdown.js")
+                script(type="text/javascript", src="/javascripts/vendor/underscore.js")
+                script(type="text/javascript", src="/javascripts/vendor/backbone.js")
+                script(type="text/javascript", src="/javascripts/vendor/backbone.iobind.js")
+                script(type="text/javascript", src="/javascripts/vendor/backbone.iosync.js")
+                script(type="text/javascript", src="/javascripts/vendor/moment.js")
+                script(type="text/javascript", src="/javascripts/vendor/bootstrap-modal.js")
+                script(type="text/javascript", src="/javascripts/vendor/bootstrap-modalmanager.js")
+                script(type="text/javascript", src="/javascripts/vendor/bootstrap-tab.js")

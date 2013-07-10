@@ -1,0 +1,15 @@
+script#template-archived-view(type="text/template")
+  |div
+  |  div.modal-header.clearfix
+  |    button(type="button",class="close",data-dismiss="modal",aria-hidden="true")×
+  |    h2.window-title-text    Archived&nbsp;
+  |      span.js-current-section \#{section}
+  |  ul.nav.nav-tabs
+  |    li.lists-tab
+  |      a.js-switch-section List
+  |    li.cards-tab
+  |      a.js-switch-section Card
+  |  div.modal-body
+  |    p.loading Loading....
+  |    div.window_module
+  |      ul.archive-list.js-archive-items

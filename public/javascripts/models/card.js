@@ -1,0 +1,240 @@
+$(function ($, _, Backbone) {
+
+  "use strict";
+
+  cantas.models.Card = cantas.models.BaseModel.extend({
+    idAttribute: "_id",
+    noIoBind: false,
+    socket: cantas.socket,
+    url: function () {
+      return "/card" + ((this.id) ? '/' + this.id : '');
+    },
+
+    initialize: function (attributes, options) {
+      // this.on('serverChange', this.serverChange, this);
+      // this.on('serverDelete', this.serverDelete, this);
+      this.commentCollection = new cantas.models.CommentCollection;
+      this.on('modelCleanup', this.modelCleanup, this);
+      if (!this.noIoBind) {
+        this.ioBind('update', this.serverChange, this);
+        this.ioBind('delete', this.serverDelete, this);
+      }
+    },
+
+    // Remove this Card and delete its view.
+    clear: function (options) {
+      this.destroy(options);
+      this.modelCleanup();
+    },
+
+    serverChange: function (data) {
+      this.set(data);
+    },
+
+    serverDelete: function (data) {
+      if (typeof this.collection === 'object') {
+        this.collection.remove(this);
+      } else {
+        this.trigger('remove', this);
+      }
+    },
+
+    modelCleanup: function () {
+      this.ioUnbindAll();
+      return this;
+    },
+
+    //card reorder function
+    moveToList: function(fromListView, newPosition, cardView) {
+      var that = this;
+      var inListView = this.inListView;
+
+      // check if move in one list.
+      if(typeof inListView === 'undefined') {
+        inListView = fromListView;
+      }
+
+      //reorder rule
+      var cardCollection = inListView.model.cardCollection;
+      var cardCount = cardCollection.length;
+      var cardOrder = -1;
+
+      //card moving cards to new list
+      //case1: move to empty list
+      if (inListView != fromListView &&
+        cardCount === 0 &&
+        typeof cardCollection.at(newPosition) === 'undefined' &&
+        typeof cardCollection.at(newPosition + 1) === 'undefined') {
+        cardOrder = cardOrder + 65536;
+      }
+
+      //case2: move to frist index of card array
+      if (inListView != fromListView &&
+        cardCount > 0 &&
+        typeof cardCollection.at(newPosition -1) === 'undefined' &&
+        typeof cardCollection.at(newPosition) != 'undefined' ) {
+        var firstIndex = cardCollection.at(newPosition).get('order');
+        cardOrder = firstIndex / 2;
+      }
+
+      //case3: move to inPosition of card array
+      if (inListView != fromListView &&
+        cardCount > 0 &&
+        typeof cardCollection.at(newPosition -1) != 'undefined' &&
+        typeof cardCollection.at(newPosition) != 'undefined' ) {
+        var beforeIndex = cardCollection.at(newPosition - 1).get('order');
+        var afterIndex = cardCollection.at(newPosition).get('order');
+        cardOrder = (beforeIndex + afterIndex) / 2;
+      }
+
+      //case4: move to last index of card array
+      if (inListView != fromListView &&
+        cardCount > 0 &&
+        typeof cardCollection.at(newPosition -1) != 'undefined' &&
+        typeof cardCollection.at(newPosition) === 'undefined') {
+        var lastIndex = cardCollection.at(newPosition - 1).get('order');
+        cardOrder = lastIndex + 65536;
+      }
+
+      //card moving cards in one list
+      //case1: move to frist index of card array
+      if (inListView === fromListView &&
+        cardCount > 0 &&
+        newPosition === 0) {
+        var firstIndex = cardCollection.at(newPosition).get('order');
+        cardOrder = firstIndex / 2;
+      }
+
+      //case 2:  moving to inPositions, from top to bottom
+      if (inListView === fromListView &&
+        cardCount > 0 &&
+        typeof cardCollection.at(newPosition -1) != 'undefined' &&
+        typeof cardCollection.at(newPosition) != 'undefined' &&
+        typeof cardCollection.at(newPosition + 1) != 'undefined' &&
+        that.get('order') < cardCollection.at(newPosition).get('order')
+        ) {
+        var beforeIndex = cardCollection.at(newPosition).get('order');
+        var afterIndex = cardCollection.at(newPosition + 1).get('order');
+        cardOrder = (beforeIndex + afterIndex) / 2;
+      }
+      //from bottom to top
+      if (inListView === fromListView &&
+        cardCount > 0 &&
+        typeof cardCollection.at(newPosition -1) != 'undefined' &&
+        typeof cardCollection.at(newPosition) != 'undefined' &&
+        typeof cardCollection.at(newPosition + 1) != 'undefined' &&
+        that.get('order') > cardCollection.at(newPosition).get('order')
+        ) {
+        var beforeIndex = cardCollection.at(newPosition - 1).get('order');
+        var afterIndex = cardCollection.at(newPosition).get('order');
+        cardOrder = (beforeIndex + afterIndex) / 2;
+      }
+
+      //case 3,move to last index of card array
+      if (inListView === fromListView &&
+        cardCount > 0 &&
+        newPosition === cardCollection.length -1) {
+        var lastIndex = cardCollection.at(newPosition).get('order');
+        cardOrder = lastIndex + 65536;
+      }
+
+      //update listView's cardCollection
+      if (fromListView.model.id !== inListView.model.id) {
+        fromListView.model.cardCollection.remove(that, {silent: true});
+        inListView.model.cardCollection.add(that, {silent: true});
+
+        //update card quantity
+        fromListView.updateCardQuantity();
+        inListView.updateCardQuantity();
+
+        //update cards order number
+        fromListView.updateCardsOrderNumber();
+        inListView.updateCardsOrderNumber();
+      }
+
+      // card moving rule-last trigger model changed event.
+      if (cardOrder != -1) {
+        that.patch({'order': cardOrder,'listId': inListView.model.id}, { silent: true });
+      }
+    }
+  });
+
+
+  // Card Collection
+  // ---------------
+
+  cantas.models.CardCollection = Backbone.Collection.extend({
+    model: cantas.models.Card,
+    socket: cantas.socket,
+
+    // Returns the relative URL where the model's resource would be
+    // located on the server. If your models are located somewhere else,
+    // override this method with the correct logic. Generates URLs of the
+    // form: "/[collection.url]/[id]", falling back to "/[urlRoot]/id" if
+    // the model is not part of a collection.
+    // Note that url may also be defined as a function.
+    url: "/card",
+
+    initialize: function () {
+      this.on('collectionCleanup', this.collectionCleanup, this);
+      // this.socket.on('/card:create', this.serverCreate, this);
+      this.bindCreateEvent(this.socket);
+    },
+
+    bindCreateEvent: function(socket) {
+      socket.removeAllListeners("/card:create");
+      socket.on('/card:create', this.serverCreate, this);
+      socket.on('/card:move', this.serverMove, this);
+    },
+
+    serverMove: function(data) {
+      if (data) {
+        var list = cantas.utils.getCurrentBoardModel().listCollection.get(data.listId);
+        var cardCollection = list.cardCollection;
+        var card = cardCollection.get(data._id);
+        if (typeof card === 'undefined') {
+          cardCollection.add(data);
+          card = cardCollection.get(data._id);
+          card.trigger("change:order", card);
+        }
+      }
+    },
+
+    serverCreate: function (data) {
+      if (data) {
+        var list = cantas.utils.getCurrentBoardModel().listCollection.get(data.listId);
+        var cards = list.cardCollection;
+        var obj = cards.get(data._id);
+        if (typeof obj === 'undefined') {
+          cards.add(data);
+        } 
+      }
+    },
+
+    collectionCleanup: function (callback) {
+      this.ioUnbindAll();
+      this.each(function (model) {
+        model.modelCleanup();
+      });
+      return this;
+    },
+
+    // Filter down the list of all items that are finished.
+    status: function () {
+      return this.filter(function (card) { return card.get('status'); });
+    },
+
+    // Filter down the list to only items that are still not finished.
+    nextOrder: function () {
+      if (!this.length) { return 1; }
+      return this.last().get('order') + 1;
+    },
+
+    comparator: function (card) {
+      return card.get('order');
+    }
+  });
+
+
+
+}(jQuery, _, Backbone));

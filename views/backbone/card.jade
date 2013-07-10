@@ -1,0 +1,22 @@
+script#template-card-view(type="text/template")
+  |div.card-container.ui-state-default.card-title
+  |  div.card.clearfix
+  |    a.setting.card-setting
+  |    p= title
+  |    section.card-items
+  |      - assignees.forEach(function(assignee){
+  |      span.card-assignee(title="Assignee: "+assignee.username + "")= assignee.username
+  |      - })
+  |      - if(typeof badges === "object"){
+  |      -   if(badges.comments !== 0){
+  |      span.card-comment(title="\#{badges.comments} comment(s).")= badges.comments
+  |      -   }
+  |      -   if(badges.checkitems !== 0){
+  |      -     var checkitemsProgress = badges.checkitemsChecked + '/' + badges.checkitems;
+  |      span.card-checklist(title=" \#{checkitemsProgress} checklist items completed.")= checkitemsProgress
+  |      -   }
+  |      span.card-vote(title=" \#{badges.votes} votes.")= badges.votes
+  |      - }
+  |    div.card-index(title="Card Position")
+  |    span.order-number= index
+  |    div.card-filter.clearfix

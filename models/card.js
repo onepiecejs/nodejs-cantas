@@ -1,0 +1,91 @@
+(function (module) {
+
+  "use strict";
+
+  var async = require('async');
+  var mongoose = require('mongoose');
+  var Comment = require('./comment');
+  var ChecklistItem = require('./checklistItem');
+  var Vote = require('./vote');
+  var Schema = mongoose.Schema;
+  var ObjectId = Schema.ObjectId;
+  var CardSchema;
+
+  CardSchema = new Schema({
+    title: { type: String, required: true },
+    description: { type: String, default: 'Description'},
+    isArchived: { type: Boolean, default: false },
+    created: { type: Date, default: Date.now },
+    dueDate: { type: Date, default: Date.now },
+    order: { type: Number, default: -1},
+    creatorId: { type: ObjectId, required: true },
+    assignees: [ {type: ObjectId, ref: 'User'} ],
+    listId: { type: ObjectId, required: true, ref: 'List' },
+    boardId: { type: ObjectId, required: true, ref: 'Board' },
+    perms: {
+      delete: {
+        users: [ ObjectId ],
+        roles: [ ObjectId ]
+      },
+      update: {
+        users: [ ObjectId ],
+        roles: [ ObjectId ]
+      }
+    }
+  });
+
+  // virtual attributes
+  CardSchema.virtual('timeLeft')
+  .get(function() {
+    return this.dueDate - Date.now
+  });
+
+  CardSchema.virtual('url').get(function(){
+    return "/card/" + this.id;
+  });
+
+  // model methods
+  CardSchema.method('getOrder', function() {
+    return this.order;
+  });
+
+  CardSchema.method('getBadges', function(callback) {
+    var cardId = this.id;
+    var badges = {};
+    return async.parallel([
+      function(callback){
+        // count comments of this card
+        Comment.count({cardId: cardId}, function(err, count){
+          badges.comments = count || 0;
+          callback(null, badges.comments);
+        });
+      },
+      function(callback){
+        // count checklist items of this card
+        ChecklistItem.count({cardId: cardId}, function(err, count){
+          badges.checkitems = count || 0;
+          callback(null, badges.checkitems);
+        });
+      },
+      function(callback){
+        // count checked checklist items of this card
+        ChecklistItem.count({cardId: cardId, checked: true}, function(err, count){
+          badges.checkitemsChecked = count || 0;
+          callback(null, badges.checkitemsChecked);
+        });
+      },
+      function(callback){
+        // count votes of the card
+        Vote.count({cardId: cardId}, function(err, count){
+          badges.votes = count || 0;
+          callback(null, badges.votes);
+        });
+      }
+    ], function(err, result){
+        callback(err, badges);
+    });
+  });
+
+  module.exports = mongoose.model('Card', CardSchema);
+
+}(module));

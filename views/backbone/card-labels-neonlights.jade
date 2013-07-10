@@ -1,0 +1,4 @@
+script#template-card-labels-neonlights(type="text/template")
+  |each relation in relations
+  |  if relation.selected
+  |    div(title=relation.labelId.title, style="background-color: " + relation.labelId.color).clabel

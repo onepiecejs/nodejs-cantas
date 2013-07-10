@@ -1,0 +1,13 @@
+script#template-label-assign-view(type="text/template")
+  |header.modal-header
+  |  button#close-board-edit.close.js-close-label-window ×
+  |  h3 Label
+  |div.modal-body
+  |  ul.label-items
+  |    each relation in relations
+  |      if relation.selected
+  |        li.checked(id=relation._id, style='background-color:' + relation.labelId.color)
+  |          span
+  |      else
+  |        li(id=relation._id, style='background-color:' + relation.labelId.color)
+  |          span

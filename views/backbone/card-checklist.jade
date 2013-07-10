@@ -1,0 +1,11 @@
+script#template-card-checklist(type="text/template")
+  |a.delete
+  |div.checklist-title
+  |  h4= cantas.utils.safeString(title)
+  |  div.progress
+  |    div.bar.bar-success.bar-self(style="width: 0%;")
+  |      a 0%
+  |  ul.js-items
+  |  ul.js-item-entryview
+  |    li.js-add-item
+  |      a.new-item Add item

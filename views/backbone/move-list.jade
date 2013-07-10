@@ -1,0 +1,34 @@
+script#template-move-list(type="text/template")
+  |div.modal-backdrop.fade.in
+  |  div#movement.modal.fade.in
+  |    div.modal-header
+  |      button.close(data-dismiss="modal") ×
+  |      h3= data.title
+  |    div.modal-body
+  |      div.choose-position
+  |        ul
+  |          li 
+  |            h4 Choose Board
+  |          li
+  |            input(class="js-move-search", type="text", placeholder="Search")
+  |          li
+  |            ul.js-move-items
+  |        ul.hide
+  |          li
+  |            h4 Choose List
+  |          li
+  |            input(class="js-move-search",type="text", placeholder="Search")
+  |          li
+  |            ul.js-move-items
+  |        ul.hide
+  |          li 
+  |            h4 Set Position
+  |          li.specific
+  |            a.js-set-position(data-position="top") Top
+  |            a.js-set-position(data-position="middle") Middle
+  |            a.js-set-position(data-position="bottom") Bottom
+  |          li
+  |            ul.js-move-position
+  |    footer.modal-footer
+  |      button.js-move.btn.btn-primary Move
+  |      button.btn(data-dismiss="modal") Cancel

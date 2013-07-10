@@ -1,0 +1,18 @@
+script#template-card-assign-view(type="text/template")
+  |header.modal-header
+  |  button#close-board-edit.close.js-close-assign-window ×
+  |  h3 Assign
+  |div.modal-body
+  |  ul.assignee
+  |    - members.forEach(function(member){
+  |    - if (member.checked){
+  |    li.js-select-assignee.checked(data-uid= member.userId._id)= member.userId.username
+  |      span 
+  |    - }else{
+  |    li.js-select-assignee(data-uid= member.userId._id)= member.userId.username
+  |      span 
+  |    - }
+  |    - })
+  |footer.modal-footer
+  |  button#save-board-edit.btn.btn-primary.js-save-assignee Save
+  |  button#cancel-board-edit.btn.js-close-assign-window Cancel

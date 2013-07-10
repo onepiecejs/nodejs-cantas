@@ -1,0 +1,18 @@
+extends layout
+
+block header
+
+block content
+  section(class='login')
+      - if (message)
+      
+      div(class="login-input card")
+        header
+          img(class="login-header",src="/images/cantas-login.png")
+        form(action='/login', method='POST')
+          input(type="text",name="username",id="username-login",placeholder="kerberos Name",tabindex="1",autocomplete="off",autocorrect="off",spellcheck="false",autocapitalize="off",autofocus="")
+          input(type="password",placeholder="Password",name="password",id="password-login",tabindex="2")
+          button(type="submit",class="btn btn-inverse login-button",tabindex="3") Log In
+      p= message
+
+block footer

@@ -1,0 +1,38 @@
+!!! 5
+html
+  head
+    style.
+      .mail{
+         background: #333;
+         padding: 50px;
+      }
+      .mail-label{
+        background: blue;
+      }
+      .mail-card{
+        width: 400px;
+        height: 200px;
+        margin: 0 auto;
+        color: #000000;
+        font-size: 13px;
+        min-width: 80%;
+        padding: 9px 18px;
+        z-index: 0;
+        border-radius: 3px;
+        border-bottom-right-radius: 95px 15px;
+        background: #FCDF71;
+      }
+      span{
+        font-style: italic;
+      }
+
+  body
+    div.mail
+      div.mail-label
+      div.mail-card
+        block content
+          h4 Hi #{username},
+          p !{message}
+          p Regards,
+          p Cantas
+

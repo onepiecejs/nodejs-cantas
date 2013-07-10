@@ -1,0 +1,124 @@
+!!! 5
+html
+  head
+    title= title
+    style.
+      *{
+        margin: 0;
+        padding: 0;
+      }
+      html, body{
+        height: 100%;
+      }
+      .mail{
+         background: #333;
+         height: 100%;
+      }
+      .mail-label{
+        background: blue;
+      }
+      .mail-card{
+        width: 50%;
+        padding-top: 11%;
+        height: 45%;
+        margin: 0 auto;
+        color: #000000;
+        font-size: 13px;
+        min-width: 40%;
+        text-align: center;
+      }
+      .error-title, .error-content{
+        height: 90%;
+        width: 40%;
+        background: #FCDF71;
+        display: inline-block;
+        position: relative;
+        padding: 18px 18px;
+        vertical-align: middle;
+      }
+      .error-title{
+        border-radius: 3px 0 0 3px;
+      }
+      .error-content{
+        margin-left: 1%;
+        border-radius: 0 3px 3px 0;
+        border-bottom-right-radius: 95px 15px;
+      }
+      section{
+        height: 100%;
+        width: 15px;
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+      .error-content section{
+        left: -15px;
+        overflow: hidden;
+      }
+      section div{
+       border-top: 15px solid transparent;
+       border-right: 15px solid #333;
+       border-bottom: 15px solid transparent;
+       border-left: 15px solid #transparent;
+       content: "";
+       display: inline-block;
+       height: 0;
+       opacity: 1;
+       vertical-align: top;
+       width: 0;
+      }
+      .error-content section div{
+       border-top: 15px solid transparent;
+       border-right: 15px solid #FCDF71;
+       border-bottom: 15px solid transparent;
+       border-left: 15px solid #transparent;
+      }
+      .error-title h1:first-child{
+        margin-top: 18px;
+        font-size: 6em;
+        font-family: fantasy;
+      }
+      .error-title h1:nth-child(2){
+        font-style: italic;
+        font-size: 3em;
+        font-family: fantasy, arial;
+      }
+      .mail-card .error-content p{
+        font-family: fantasy, arial;
+        text-align: left;
+      }
+  body
+    div.mail
+      div.mail-card
+        div.error-title
+          h1 404
+          h1 Page Not Found
+          section
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+        div.error-content
+          p The requested URL #{url} was not found on this server.
+          section
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+            div
+

@@ -1,0 +1,21 @@
+script#template-comment-item-view(type="text/template")
+  |dt
+  |  span.speanker= authorId.username
+  |dd
+  |  span.speaker-detail!= content
+  |  div.comment-option
+  |    div.item-time= "Creation: " + cantas.utils.formatDate(createdOn)
+  |    - if(typeof updatedOn !== 'undefined'){
+  |    -   updatedOn = " Last Modified: " + cantas.utils.formatDate(updatedOn);
+  |    div.item-time= updatedOn
+  |    - }
+  |    - if(authorId._id === cantas.utils.getCurrentUser().id){
+  |    a.edit-comment.js-edit-comment(data-cid= _id) Edit
+  |    - }
+  |    // a.reply-comment Reply
+
+script#template-comment-item-edit-view(type="text/template")
+  |textarea.js-comment-input
+  |button.btn.btn-primary.js-save-comment Save
+  |button.btn.js-cancel-comment Cancel
+
