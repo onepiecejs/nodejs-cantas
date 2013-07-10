@@ -1,5 +1,7 @@
 # Cantas
 
+![cantas prototype](public/images/cantas-help-card.gif)
+
 ## Setup development environment
 
 - rpm requirements:
