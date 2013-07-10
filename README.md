@@ -65,8 +65,8 @@ That's it.
 
 ## Resources
 
-- [trello](https://trello.com/)
-- [the trello tech talk](http://blog.fogcreek.com/the-trello-tech-stack/)
+- [Trello](https://trello.com/)
+- [the Trello tech talk](http://blog.fogcreek.com/the-trello-tech-stack/)
 - [HTML5 pushState](http://diveintohtml5.info/history.html)
 
 ## Integration && Test Environment
