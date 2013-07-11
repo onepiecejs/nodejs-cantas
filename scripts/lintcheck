@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Run this script under the root directory of project. You can run this by
+# issuing `$ scripts/lintcheck` or `$ npm run-script lintcheck`.
+
+# Update this variable when add new directory in the root directory of project.
+dirs_to_check='models/
+               public/javascripts/models/
+               public/javascripts/utils/
+               public/javascripts/views/
+               routes/ scripts/ services/ sockets/
+               app.js settings.js'
+
+nodelint $dirs_to_check --config lint-config.js
