@@ -16,33 +16,6 @@
     , Activity = require("../models/activity")
     , SocketPatch = require("./patch_socket");
 
-  /*
-   * Bind object to its CRUD event handlers.
-   *
-   * Arguments:
-   *
-   * - modelName: model's name
-   * - socket: the socket object related to current client
-   * - hs: handshake of current socket object
-   * - exceptMe: whether model object cares the event that happens in server
-   *   side to itself. By default, it's false.
-   */
-  function setUpCrudForModel(modelName, socket, hs, exceptMe, events) {
-    // No point in continuing without the required references
-    if (!modelName || !socket || !hs) {
-      return;
-    }
-    // Add socket message handlers for this this model
-    crud.addListeners({
-      'model': mongoose.model(modelName),
-      'rooturl': modelName.toLowerCase(),
-      'socket': socket,
-      'handshake': hs,
-      'exceptMe': exceptMe || false,
-      'events': events
-    });
-  }
-
   function Room (socket) {
     /**
      * Set an internal reference of the client socket.
