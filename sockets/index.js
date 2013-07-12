@@ -2,18 +2,14 @@
 
   "use strict";
 
-  var mongoose = require('mongoose')
-    , connect = require('express/node_modules/connect')
+  var connect = require('express/node_modules/connect')
     , parseCookie = connect.utils.parseCookie
-    , Session = connect.middleware.session.Session
     , passport = require('passport')
     , crud = require('./crud')
-    , io // To be set globally later.
     , Board = require("../models/board")
     , BoardMembership = require("./boardMembership")
     , BoardMove = require("./boardMove")
     , BoardMemberRelation = require("../models/boardMemberRelation")
-    , Activity = require("../models/activity")
     , SocketPatch = require("./patch_socket")
     , Room = require('./room');
 
