@@ -42,7 +42,7 @@
         next();
       } else {
         if (req.xhr) {
-          res.status(500).json({error: 'canats session timeout'});
+          res.status(500).json({error: 'Cantas session timeout'});
         } else {
           req.session.redirectUrl = req.url;
           res.redirect('/login');
