@@ -14,7 +14,7 @@
       var sessionID = req.cookies['express.sid'];
       sessionStore.load(sessionID, function(err, session){
         if ((err || !session) && req.xhr) {
-          res.status(500).json({error: 'canats session timeout'});
+          res.status(500).json({error: 'Cantas session timeout'});
         } else if ((err || !session) && !req.xhr) {
           req.session.redirectUrl = req.url;
           res.redirect('/login');
