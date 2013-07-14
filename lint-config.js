@@ -8,14 +8,14 @@
 /*jslint indent: 4*/
 
 var options = {
-    anon:       false, // if the space may be omitted in anonymous function declarations
+    anon:       true, // if the space may be omitted in anonymous function declarations
     bitwise:    true,  // if bitwise operators should be allowed
     browser:    false, // if the standard browser globals should be predefined
     cap:        false, // if upper case HTML should be allowed
     'continue': false, // if the continuation statement should be tolerated
     css:        false, // if CSS workarounds should be tolerated
     debug:      false, // if debugger statements should be allowed
-    devel:      false, // if logging should be allowed (console, alert, etc.)
+    devel:      true, // if logging should be allowed (console, alert, etc.)
     eqeq:       false, // if == should be allowed
     es5:        false, // if ES5 syntax should be allowed
     evil:       false, // if eval should be allowed
