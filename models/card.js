@@ -7,6 +7,7 @@
   var Comment = require('./comment');
   var ChecklistItem = require('./checklistItem');
   var Vote = require('./vote');
+  var Attachment = require('./attachment');
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
   var CardSchema;
@@ -75,10 +76,24 @@
         });
       },
       function(callback){
-        // count votes of the card
-        Vote.count({cardId: cardId}, function(err, count){
-          badges.votes = count || 0;
-          callback(null, badges.votes);
+        // count the num of votes that vote yes of the card
+        Vote.count({cardId: cardId, yesOrNo: true}, function(err, count){
+          badges.votesYes = count || 0;
+          callback(null, badges.votesYes);
+        });
+      },
+      function(callback){
+        // count the num of votes that vote no of the card
+        Vote.count({cardId: cardId, yesOrNo: false}, function(err, count){
+          badges.votesNo = count || 0;
+          callback(null, badges.votesNo);
+        });
+      },
+      function(callback){
+        // count attachment of the card
+        Attachment.count({cardId: cardId}, function(err,count) {
+          badges.attachments = count || 0;
+          callback(null, badges.attachments);
         });
       }
     ], function(err, result){

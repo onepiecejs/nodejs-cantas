@@ -8,3 +8,5 @@ _SpecRunner.html
 public/javascripts/dist/*.js
 public/stylesheets/*.min.css
 .grunt
+uploads
+public/attachments

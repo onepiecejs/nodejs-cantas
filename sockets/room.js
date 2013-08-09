@@ -44,7 +44,7 @@
    * leave all room and return boardID list
    */
   Room.prototype.leaveAllRoom = function () {
-    this.socket.room.emit('user-logout', {ok: 0, visitor: this.socket.handshake.user});
+    this.socket.room.emit('user-leave-all-room', {ok: 0, visitor: this.socket.handshake.user});
     var rooms = this.myRooms();
 
     for (var index in rooms) {

@@ -42,7 +42,7 @@ app.configure(function () {
     key: 'express.sid',
     store: sessionStore
   }));
-  app.use(express.bodyParser());
+  app.use(express.bodyParser({uploadDir: __dirname + '/uploads'}));
   app.use(express.methodOverride());
   app.use(passport.initialize());
   app.use(passport.session());

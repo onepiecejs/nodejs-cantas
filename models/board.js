@@ -2,40 +2,41 @@
 
   "use strict";
 
-  var mongoose = require('mongoose');
-  var Mailer = require('../services/mail');
-  var List = require('./list');
-  var Activity = require("./activity");
-  var User = require("./user");
-  var BoardMemberRelation = require('./boardMemberRelation');
-  var Notification = require("../services/notification");
-  var BoardMemberStatus = require("./boardMemberStatus");
-  var Schema = mongoose.Schema;
-  var ObjectId = Schema.ObjectId;
-  var BoardMemberRelation = require("./boardMemberRelation");
-  var async = require('async');
-  var Sites = require("../services/sites");
+  var mongoose = require('mongoose'),
+    Mailer = require('../services/mail'),
+    List = require('./list'),
+    Activity = require("./activity"),
+    User = require("./user"),
+    BoardMemberRelation = require('./boardMemberRelation'),
+    Notification = require("../services/notification"),
+    BoardMemberStatus = require("./boardMemberStatus"),
+    Schema = mongoose.Schema,
+    ObjectId = Schema.ObjectId,
+    async = require('async'),
+    Sites = require("../services/sites"),
+    LogActivity = require("../services/activity").Activity,
 
-  var BoardSchema = new Schema({
-    title: { type: String, required: true },
-    description: { type: String, default: '' },
-    isClosed: { type: Boolean, default: false },
-    created: { type: Date, default: Date.now },
-    creatorId: { type: ObjectId, required: true, ref: 'User' },
-    groupId: { type: ObjectId },
-    isPublic: {type: Boolean, default: true},
-    voteStatus: {type: String, default: 'enabled'},
-    perms: {
-      delete: {
-        users: [ ObjectId ],
-        roles: [ ObjectId ]
-      },
-      update: {
-        users: [ ObjectId ],
-        roles: [ ObjectId ]
+    BoardSchema = new Schema({
+      title: { type: String, required: true },
+      description: { type: String, default: '' },
+      isClosed: { type: Boolean, default: false },
+      created: { type: Date, default: Date.now },
+      creatorId: { type: ObjectId, required: true, ref: 'User' },
+      groupId: { type: ObjectId },
+      isPublic: {type: Boolean, default: true},
+      voteStatus: {type: String, default: 'enabled'},
+      commentStatus: {type:String, default: 'enabled'},
+      perms: {
+        delete: {
+          users: [ ObjectId ],
+          roles: [ ObjectId ]
+        },
+        update: {
+          users: [ ObjectId ],
+          roles: [ ObjectId ]
+        }
       }
-    }
-  });
+    });
 
   BoardSchema.post('remove', function (board) {
     // Also remove its lists.
@@ -43,7 +44,7 @@
   });
 
 
-  BoardSchema.virtual('url').get(function(){
+  BoardSchema.virtual('url').get(function () {
     return "/board/" + this.id;
   });
 
@@ -58,16 +59,16 @@
    * Finally, join current user to board and notify client everything is okay.
    *
    */
-  BoardSchema.statics.joinBoard = function(user, boardId, callback) {
-    var that = this;
-    var result = null;
+  BoardSchema.statics.joinBoard = function (user, boardId, socket, callback) {
+    var that = this,
+      result = null;
 
     async.waterfall([
-      function(callback) {
+      function (callback) {
         that.findById(boardId,
                       "_id isPublic creatorId",
-                      function(err, board) {
-          if (err || board === null) { 
+                      function (err, board) {
+          if (err || board === null) {
             result = {ok: 1, message: 'no valid board'};
             return callback(result, null);
           };
@@ -75,26 +76,33 @@
           callback(null, board);
         });
       },
-      function(board, callback) {
+      function (board, callback) {
         if (user === null) {
-          result = {ok:1, message: 'no user defined'};
+          result = {ok: 1, message: 'no user defined'};
           return callback(result, null);
         }
-        board.getMemberStatus(user._id, function(err, status) {
-          if (err) { 
+        board.getMemberStatus(user._id, function (err, status) {
+          if (err) {
             result = {ok: 1, message: 'getMemberStatus failed'};
             return callback(result, null);
           };
 
           if (status == BoardMemberStatus.inviting) {
             //update user status
-            board.confirmInvitation(user._id, function(err, obj) {
-              if (err) { 
+            board.confirmInvitation(user._id, function (err, obj) {
+              if (err) {
                 result = {ok: 1, message: 'confirmInvitation failed'};
                 return callback(result, null);
               };
+              var content = user.username + ' has accepted invitation and joined the board.'
+              var activity = new LogActivity({socket: socket, exceptMe: false});
+              activity.log({
+                content: content,
+                creatorId: user._id,
+                boardId: board._id
+              });
 
-              callback(null,board);
+              callback(null, board);
             });
           } else {
             //redirect to next callback
@@ -102,34 +110,34 @@
           }
         });
       },
-      function(board, callback) {
-        BoardMemberRelation.isBoardMember(user._id, boardId, function(err, memberStatus){
+      function (board, callback) {
+        BoardMemberRelation.isBoardMember(user._id, boardId, function (err, memberStatus) {
           if (err) {
-            result = {ok: 1, message: 'isBoardMember failed'}
-            return callback(result, null) 
+            result = {ok: 1, message: 'isBoardMember failed'};
+            return callback(result, null);
           };
-          callback(null,board, memberStatus);
+          callback(null, board, memberStatus);
         });
       },
-      function(board, memberStatus, callback) {
-        if ( board.creatorId.equals(user._id) ||
-        memberStatus === true ){
-          result = {ok: 0, message: 'member', board: board}
-          callback(null,result);
-        } else if ( board.isPublic === true &&
-          memberStatus === false ) {
-            result = {ok: 0, message: 'normal', board: board}
-            callback(null,result);
-          } else {
-            //private board without member relation, you can't login
-            result = {ok: 0, message: 'nologin', board:board}
-            callback(null,result);
-          }
+      function (board, memberStatus, callback) {
+        if (board.creatorId.equals(user._id) ||
+            memberStatus === true) {
+          result = {ok: 0, message: 'isMember', board: board};
+          callback(null, result);
+        } else if (board.isPublic === true &&
+            memberStatus === false) {
+              result = {ok: 0, message: 'normal', board: board};
+              callback(null,result);
+            } else {
+              //private board without member relation, you can't login
+              result = {ok: 0, message: 'nologin', board: board};
+              callback(null, result);
+            }
       }
-      ], function(err, result) {
-        if (err) { result = err };
-        callback(null, result);
-      });
+    ], function (err, result) {
+      if (err) { result = err };
+      callback(null, result);
+    });
   }
 
   // Schema methods
@@ -143,7 +151,7 @@
    *           separated by a space. This is optional.
    * - callback: called when operation is done. Accepts two arguments as normal.
    */
-  BoardSchema.statics.getById = function(boardId, fields, callback) {
+  BoardSchema.statics.getById = function (boardId, fields, callback) {
     var _callback = typeof fields === 'function' ? fields : callback;
     this
       .findById(boardId)
@@ -165,11 +173,11 @@
    * - userId: the Id of the member who is being kicked off.
    * - callback: a function, it will be invoked when all is done.
    */
-  BoardSchema.statics.kickOffMember = function(boardId, userId, callback) {
+  BoardSchema.statics.kickOffMember = function (boardId, userId, callback) {
     this.update(
       { _id: boardId, "members.userId": userId },
       { $set: { "members.$.quitOn": Date.now() } },
-      function(err, numberAffected, raw) {
+      function (err, numberAffected, raw) {
         callback(err, numberAffected, raw);
       });
   };
@@ -183,8 +191,8 @@
    * - callback: a function, a collection of found Activities is passed as the
    *   second argument. Error object is passed to first argument as normal.
    */
-  BoardSchema.methods.getActivities = function(callback) {
-    Activity.find({ boardId: this.id }, function(err, activities) {
+  BoardSchema.methods.getActivities = function (callback) {
+    Activity.find({ boardId: this.id }, function (err, activities) {
       callback(err, activities);
     });
   };
@@ -197,9 +205,9 @@
    * - callback: a function to accept the status. The first argument is an
    *             error object and status is passed to the second one.
    */
-  BoardSchema.methods.getMemberStatus = function(userId, callback) {
+  BoardSchema.methods.getMemberStatus = function (userId, callback) {
     var conditions = { boardId: this._id, userId: userId };
-    BoardMemberRelation.findOne(conditions, function(err, relation) {
+    BoardMemberRelation.findOne(conditions, function (err, relation) {
       if (err)
         callback(err, null);
       else {
@@ -217,7 +225,7 @@
    * - callback: a function to accept the result. callback is passed to
    *             findOneAndUpdate directly.
    */
-  BoardSchema.methods.confirmInvitation = function(userId, callback) {
+  BoardSchema.methods.confirmInvitation = function (userId, callback) {
     BoardMemberRelation.findOneAndUpdate(
       { boardId: this._id, userId: userId },
       { status: BoardMemberStatus.available },

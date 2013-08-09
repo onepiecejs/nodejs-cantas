@@ -1,0 +1,36 @@
+<script id="template-comment-config-view" type="text/template">
+dt
+ h3 Comment
+dd
+ if commentStatus == 'opened'
+   a.checked.js-open-comment.all
+     span
+     span
+     span Public for Every User
+ else
+   a.js-open-comment.all
+     span
+     span
+     span Public for Every User
+ if commentStatus == 'enabled'
+   a.checked.js-enable-comment.part
+     span
+     span
+     span Public for Board Member
+ else
+   a.js-enable-comment.part
+     span
+     span
+     span Public for Board Member
+ if commentStatus == 'disabled'
+   a.checked.js-disable-comment.none
+     span
+     span
+     span Disable
+ else
+   a.js-disable-comment.none
+     span
+     span
+     span Disable
+dd
+</script>

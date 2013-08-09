@@ -18,7 +18,7 @@
   var async = require('async');
   var mongoose = require('mongoose');
   var Board = require('../models/board');
-  var VoteStatus = require('../models/voteStatus');
+  var configStatus = require('../models/configStatus');
   var settings = require('../settings');
 
   var beforeMigration = function beforeMigration() {
@@ -43,7 +43,7 @@
     Board.find({voteStatus: {$exists: false}}, '_id', function(err, boards) {
       async.map(boards,
         function(board, asyncCallback) {
-          var updateData = {$set: {voteStatus: VoteStatus.enabled}};
+          var updateData = {$set: {voteStatus: configStatus.enabled}};
           Board.findByIdAndUpdate(board._id, updateData, function(err, updatedBoard) {
             if (err)
               asyncCallback(err, null);

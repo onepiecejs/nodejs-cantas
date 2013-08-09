@@ -11,6 +11,10 @@ $(function ($, _, Backbone) {
 
     template: jade.compile($("#template-help-view").text()),
 
+    close: function(){
+     this.remove();
+    },
+
     remove: function(){
       this.undelegateEvents();
       this.$el.empty();

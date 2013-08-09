@@ -112,6 +112,6 @@ Strategy.prototype._challenge = function(code, desc, uri) {
 
 /**
  * Expose `Strategy`.
- */ 
+ */
 
 module.exports = Strategy;

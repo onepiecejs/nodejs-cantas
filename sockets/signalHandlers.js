@@ -5,6 +5,7 @@
 
   var async = require('async');
   var Label = require('../models/label');
+  var Card = require('../models/card');
   var LabelMetadata = require('../models/metadata').LabelMetadata;
   var CardLabelRelation = require('../models/cardLabelRelation');
 
@@ -86,6 +87,19 @@
             done(null, true);
           }
         });
+    });
+  };
+
+  module.exports.updateCardBadges = function(args, done) {
+    var cardId = args.instance.cardId;
+    Card.findById(cardId, function(err, card) {
+      if (!err) {
+        card.getBadges(function(err, badges) {
+          if (!err) {
+            args.socket.room.emit("badges:update", {cardId: cardId, badges: badges});
+          }
+        });
+      }
     });
   };
 

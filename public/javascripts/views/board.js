@@ -49,11 +49,25 @@ $(function ($, _, Backbone) {
     },
 
     rememberMe: function() {
-      this.attributes.editRestoreChain.push(this);
+      // For now we only allow one expanded view at a time,
+      // so we need to shift and collapse them.
+      while (this.attributes.expandedViewChain.length > 0) {
+        var view = this.attributes.expandedViewChain.shift();
+        if (view != undefined) {
+          view.collapse();
+        }
+      }
+      this.attributes.expandedViewChain.push(this);
+    },
+    forgetMe: function () {
+      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
+        this.attributes.expandedViewChain.pop();
+      }
     },
 
+
     /*
-     * Get current board title from the textbox wit ID #board-title-input
+     * Get current board title from the textbox with ID #board-title-input
      */
     getBoardTitle: function() {
       return $("#board-title-input").val();
@@ -66,6 +80,8 @@ $(function ($, _, Backbone) {
     },
 
     edit: function(event) {
+      // Prevents the click event from bubbling up.
+      event.stopPropagation();
 
       var div = $("div.js-edit-board-title");
       div
@@ -89,10 +105,14 @@ $(function ($, _, Backbone) {
         alert("Please enter a board title.");
         return false;
       } else {
+        var origin_title = this.model.get("title");
         var result = this.model.set({ "title": title },
                                     { validate: true });
         if (result && this.model.hasChanged("title"))
-          this.model.patch({ title: this.model.get("title") });
+          this.model.patch({
+            title: this.model.get("title"),
+            original: {title: origin_title}
+          });
       }
       return true;
     },
@@ -130,8 +150,8 @@ $(function ($, _, Backbone) {
       }
     },
 
-    // To restore the edit control area
-    cancelEdit: function() {
+    // Collapse the edit control area
+    collapse: function() {
       var divContainer = $("#board-edit-title").parent("div");
       var editPlaceholder = divContainer.html();
       divContainer
@@ -154,8 +174,8 @@ $(function ($, _, Backbone) {
     className: "modal board-description hide",
     events: {
       "click #save-board-edit": "saveClicked",
-      "click #cancel-board-edit": "cancelEdit",
-      "click #close-board-edit": "cancelEdit"
+      "click #cancel-board-edit": "collapse",
+      "click #close-board-edit": "collapse"
     },
 
     initialize: function(data) {
@@ -164,10 +184,8 @@ $(function ($, _, Backbone) {
         alert(error);
       });
       $("#board-description").on("click", function(event) {
-        var sender_id = event.target.id;
-        var propagation_allowed = ["cancel-board-edit", "close-board-edit"];
-        if (propagation_allowed.indexOf(sender_id) < 0)
-          event.stopPropagation();
+        // Prevents the click event from bubbling up.
+        event.stopPropagation();
       });
       this.model.on("change:description", this.descriptionChangedFromOthers);
     },
@@ -179,13 +197,34 @@ $(function ($, _, Backbone) {
     },
 
     rememberMe: function() {
-      this.attributes.editRestoreChain.push(this);
+      // For now we only allow one expanded view at a time,
+      // so we need to shift and collapse them.
+      while (this.attributes.expandedViewChain.length > 0) {
+        var view = this.attributes.expandedViewChain.shift();
+        if (view != undefined) {
+          view.collapse();
+        }
+      }
+      this.attributes.expandedViewChain.push(this);
+    },
+    forgetMe: function () {
+      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
+        this.attributes.expandedViewChain.pop();
+      }
     },
 
     toggleInfoEdition: function(event) {
+      // Prevents the click event from bubbling up.
+      event.stopPropagation();
+
+      var view = event.data;
       if ($("div#board-description").hasClass("hide")) {
-        var view = event.data;
+        $(".board-menu").hide();
+        $(".list-menu,.js-list-setting").hide();
+        $(".card-menu,.card-setting").hide();
         view.showInfoEditionDialog();
+      }else {
+        view.collapse();
       }
     },
 
@@ -202,21 +241,24 @@ $(function ($, _, Backbone) {
 
     saveClicked: function(event) {
       var description = $("#board-description-text").val().trim();
+      var origin_description = this.model.get("description");
       var result = this.model.set({ "description": description },
                                   { validate: true });
       if (result != false && this.model.hasChanged("description")) {
         this.model.patch({ 
           description: this.model.get("description"),
+          original: {description: origin_description}
         });
       }
       $("body").trigger("click");
     },
 
-    // To restore the edit control area
-    cancelEdit: function() {
+    // Collpase the edit control area
+    collapse: function() {
       $("div#board-description").addClass("hide");
       if (this.model.hasChanged("description"))
         $("textarea#board-description-text").val(this.model.get("description"));
+      this.forgetMe();
     }
   });
 
@@ -393,6 +435,7 @@ $(function ($, _, Backbone) {
           model.patch({
             isArchived: false,
             order: newListOrder,
+            original: {isArchived: true}
           }, {silent: true});
         }
       });
@@ -419,7 +462,14 @@ $(function ($, _, Backbone) {
                 sortArray.sort(function(a,b){return a - b});
                 var lastCardOrder = ('undefined' ===  typeof _.last(sortArray)) ? -1 : _.last(sortArray);
                 var newCardOrder = lastCardOrder + 65536;
-                model.patch({isArchived: false, 'order': newCardOrder}, {silent: true});
+                model.patch({
+                  isArchived: false,
+                  'order': newCardOrder,
+                  original: {isArchived: true}
+                },
+                {
+                  silent: true
+                });
               },
               error: function() {
                 cantas.utils.renderTimeoutBox();
@@ -437,6 +487,7 @@ $(function ($, _, Backbone) {
             model.patch({
               isArchived: false,
               order: newCardOrder,
+              original: {isArchived: true}
             }, {silent: true});
           }
         }
@@ -470,11 +521,13 @@ $(function ($, _, Backbone) {
       "click .board-side-scroll a": "scrollBoardContent",
       "mousedown .board-side-scroll a": "startScrollBoardContent",
       "mouseup .board-side-scroll a": "stopScrollBoardContent",
-      "click .js-close-board": "closeBoardClicked"
+      "click .js-close-board": "closeBoardClicked",
+
+      'click .js-show-configuration': 'onShowConfigurationClick'
     },
 
     initialize: function(data){
-      window.cantas.isBoardMember = data.member;
+      window.cantas.isBoardMember = data.isMember;
       // cache list view instance.
       this.listViewCollection = [];
 
@@ -500,29 +553,31 @@ $(function ($, _, Backbone) {
       $(window).bind("resize", _.bind(this.resize, this));
 
       /*
-       * Currently, registering document's click event to restore previous
-       * edit control.
+       * Currently, registering document's click event to collapse previous
+       * epanded editing or setting view.
        */
       $("body").on("click", this, this.bodyClicked);
 
       /*
-       * For restoring previous edit control area, I record them in this array.
-       * Only one edit control area appears in page at a time. The area that is
-       * being opened is appended to this array, and the first element becomes
-       * previous one.
-       * Document's click event will get and remove the previous edit control
-       * area from here.
+       * For collapsing previous expanded views, I record them in this array.
+       * The view that is being expanded is appended to this array.
+       * Document's click event will pop and try to collapse the previous
+       * expanded view.
        *
-       * Why an undefined is here for initialization?
-       * When user edits something for the first time, there should be a dummy
-       * previous one. So, this is a placeholder only, and ignore it.
+       * Now we only allow one expanded control area appears in page at a time.
+       * which is guaranteed by view's rememberMe function.
        */
-      this._editRestoreChain = [undefined];
+      this._expandedViewChain = [];
 
       this.timers = [];
       this.timer_scrollBoard = 0;
       this.flag_continueScrollBoard = false;
       this.timer_continueScrollBoard = 0;
+    },
+
+    onShowConfigurationClick: function(event) {
+      var configView = new cantas.views.ConfigView({model: this.model});
+      configView.show();
     },
 
     openArchivedItems: function(event) {
@@ -537,6 +592,10 @@ $(function ($, _, Backbone) {
       event.preventDefault();
       //event.stopPropagation();
       this.addListView.render();
+    },
+
+    close: function() {
+      this.remove();
     },
 
     remove: function(){
@@ -580,21 +639,21 @@ $(function ($, _, Backbone) {
       this.boardTitleView = new BoardTitleView({
         model: this.model,
         attributes: {
-          editRestoreChain: this._editRestoreChain
+          expandedViewChain: this._expandedViewChain
         }
       });
 
       this.boardDescriptionView = new BoardDescriptionView({
         model: this.model,
         attributes: {
-          editRestoreChain: this._editRestoreChain
+          expandedViewChain: this._expandedViewChain
         }
       });
 
       this.addListView = new AddListView({
         model: this.model,
         attributes: {
-          editRestoreChain: this._editRestoreChain
+          expandedViewChain: this._expandedViewChain
          }
        });
 
@@ -630,16 +689,36 @@ $(function ($, _, Backbone) {
       );
 
       if (!window.cantas.isBoardMember) {
-        this.$el.find('button.js-add-list').hide();
-        this.$el.find('a.js-select-private').hide();
-        this.$el.find('a.js-toggleInvite').hide();
-        this.$el.find('a.js-toggle-board-menu').hide();
-        this.$el.find('a.board-info').hide();
-        this.$el.undelegate('.board-content', 'dblclick');
-        this.boardTitleView.undelegateEvents();
+        this.disableEvents();
+      };
+
+      var currentUserRole = this.getCurrentUserRole();
+      if (currentUserRole !== 'admin' ){
+        this.$el.find('.js-show-configuration').hide();
       };
 
       return this;
+    },
+
+    getCurrentUserRole: function() {
+      var currentUserRole = null;
+      var currentUser = cantas.utils.getCurrentUser();
+      this.visitors.each(function(visitor) {
+        if (visitor.attributes._id == currentUser.id) {
+          currentUserRole = visitor.attributes.role.name;
+        };
+      });
+      return currentUserRole;
+    },
+
+    disableEvents: function() {
+      this.$el.find('button.js-add-list').hide();
+      this.$el.find('a.js-select-private').hide();
+      this.$el.find('a.js-toggleInvite').hide();
+      this.$el.find('a.js-toggle-board-menu').hide();
+      this.$el.find('a.board-info').hide();
+      this.$el.undelegate('.board-content', 'dblclick');
+      this.boardTitleView.undelegateEvents();
     },
 
     addAll: function(){
@@ -662,7 +741,7 @@ $(function ($, _, Backbone) {
       var thatListView = new cantas.views.ListView({
         model: list,
         attributes: {
-          editRestoreChain: this._editRestoreChain
+          expandedViewChain: this._expandedViewChain
         }
       });
 
@@ -677,7 +756,7 @@ $(function ($, _, Backbone) {
       if (context) {
         $("#board").find(".list-panel:last").addClass("list-panel-highlight");
         setTimeout(function(){
-          $("#board").find(".list-panel:.list-panel-highlight").removeClass("list-panel-highlight");
+          $("#board").find(".list-panel").filter(".list-panel-highlight").removeClass("list-panel-highlight");
         }, 10);
 
         // board get scrolled for and only for the list creator.
@@ -756,21 +835,18 @@ $(function ($, _, Backbone) {
     },
 
     /*
-     * Restore previous edit control area.
+     * Collapse previous edit control area.
      */
-    restorePreviousEdit: function() {
-      var view = this._editRestoreChain[0];
+    collapsePreviousEdit: function() {
+      var view = this._expandedViewChain.pop();
       if (view != undefined) {
-          view.cancelEdit();
+          view.collapse();
       }
-      if (this._editRestoreChain.length == 1)
-        this._editRestoreChain.push(undefined);
-      this._editRestoreChain.shift();
     },
 
     bodyClicked: function(event) {
       // Currently, there is only one task to do.
-      event.data.restorePreviousEdit();
+      event.data.collapsePreviousEdit();
     },
 
     toggleVisibility: function(event) {
@@ -784,7 +860,11 @@ $(function ($, _, Backbone) {
         $(event.target).addClass("active").attr("title", "Set to public");
       }
       var visibility = this.model.get("isPublic") === true ? false : true;
-      this.model.patch({"isPublic": visibility},{silent: true,validate: true})
+      var origin_isPublic = this.model.get("isPublic");
+      this.model.patch({
+        "isPublic": visibility,
+        original: {isPublic: origin_isPublic}
+      },  {silent: true, validate: true})
     },
 
     resetVisibility: function() {

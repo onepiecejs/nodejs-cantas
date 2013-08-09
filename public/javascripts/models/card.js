@@ -14,6 +14,7 @@ $(function ($, _, Backbone) {
       // this.on('serverChange', this.serverChange, this);
       // this.on('serverDelete', this.serverDelete, this);
       this.commentCollection = new cantas.models.CommentCollection;
+      this.attachmentCollection = new cantas.models.AttachmentCollection;
       this.on('modelCleanup', this.modelCleanup, this);
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
@@ -55,44 +56,50 @@ $(function ($, _, Backbone) {
       }
 
       //reorder rule
-      var cardCollection = inListView.model.cardCollection;
-      var cardCount = cardCollection.length;
+      // var cardCollection = inListView.model.cardCollection;
+      var activeCardArray = inListView.model.cardCollection.where({isArchived: false});
+      activeCardArray = _.map(activeCardArray, function(card) {
+        return card.get('order');
+      })
+      activeCardArray = activeCardArray.sort(function(a,b) {return a-b });
+
+      var cardCount = activeCardArray.length;
       var cardOrder = -1;
 
       //card moving cards to new list
       //case1: move to empty list
       if (inListView != fromListView &&
         cardCount === 0 &&
-        typeof cardCollection.at(newPosition) === 'undefined' &&
-        typeof cardCollection.at(newPosition + 1) === 'undefined') {
+        typeof activeCardArray[newPosition] === 'undefined' &&
+        typeof activeCardArray[newPosition + 1] === 'undefined') {
         cardOrder = cardOrder + 65536;
       }
 
       //case2: move to frist index of card array
       if (inListView != fromListView &&
         cardCount > 0 &&
-        typeof cardCollection.at(newPosition -1) === 'undefined' &&
-        typeof cardCollection.at(newPosition) != 'undefined' ) {
-        var firstIndex = cardCollection.at(newPosition).get('order');
+        typeof activeCardArray[newPosition -1] === 'undefined' &&
+        typeof activeCardArray[newPosition] != 'undefined' ) {
+        var firstIndex = activeCardArray[newPosition];
         cardOrder = firstIndex / 2;
       }
 
       //case3: move to inPosition of card array
       if (inListView != fromListView &&
         cardCount > 0 &&
-        typeof cardCollection.at(newPosition -1) != 'undefined' &&
-        typeof cardCollection.at(newPosition) != 'undefined' ) {
-        var beforeIndex = cardCollection.at(newPosition - 1).get('order');
-        var afterIndex = cardCollection.at(newPosition).get('order');
+        typeof activeCardArray[newPosition -1] != 'undefined' &&
+        typeof activeCardArray[newPosition] != 'undefined' ) {
+        var beforeIndex = activeCardArray[newPosition - 1];
+        var afterIndex = activeCardArray[newPosition];
         cardOrder = (beforeIndex + afterIndex) / 2;
       }
 
       //case4: move to last index of card array
       if (inListView != fromListView &&
         cardCount > 0 &&
-        typeof cardCollection.at(newPosition -1) != 'undefined' &&
-        typeof cardCollection.at(newPosition) === 'undefined') {
-        var lastIndex = cardCollection.at(newPosition - 1).get('order');
+        typeof activeCardArray[newPosition -1] != 'undefined' &&
+        typeof activeCardArray[newPosition] === 'undefined') {
+        var lastIndex = activeCardArray[newPosition - 1];
         cardOrder = lastIndex + 65536;
       }
 
@@ -101,40 +108,40 @@ $(function ($, _, Backbone) {
       if (inListView === fromListView &&
         cardCount > 0 &&
         newPosition === 0) {
-        var firstIndex = cardCollection.at(newPosition).get('order');
+        var firstIndex = activeCardArray[newPosition];
         cardOrder = firstIndex / 2;
       }
 
       //case 2:  moving to inPositions, from top to bottom
       if (inListView === fromListView &&
         cardCount > 0 &&
-        typeof cardCollection.at(newPosition -1) != 'undefined' &&
-        typeof cardCollection.at(newPosition) != 'undefined' &&
-        typeof cardCollection.at(newPosition + 1) != 'undefined' &&
-        that.get('order') < cardCollection.at(newPosition).get('order')
+        typeof activeCardArray[newPosition -1] != 'undefined' &&
+        typeof activeCardArray[newPosition] != 'undefined' &&
+        typeof activeCardArray[newPosition + 1] != 'undefined' &&
+        that.get('order') < activeCardArray[newPosition]
         ) {
-        var beforeIndex = cardCollection.at(newPosition).get('order');
-        var afterIndex = cardCollection.at(newPosition + 1).get('order');
+        var beforeIndex = activeCardArray[newPosition];
+        var afterIndex = activeCardArray[newPosition + 1];
         cardOrder = (beforeIndex + afterIndex) / 2;
       }
       //from bottom to top
       if (inListView === fromListView &&
         cardCount > 0 &&
-        typeof cardCollection.at(newPosition -1) != 'undefined' &&
-        typeof cardCollection.at(newPosition) != 'undefined' &&
-        typeof cardCollection.at(newPosition + 1) != 'undefined' &&
-        that.get('order') > cardCollection.at(newPosition).get('order')
+        typeof activeCardArray[newPosition -1] != 'undefined' &&
+        typeof activeCardArray[newPosition] != 'undefined' &&
+        typeof activeCardArray[newPosition + 1] != 'undefined' &&
+        that.get('order') > activeCardArray[newPosition]
         ) {
-        var beforeIndex = cardCollection.at(newPosition - 1).get('order');
-        var afterIndex = cardCollection.at(newPosition).get('order');
+        var beforeIndex = activeCardArray[newPosition - 1];
+        var afterIndex = activeCardArray[newPosition];
         cardOrder = (beforeIndex + afterIndex) / 2;
       }
 
       //case 3,move to last index of card array
       if (inListView === fromListView &&
         cardCount > 0 &&
-        newPosition === cardCollection.length -1) {
-        var lastIndex = cardCollection.at(newPosition).get('order');
+        newPosition === activeCardArray.length -1) {
+        var lastIndex = activeCardArray[newPosition];
         cardOrder = lastIndex + 65536;
       }
 
@@ -154,7 +161,18 @@ $(function ($, _, Backbone) {
 
       // card moving rule-last trigger model changed event.
       if (cardOrder != -1) {
-        that.patch({'order': cardOrder,'listId': inListView.model.id}, { silent: true });
+        if (inListView === fromListView) {
+          that.patch({
+            'order': cardOrder,
+            original: {order: that.order}
+          }, { silent: true });
+        }
+        if (inListView !== fromListView)
+          that.patch({
+            'order': cardOrder,
+            'listId': inListView.model.id,
+            original: {listId: fromListView.model.id}
+            }, { silent: true });
       }
     }
   });

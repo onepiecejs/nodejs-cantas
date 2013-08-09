@@ -12,13 +12,14 @@ script#template-board-view(type="text/template")
   |        button#cancel-board-edit.btn Cancel
   |        button#save-board-edit.btn.btn-primary Save
   |    a.private.setting.js-select-private(title="Set to private")
-  |    a.board-setting.setting.js-toggle-board-menu(title="Board Settings")
+  |    a.board-setting.setting.js-toggle-board-menu(title="Board Options")
+  |    a.js-show-configuration.setting.board-config(title="Admin Configuration")
   |    div.board-menu.menu.modal
   |      header.modal-header
   |        h4 Board Options
   |      div.modal-body
   |        ul
-  |          li.js-add-list: a Add List
+  |          li.js-add-list: a Add a List
   |          li.js-archived-items: a Archived Items
   |          if creatorId._id == cantas.user.id
   |            if isClosed
@@ -64,7 +65,7 @@ script#template-board-view(type="text/template")
   |div#list-new.modal.list-new.hide
   |  header.modal-header
   |    button.close(data-dismiss="modal") ×
-  |    h3 Add List
+  |    h3 Add a List
   |  div.modal-body
   |    input#list-title.text-shadow-inset(placeholder="Untitled List")
   |  footer.modal-footer

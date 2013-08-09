@@ -1,0 +1,19 @@
+script#template-card-vote-view(type="text/template")
+  |header.modal-header
+  |  button#close-board-edit.close.js-close-vote-window ×
+  |  h3 Vote
+  |div.modal-body
+  |  - if (voteControl === 'opened') {
+  |  a#card-agree.js-vote-agree.burst-12.agree.vote 
+  |    span 
+  |    span 
+  |    span 
+  |  a#card-disagree.js-vote-disagree.burst-12.disagree.vote 
+  |    span 
+  |    span 
+  |    span 
+  |  - } else if (voteControl === 'disabled') {
+  |  span This vote is only for members.
+  |  - } else if(voteControl === 'closed') {
+  |  span This vote is closed.
+  |  - }

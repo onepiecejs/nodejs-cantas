@@ -74,4 +74,39 @@
     return id1.toString() === id2.toString();
   };
 
+
+  var markdownEscapeChars = ['\\', '`', '*', '_', '{', '}', '[', ']', '(', ')',
+                             '#', '+', '-', '.', '!'];
+
+  module.exports.safeMarkdownString = function(s) {
+    var result = [], i = 0, ch;
+    while ((ch = s[i]) !== undefined) {
+      if (markdownEscapeChars.indexOf(ch) >= 0) {
+        result.push('\\' + ch);
+      } else {
+        result.push(ch);
+      }
+      ++i;
+    }
+    return result.join('');
+  };
+
+  // sanitizing string to compatible url convension
+  module.exports.formatForUrl = function(str) {
+      return str.replace(/_/g, '-')
+          .replace(/ /g, '-')
+          .replace(/:/g, '-')
+          .replace(/\\/g, '-')
+          .replace(/\//g, '-')
+          .replace(/[^a-zA-Z0-9\-]+/g, '')
+          .replace(/-{2,}/g, '-')
+          .toLowerCase();
+  };
+
+  //get filename extension string
+  module.exports.getExtension = function(filename) {
+      var i = filename.lastIndexOf('.');
+      return (i < 0) ? '' : filename.substr(i);
+  };
+
 }(module));

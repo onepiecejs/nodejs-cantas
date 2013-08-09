@@ -15,7 +15,13 @@ script#template-card-view(type="text/template")
   |      -     var checkitemsProgress = badges.checkitemsChecked + '/' + badges.checkitems;
   |      span.card-checklist(title=" \#{checkitemsProgress} checklist items completed.")= checkitemsProgress
   |      -   }
-  |      span.card-vote(title=" \#{badges.votes} votes.")= badges.votes
+  |      -   if((badges.votesYes + badges.votesNo) !== 0){
+  |      -   var badgesVotes = badges.votesYes + '/' + badges.votesNo;
+  |      span.card-vote(title=" \#{badges.votesYes} agree,  \#{badges.votesNo} disagree.")= badgesVotes
+  |      -   }
+  |      -   if(badges.attachments !== 0){
+  |      span.card-attachment(title=" \#{badges.attachments} attachment(s).")= badges.attachments
+  |      -   }
   |      - }
   |    div.card-index(title="Card Position")
   |    span.order-number= index

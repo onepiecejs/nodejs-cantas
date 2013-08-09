@@ -21,7 +21,19 @@ $(function ($, _, Backbone) {
     render: function() {
       this.$el.html(this.template());
       this.renderCommentItems();
+      this.controlComment();
       return this;
+    },
+
+    controlComment: function() {
+      var commentStatus = cantas.utils.getCurrentCommentStatus();
+      if (commentStatus == 'disabled') {
+        this.$el.find('.js-add-comment-input').hide();
+      } else {
+        if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
+            this.$el.find('.js-add-comment-input').hide();
+          }
+        };
     },
 
     renderCommentItems: function(){
@@ -82,7 +94,19 @@ $(function ($, _, Backbone) {
       var comment = this.model.toJSON();
       comment.content = markdown.toHTML(comment.content);
       this.$el.html(this.template(comment));
+      this.controlComment();
       return this;
+    },
+
+    controlComment: function() {
+      var commentStatus = cantas.utils.getCurrentCommentStatus();
+      if (commentStatus == 'disabled') {
+        this.$el.find('a.js-edit-comment').hide();
+      } else {
+        if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
+          this.$el.find('a.js-edit-comment').hide();
+        };
+      }
     },
 
     editComment: function(event){

@@ -9,7 +9,7 @@
   var VoteSchema = new Schema({
     yesOrNo: { type: Boolean, default: true },
     cardId: { type: ObjectId, required: true, ref: 'Card' },
-    authorId: {type: ObjectId, required: true, ref: "User"},
+    authorId: { type: ObjectId, required: true, ref: 'User' },
     createdOn: { type: Date, default: Date.now },
     updatedOn: { type: Date, default: Date.now }
   });

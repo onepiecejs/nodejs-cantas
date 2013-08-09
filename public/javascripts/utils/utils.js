@@ -30,6 +30,11 @@ $(function ($, _, Backbone) {
     return cantas.user;
   };
 
+  utils.getCurrentCommentStatus = function() {
+    var currentBoard = cantas.utils.getCurrentBoardModel();
+    return currentBoard.attributes.commentStatus;
+  };
+
   utils.renderTimeoutBox = function() {
     $('div.force-alert > div.alert-content > p')
       .html('Caution: failed to sync with the Cantas server. Changes made now may not be saved.');
@@ -88,24 +93,25 @@ $(function ($, _, Backbone) {
     return emailRegExp.test(email);
   };
 
-  utils.renderMoveList = function(_this, boardId, listId, tabIndex) {
-    //default parameter set by board items
-    var collection = _this.boardCollection;
-    var queryData = {isClosed: false};
-    var tabId = boardId;
-
-    // update parameter when update list items
-    if(tabIndex === 1){
-      collection = _this.listCollection;
-      tabId = listId;
-      queryData = {"boardId": boardId,"isArchived": false};
+  utils.formatFileSize = function (bytes) {
+    if(typeof bytes !== 'number') {
+      return '';
     }
+    if(bytes >= 1000000000) {
+      return (bytes / 1000000000).toFixed(2) + ' GB';
+    }
+    if(bytes >= 1000000) {
+      return (bytes / 1000000).toFixed(2) + ' MB';
+    }
+    return (bytes / 1000).toFixed(2) + ' KB';
+  };
 
+  var _renderMoveSelectionList = function(_this, collection, tabId, tabIndex, queryData) {
     collection.fetch({
       data: queryData,
       success: function (collection, response, options){
-        var moveItemsPath = '.choose-position > ul:eq('+tabIndex+') .js-move-items';
-        var checkedItemPath = "a[data-itemid*='"+tabId+"']";
+        var moveItemsPath = '.choose-position > ul:eq(' + tabIndex + ') .js-move-items';
+        var checkedItemPath = "a[data-itemid*='" + tabId + "']";
         _this.$el.find(moveItemsPath).empty();
         collection.each(function(oneItem){
           var itemView = new cantas.views.MoveItemView({
@@ -117,6 +123,49 @@ $(function ($, _, Backbone) {
         _this.$el.find(checkedItemPath).parent('li').addClass('checked');
       }
     });
+  };
+
+  utils.renderMoveList = function(_this, boardId, listId, tabIndex) {
+    //default parameter set by board items
+    var collection = _this.boardCollection;
+    var tabId = boardId;
+    var queryData = {};
+    var boardIds = [];
+
+    //board list should be those user has permission to add list/card in it.
+    if(tabIndex === 0) {
+      var user = utils.getCurrentUser();
+      var boardMemberQueryData = {
+        userId: user.id,
+        $or: [{status: 'available'}, {status: 'inviting'}]
+      };
+      _this.boardMemberCollection.fetch({
+        data: boardMemberQueryData,
+        success: function(boardMemberRelations, response, options) {
+          boardIds = boardMemberRelations.map(function(boardMemberRelation) {
+            return boardMemberRelation.get("boardId");
+          });
+          queryData = {
+            isClosed: false,
+            $or: [{creatorId: user.id}, {"_id": { $in: boardIds }}]
+          };
+
+          //get and render board items
+          _renderMoveSelectionList(_this, collection, tabId, tabIndex, queryData);
+        }
+      });
+    }
+
+    // update parameter when update list items
+    if(tabIndex === 1) {
+      collection = _this.listCollection;
+      tabId = listId;
+      queryData = {"boardId": boardId, "isArchived": false};
+
+      //get and render list items
+      _renderMoveSelectionList(_this, collection, tabId, tabIndex, queryData);
+    }
+
   };
 
   utils.renderMoveSearch = function(event){

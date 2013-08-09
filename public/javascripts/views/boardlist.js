@@ -22,6 +22,10 @@ $(function ($, _, Backbone) {
       });
     },
 
+    close: function(){
+      this.remove();
+    },
+
     remove: function(){
       this.undelegateEvents();
       this.$el.empty();

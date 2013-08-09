@@ -28,14 +28,15 @@ beforeEach(function (done) {
   }
 
   if (mongoose.connection.readyState === 0) {
-     mongoose.connect(dbURI, function (err) {
-       if (err) {
-         throw err;
-       }
-       return clearDB();
-     });
+    mongoose.connect(dbURI, function (err) {
+      if (err) {
+        throw err;
+      }
+      return clearDB();
+    });
+    mongoose.set('debug', true);
   } else {
-     return clearDB();
+    return clearDB();
   }
 });
 
@@ -43,5 +44,5 @@ afterEach(function (done) {
   setTimeout(function(){
     mongoose.connection.close();
     done();
-  },100);
+  },0);
 });

@@ -1,0 +1,9 @@
+script#template-attachment-upload-view(type="text/template").
+  td.upload-preview
+  td.upload-name= name
+  td.upload-size= fileSize
+    div.progress.progress-success.progress-striped.active.js-upload-progress(role='progressbar', aria-valuemin="0", aria-valuemax='100', aria-valuenow='0')
+      div.bar(style='width:0%')
+  td.upload-control
+    button.btn.btn-primary.start.js-upload-start(disabled='disabled') Processing...
+    button.btn.btn-danger.upload-delete.js-upload-delete Delete

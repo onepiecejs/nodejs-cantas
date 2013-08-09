@@ -3,6 +3,7 @@
 
   // expose variable
   var async = require("async");
+  var util = require("util");
   var stdlib = require("./stdlib");
   var mongoose = require('mongoose');
   var User = require("../models/user");
@@ -10,6 +11,7 @@
   var List = require("../models/list");
   var Card = require("../models/card");
   var MemberRelation = require("../models/boardMemberRelation");
+  var LogActivity = require("../services/activity").Activity;
 
   exports.init = function(socket) {
     /**
@@ -47,7 +49,9 @@
             socket.room.emit(removeEventName, badgesCard);
           }
         });
-        
+
+        _logActivityWhenMoveCard(socket, origCard, updateCard);
+
       });
     });
 
@@ -76,6 +80,7 @@
         if ( isSameBoard == true ) {
           socket.room.emit(eventName, updateList);
         } else {
+          _logActivityWhenMoveList(socket, origList, updateList);
           socket.broadcast.to(eventRoomName).emit(eventName, updateList);
           socket.room.emit(removeEventName, updateList);
         }
@@ -83,7 +88,6 @@
       });
     });
   };
-
 
   /**
    *  Private methods
@@ -290,7 +294,7 @@
     }
 
     // case 3, move to another board, the target board have more than 0 list.
-    //case 5, different board, move in imddle of position in two baord.
+    //case 5, different board, move in imddle of position in two board.
     else if (isSameBoard == false &&
               moveIndex > 0 &&
               moveIndex <= lastIndex ) {
@@ -299,5 +303,157 @@
 
     return order;
   }
+
+  var _logActivity = function(socket, data){
+    var activity = new LogActivity({socket: socket, exceptMe: false});
+    activity.log(data);
+  };
+
+  var _logActivityWhenMoveList = function(socket, origList, updateList) {
+    _generateListActivityContent(socket, origList, updateList, function(err, contentOnOrigBoard, contentOnUpdateBoard) {
+      _logActivity(socket, {content: contentOnOrigBoard});
+      _logActivity(socket, {
+        content: contentOnUpdateBoard,
+        boardId: updateList.boardId
+      });
+    });
+  };
+
+  var _generateListActivityContent = function(socket, origList, updateList, callback) {
+    var username = socket.handshake.user.username;
+    async.waterfall([
+      function (callback) {
+        Board.findOne({_id: origList.boardId}, 'title', function(err, origBoard) {
+          if (err) {
+            callback(err, null);
+          } else {
+            callback(null, origBoard);
+          }
+        });
+      },
+      function (origBoard, callback) {
+        Board.findOne({_id: updateList.boardId}, 'title', function(err, updateBoard) {
+          if (err) {
+            callback(err, null, null);
+          } else {
+            callback(null, origBoard, updateBoard);
+          }
+        });
+      },
+      function (origBoard, updateBoard, callback) {
+        var contentOnOrigBoard = util.format('%s moved list "%s" from this board to board "%s"',
+                          username, updateList.title, updateBoard.title);
+
+        var contentOnUpdateBoard = util.format('%s moved list "%s" from board "%s" to this board',
+                             username, updateList.title, origBoard.title);
+        callback(null, contentOnOrigBoard, contentOnUpdateBoard);
+      }
+    ], function(err, contentOnOrigBoard, contentOnUpdateBoard) {
+      if (err) {
+        callback(err, null, null);
+      } else {
+        callback(null, contentOnOrigBoard, contentOnUpdateBoard);
+      }
+    });
+  }
+
+  var _logActivityWhenMoveCard = function(socket, origCard, updateCard) {
+    var isSameBoard = (origCard.boardId.toString('utf-8') === updateCard.boardId.toString('utf-8'));
+    var isSameList = (origCard.listId.toString('utf-8') === updateCard.listId.toString('utf-8'));
+    if (isSameBoard === true && isSameList === false) {
+      _generateCardContentInBoard(socket, origCard, updateCard, function(err, content) {
+        if (err) {
+          console.log(err);
+        } else {
+          if (content) {
+            _logActivity(socket, {content: content});
+          }
+        }
+      });
+    }
+    if (isSameBoard === false) {
+      _generateCardContentInBoards(socket, origCard, updateCard, function(err, contentOnOrigBoard, contentOnUpdateBoard) {
+        if (err) {
+          console.log(err);
+        } else {
+          _logActivity(socket, {content: contentOnOrigBoard});
+          _logActivity(socket, {
+            content: contentOnUpdateBoard,
+            boardId: updateCard.boardId
+          });
+        }
+      });
+    }
+  };
+
+  var _generateCardContentInBoard = function(socket, origCard, updateCard, callback) {
+    var username = socket.handshake.user.username;
+    async.waterfall([
+      function(callback) {
+        List.findOne({_id: origCard.listId}, 'title', function(err, origList) {
+          if (err) {
+            return callback(err, null);
+          } else {
+            callback(null, origList);
+          }
+        });
+      },
+      function(origList, callback) {
+        List.findOne({_id: updateCard.listId}, 'title', function(err, updateList) {
+          if (err) {
+            callback(err, null, null);
+          } else {
+            callback(null, origList, updateList);
+          }
+        });
+      },
+      function(origList, updateList, callback) {
+        var content = util.format('%s moved card "%s" from list "%s" to list "%s"',
+                      username, updateCard.title, origList.title, updateList.title);
+        callback(null, content);
+      }
+    ], function(err, content) {
+      if (err) {
+        callback(err, null);
+      } else {
+        callback(null, content);
+      }
+    });
+  };
+
+  var _generateCardContentInBoards = function(socket, origCard, updateCard, callback) {
+    var username = socket.handshake.user.username;
+    async.waterfall([
+      function(callback) {
+        Board.findOne({_id: origCard.boardId}, 'title', function(err, origBoard) {
+          callback(err, origBoard);
+        });
+      },
+      function(origBoard, callback) {
+        List.findOne({_id: origCard.listId}, 'title', function(err, origList) {
+          callback(err, origBoard, origList);
+        });
+      },
+      function(origBoard, origList, callback) {
+        Board.findOne({_id: updateCard.boardId}, 'title', function(err, updateBoard) {
+          callback(err, origBoard, origList, updateBoard);
+        });
+      },
+      function(origBoard, origList, updateBoard, callback) {
+        List.findOne({_id: updateCard.listId}, 'title', function(err, updateList) {
+          callback(err, origBoard, origList, updateBoard, updateList);
+        });
+      },
+      function(origBoard, origList, updateBoard, updateList, callback) {
+        var contentOnOrigBoard = util.format('%s moved card "%s" from list "%s" to board "%s" list "%s"',
+          username, updateCard.title, origList.title, updateBoard.title, updateList.title);
+        var contentOnUpdateBoard = util.format('%s moved card "%s" to list "%s" from board "%s" list "%s"',
+          username, updateCard.title, updateList.title, origBoard.title, origList.title);
+        callback(null, contentOnOrigBoard, contentOnUpdateBoard);
+      }
+    ], function(err, contentOnOrigBoard, contentOnUpdateBoard) {
+      callback(err, contentOnOrigBoard, contentOnUpdateBoard);
+    });
+  };
 
 }(exports));

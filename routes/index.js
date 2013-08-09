@@ -8,7 +8,10 @@
     var moment = require('moment');
     var utils = require('../services/utils');
     var Activity = require('../models/activity');
-    var User = require("../models/user")
+    var Attachment = require('../models/attachment');
+    var User = require("../models/user");
+    var settings = require('../settings');
+    var fs = require('fs');
 
     var checkForSessionTimeout = function (req, res, next){
       var sessionID = req.cookies['express.sid'];
@@ -30,7 +33,15 @@
     // login page.
     function ensureAuthenticated(req, res, next) {
       if (req.isAuthenticated()) {
+        if(req.user.isFirstLogin === true) {
+          User.findByIdAndUpdate(req.user._id, {'isFirstLogin': false}, function(err, updatedData) {
+            if(err)
+              console.log(err);
+          });
+        }
+
         app.helpers({user: req.user});
+        app.helpers({isFirstLogin: req.isFirstLogin});
 
         // If we have session.redirectUrl, use that,
         // otherwise, bypass redirect url
@@ -127,8 +138,8 @@
     });
 
     app.post('/login',
-      passport.authenticate('local', { failureRedirect:'/login', failureFlash:true }), function (req, res) {
-        var redirectUrl = req.session.redirectUrl || "/";
+      passport.authenticate('kerberos', { failureRedirect:'/login', failureFlash:true }), function (req, res) {
+        var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);
       });
 
@@ -160,6 +171,70 @@
       });
     });
 
+    function FSRename(renameParams) {
+      var filenameExt = utils.getExtension(renameParams.targetFilename);
+      // remove filename string's extension type
+      var unSanitizedString = renameParams.targetFilename.replace(/(.*)\.[^.]+$/, "$1");
+      var sanitizedFilename = utils.formatForUrl(unSanitizedString) + filenameExt;
+      fs.rename(renameParams.tmpPath, renameParams.targetPath + '/' + sanitizedFilename,
+        function(err){
+          if (err) {
+            renameParams.res.json({'user_error':'Uploading attachment failed',
+              'maintainer_error': 'Renaming path failed'});
+          }
+          else {
+            renameParams.res.json({'attachment': {
+              'cardId': renameParams.cardId,
+              'uploaderId': renameParams.uploaderId,
+              'name': sanitizedFilename,
+              'size': renameParams.size,
+              'path': renameParams.targetPath + '/' + renameParams.targetFilename
+            }});
+          }
+      });
+    }
+
+    // rote to upload
+    app.post('/upload/:cardId', function(req, res) {
+      var tmpPath = req.files.attachment.path;
+      var targetPath = __dirname + '/../public/attachments/' + req.params.cardId;
+      var targetFilename = req._startTime.valueOf() + '-' + req.files.attachment.name;
+
+      var renameParams = {
+        'tmpPath': tmpPath,
+        'targetPath': targetPath,
+        'targetFilename': targetFilename,
+        'cardId': req.params.cardId,
+        'uploaderId': req.user.id,
+        'size': req.files.attachment.size,
+        'res': res
+      };
+      fs.exists(targetPath, function (isExist) {
+        if(!isExist) {
+          fs.mkdir(targetPath, function(err){
+            if (err) {
+              res.json({'user_error':'Uploading attachment failed',
+                'maintainer_error': 'Making directory failed'});
+            }
+            else {
+              FSRename(renameParams);
+            }
+          });
+        }
+        else {
+          FSRename(renameParams);
+        }
+      });
+    });
+
+    // route to download attachment
+    app.get('/attachment/:attachmentId/download', function (req, res) {
+      Attachment.findById(req.params.attachmentId, 'path name', function(err, attachment){
+        var realName = attachment.name;
+        var friendlyName = realName.slice(realName.indexOf('-') + 1);
+        res.download(attachment.path, friendlyName);
+      });
+    });
 
     // TODO:when timeout, user should be relogin,and server will redirect to
     // original url, this is not ajax, should be add this mapping.we can
@@ -187,7 +262,7 @@
     app.get('/api/search_member', ensureAuthenticated, function (req, res) {
       var regex = new RegExp(req.query["term"], 'i');
       var query = User.find({email: regex}, {'email': 1}).sort({"updated_at": -1}).sort({"created_at": -1}).limit(20);
-      
+
       query.exec(function(err, users) {
         if (!err) {
           res.json(users);
@@ -200,9 +275,18 @@
       res.render('application', {title: 'Cantas'});
     });
 
+    // welcome page
+    app.get('/welcome', ensureAuthenticated, function (req, res) {
+      if(req.user.isFirstLogin === true)
+        res.render('application', {title: 'Cantas'});
+      else
+        res.redirect('/');
+    });
+
     // route to home page
+    var strategyName = settings.auth.strategy;
     app.get('/',
-      passport.authenticate('remote_user',{ failureRedirect:'/login' }),
+      passport.authenticate(strategyName, { failureRedirect:'/login' }),
       checkForSessionTimeout, ensureAuthenticated, function (req, res) {
       res.render('application', {title: 'Cantas'});
     });

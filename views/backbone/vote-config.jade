@@ -1,0 +1,35 @@
+script#template-vote-config-view(type="text/template")
+  |dt
+  |  h3 Vote
+  |dd
+  |  if voteStatus == 'opened'
+  |    a.checked.js-open-vote.all
+  |      span
+  |      span
+  |      span Public for Every User
+  |  else
+  |    a.js-open-vote.all
+  |      span
+  |      span
+  |      span Public for Every User
+  |  if voteStatus == 'enabled'
+  |    a.checked.js-enable-vote.part
+  |      span
+  |      span
+  |      span Public for Board Member
+  |  else
+  |    a.js-enable-vote.part
+  |      span
+  |      span
+  |      span Public for Board Member
+  |  if voteStatus == 'disabled'
+  |    a.checked.js-disable-vote.none
+  |      span
+  |      span
+  |      span Disable
+  |  else
+  |    a.js-disable-vote.none
+  |      span
+  |      span
+  |      span Disable
+  |dd
