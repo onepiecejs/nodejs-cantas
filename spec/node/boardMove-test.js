@@ -12,6 +12,7 @@ var List = require('../../models/list');
 var Card = require('../../models/card');
 var mongoose = require('mongoose');
 var dbinit = require('./dbinit');
+var SocketPatch = require("../../sockets/patch_socket");
 
 function Room (socket) {
   this.socket = socket;
@@ -132,6 +133,11 @@ describe('Test cardMove', function(){
           var eventName = '/card/' + cardOne.id + ':update';
            sio.on('connection', function(s){
              s.room = new Room(s);
+             //mock a username,board, and patch a getCurrentUser
+             s.handshake['user'] = {username: 'test'};
+             s.room.board = 'board:' + boardOne.id;
+             SocketPatch.patch(s);
+
              boardMove.init(s);
              socket.on(eventName, function(data) {
                expect(data.boardId).to.be(boardOne.id);

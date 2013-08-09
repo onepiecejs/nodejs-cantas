@@ -19,7 +19,8 @@ block content
   div.content.clearfix
   div#card-detail.modal.hide.fade
   div.window-overlay.archived-window.modal.hide.fade
-  div.modal-backdrop.hide.fade
+  div.config-window.hide.fade
+  div.hide.fade
   div.force-alert.hide.fade
     div.alert-content
       p This board is closed by board creator. Any further operation, please contact the creator.
@@ -32,6 +33,7 @@ block append scripts
 
   //- templates for backbone view
   include backbone/help
+  include backbone/welcome
   include backbone/board-list
   include backbone/board
   include backbone/board-title
@@ -46,6 +48,11 @@ block append scripts
   include backbone/card-checklist
   include backbone/card-checkitem
   include backbone/card-labels-neonlights
+  include backbone/card-vote
+  include backbone/card-votes-total
+  include backbone/card-attachment
+  include backbone/card-attachment-upload
+  include backbone/card-attachment-download
   include backbone/archived
   include backbone/archived-item
   include backbone/notification-item
@@ -54,9 +61,12 @@ block append scripts
   include backbone/move-list-item
   include backbone/comment
   include backbone/comment-item
+  include backbone/admin-config
+  include backbone/vote-config
+  include backbone/comment-config
 
   - if (process.env.NODE_ENV == 'production')
-    script(type="text/javascript", src="/javascripts/dist/cantas-app.min.js")
+    script(type="text/javascript", src="/javascripts/dist/cantas-app.js")
   - else
     //- script section
     script(type="text/javascript", src="/javascripts/constants.js")
@@ -84,12 +94,18 @@ block append scripts
     script(type="text/javascript", src="/javascripts/views/card.js")
     script(type="text/javascript", src="/javascripts/models/comment.js")
     script(type="text/javascript", src="/javascripts/views/comment.js")
+    script(type="text/javascript", src="/javascripts/models/attachment.js")
+    script(type="text/javascript", src="/javascripts/views/attachment.js")
+    script(type="text/javascript", src="/javascripts/models/vote.js")
     script(type="text/javascript", src="/javascripts/views/boardlist.js")
     script(type="text/javascript", src="/javascripts/views/help.js")
+    script(type="text/javascript", src="/javascripts/views/welcome.js")
     script(type="text/javascript", src="/javascripts/views/confirmDialog.js")
 
     script(type="text/javascript", src="/javascripts/models/visitor.js")
     script(type="text/javascript", src="/javascripts/views/boardActiveUsers.js")
+
+    script(type="text/javascript", src="/javascripts/views/adminConfig.js")
 
     //- router
     script(type="text/javascript", src="/javascripts/router.js")

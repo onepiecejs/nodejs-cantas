@@ -1,0 +1,74 @@
+<script id="template-board-view" type="text/template">
+header#board-header
+ div.js-edit-board-title.board-title(title=title)= title
+ a.board-info(title="Board Description")
+   div#board-description.modal.window-detail.hide
+     header.modal-header
+       button#close-board-edit.close ×
+       h3 Description
+     div.modal-body
+       textarea#board-description-text.board-info-panel.text-shadow-inset(placeholder="Add Board Description")
+     footer.modal-footer
+       button#cancel-board-edit.btn Cancel
+       button#save-board-edit.btn.btn-primary Save
+   a.private.setting.js-select-private(title="Set to private")
+   a.board-setting.setting.js-toggle-board-menu(title="Board Settings")
+   a.js-show-configuration configuration
+   div.board-menu.menu.modal
+     header.modal-header
+       h4 Board Options
+     div.modal-body
+       ul
+         li.js-add-list: a Add a List
+         li.js-archived-items: a Archived Items
+         if creatorId._id == cantas.user.id
+           if isClosed
+             li.js-open-board: a Open this board
+           else
+             li.js-close-board: a Close this board
+   button.btn.btn-warning.new-list.js-add-list New List
+   a#toggleActivities.setting.activity-link(title="Activity")
+div#app.board-content.clearfix
+ div#list-title-edit-placeholder.hide
+   div#edit-title.edit-title
+     input(id="title-input", placeholder="")
+     button.btn#title-save.js-save-list-title Save
+ div#board.ui-sortable.board
+div.board-side-scroll.js-board-side-scroll-left
+ a ‹
+div.board-side-scroll.board-side-scroll-right.js-board-side-scroll-right
+ a ›
+div.side-bar.member-bar
+ a.new-item.js-toggleInvite Invite
+ div#sb_memberlist.scroll-pane
+   div.scroll-content-item
+div.invite.side-bar
+ div.side-bar.collapse-bar <span>›</span>
+ header <h4>Invitation</h4> <a>×</a>
+ div.invite-new
+   div.invite-display
+     ul
+       li
+          input.input-member(type="text", size="2", maxlength="21")
+   span 'Space' or 'Enter' is needed to activate and add more.
+   button#btn-invite.btn(disabled="disabled") Invite
+ header <h4>Member</h4>
+ div.invite-member
+   div.invite-display
+     ul
+div.activity.side-bar
+ div.side-bar.collapse-bar <span>›</span>
+ header <h4>Activity</h4> <a>×</a>
+ script(type="text/template", id="activity-item-template", class="hide")
+   <%= cantas.utils.safeString(content) %><p><%= cantas.utils.formatDate(createdOn) %></p>
+ ul // Empty Activities container
+div#list-new.modal.list-new.hide
+ header.modal-header
+   button.close(data-dismiss="modal") ×
+   h3 Add a List
+ div.modal-body
+   input#list-title.text-shadow-inset(placeholder="Untitled List")
+ footer.modal-footer
+   button.js-create-new-list.btn.btn-primary Add
+   button.btn(data-dismiss="modal") Cancel
+</script>

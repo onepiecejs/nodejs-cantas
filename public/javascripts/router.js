@@ -3,7 +3,9 @@ $(function ($, _, Backbone) {
 
   "use strict";
 
-  var member = false;
+  window.cantas = window.cantas || {};
+
+  var isMember = false;
 
   var Router = Backbone.Router.extend({
     routes: {
@@ -13,6 +15,7 @@ $(function ($, _, Backbone) {
       "board/:boardId(/:slug)": "joinBoard",
       "card/:cardId(/:slug)": "renderCardDetail",
       "help": "help",
+      "welcome": "welcome",
       "search/:query": "search"
     },
 
@@ -20,10 +23,25 @@ $(function ($, _, Backbone) {
 
     switchView: function(view, context){
       if (this.currentView){
-        this.currentView.remove();
+        this.currentView.close();
       }
+
+      // Handle board leave
+      var sock = cantas.socket;
+      if (this.currentView && this.currentView.boardTitleView) {
+        //logout the board
+        var leaveBoardId = this.currentView.model.id;
+        sock.emit('user-logout', {boardId: leaveBoardId, user: cantas.utils.getCurrentUser });
+      }
+
       this.currentView = view;
       this.currentView.render(context);
+
+      // check the switch view is baordView
+      if (view && view.boardTitleView) {
+        var joinBoardId = view.model.id;
+        sock.emit('join-board', joinBoardId);
+      }
     },
 
     home: function(){
@@ -66,10 +84,10 @@ $(function ($, _, Backbone) {
             });
             alert('You can\'t access a private Board! Please let Board admin invite you as an board member firstly!');
           } else {
-            member = (result.message === 'member') ? true : false;
+            isMember = (result.message === 'isMember') ? true : false;
             //build visitor collection
             var visitors = that.setupVisitorCollection(result.visitors);
-            that.renderBoard(boardId,visitors);
+            that.renderBoard(boardId, visitors);
           }
         } else {
           that.navigate("boards/mine",{
@@ -97,7 +115,7 @@ $(function ($, _, Backbone) {
             model : model,
             response : response,
             options: options,
-            member: member,
+            isMember: isMember,
             visitors: visitors
           });
           // render board
@@ -135,6 +153,11 @@ $(function ($, _, Backbone) {
     help: function() {
       var helpView = new cantas.views.HelpView();
       this.switchView(helpView, {title: "Help"});
+    },
+
+    welcome: function() {
+      var welcomeView = new cantas.views.WelcomeView();
+      this.switchView(welcomeView, {title: "Welcome"});
     },
 
     search: function(query) {

@@ -19,7 +19,7 @@
     var socket = this;
     var user = socket.handshake.user;
 
-    Board.joinBoard(user, boardId, function (err, result) {
+    Board.joinBoard(user, boardId, socket, function (err, result) {
       if (result.ok === 0) {
         BoardMemberRelation.getBoardMembers(result.board._id, function (err, members) {
           members = members.map(function (member) {
@@ -60,6 +60,18 @@
     });
   };
 
+  var onUserLogout = function(data) {
+    var socket = this;
+    var user = socket.handshake.user;
+    var boardId = data.boardId;
+    var eventName = 'user-logout:board:' + boardId;
+    var eventRoomName = 'board:' + boardId;
+
+    if (socket.handshake.user._id.toString() === user._id.toString()) {
+      socket.broadcast.to(eventRoomName).emit(eventName, {ok: 0, visitor:user});
+    }
+  }
+
   var onConnection = function (socket) {
     // Let us patch socket first to add our custom and useful behaviors,
     // which will be used in the whole life of Cantas.
@@ -86,6 +98,8 @@
      * Finally, join current user to board and notify client everything is okay.
      */
     socket.on('join-board', onJoinBoard);
+
+    socket.on('user-logout', onUserLogout);
 
     //  "disconnect" is emitted when the socket disconnected
     socket.on('disconnect', function() {

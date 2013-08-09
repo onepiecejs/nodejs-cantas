@@ -13,7 +13,8 @@
     password: { type: String, default: '', select: false },
     email: { type: String, required: true, lowercase: true, unique: true },
     joined: { type: Date, default: Date.now },
-    roles: [ ObjectId ]
+    roles: [ ObjectId ],
+    isFirstLogin: { type: Boolean, default: true }
   });
 
   // static method

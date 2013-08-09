@@ -89,7 +89,7 @@
   BoardMemberRelationSchema.statics.revoke = function(userId, boardId, callback) {
     var condition = { userId: userId, boardId: boardId };
     var update = { $set: { quitOn: Date.now(), status: memberStatus.kickedOff } };
-    this.findOneAndUpdate(condition, update, function(err, relation) {
+    this.findOneAndUpdate(condition, update).populate('userId').exec(function(err, relation) {
       if (err)
         callback(err, null);
       else {

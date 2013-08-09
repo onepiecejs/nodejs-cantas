@@ -7,14 +7,23 @@ html
         - if (process.env.NODE_ENV == 'production')
             link(rel='stylesheet', href='/stylesheets/eso-theme.min.css')
             link(rel='stylesheet', href='/stylesheets/project.min.css')
+            link(rel='stylesheet', href='/stylesheets/jquery-fileupload-ui.min.css')
+            - if (user && user.isFirstLogin)
+                link(rel='stylesheet', href='/stylesheets/style.min.css')
+                link(rel='stylesheet', href='/stylesheets/custom.min.css')
         - else
             link(rel='stylesheet', href='/stylesheets/eso-theme.css')
             link(rel='stylesheet', href='/stylesheets/project.css')
+            link(rel='stylesheet', href='/stylesheets/jquery-fileupload-ui.css')
+        //    - if (user && user.isFirstLogin)
+                link(rel='stylesheet', href='/stylesheets/style.css')
+                link(rel='stylesheet', href='/stylesheets/custom.css')
 
     body
         block header
             header#eso-topbar.clearfix
                 a(onclick="cantas.navigateTo('')",title="go back home",class="logo")
+                a(href="#{links.hssPortal}", target="_blank", class="eso-logo") Developed by HSS
                 ul(class="quick-menu unstyled clearfix")
                     li(class="dropdown header-user")
                         a(class="dropdown-toggle",data-toggle="dropdown") #{user.username}
@@ -40,8 +49,11 @@ html
 
         block footer
             footer(class="footer")
+                div(class="hss-logo")
                 div(class="copyright")
                     | <p>Version #{version} <a href="#{links.bugzilla}" target="_blank">Report an Issue</a></p>
+                    | <p>INTERNAL USE ONLY</p>
+                    | <p>Copyright &copy; 2013 Red Hat, Inc. All rights reserved.</p>
 
         block scripts
             script(type="text/javascript", src="/socket.io/socket.io.js")
@@ -49,7 +61,7 @@ html
             - if (process.env.NODE_ENV == 'production')
                 script(type="text/javascript", src="/javascripts/dist/vendor.min.js")
             - else
-                script(type="text/javascript", src="/javascripts/vendor/jquery-1.7.2.js")
+                script(type="text/javascript", src="/javascripts/vendor/jquery-2.0.0.js")
                 script(type="text/javascript", src="/javascripts/vendor/jquery.slug.js")
                 script(type="text/javascript", src="/javascripts/vendor/async.js")
                 script(type="text/javascript", src="/javascripts/vendor/markdown.js")
@@ -63,3 +75,12 @@ html
                 script(type="text/javascript", src="/javascripts/vendor/bootstrap-modal.js")
                 script(type="text/javascript", src="/javascripts/vendor/bootstrap-modalmanager.js")
                 script(type="text/javascript", src="/javascripts/vendor/bootstrap-tab.js")
+                script(type='text/javascript', src='/javascripts/vendor/modernizr.custom.79639.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.ba-cond.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.slitslider.js')
+                script(type='text/javascript', src='/javascripts/vendor/load-image.min.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.iframe-transport.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload-process.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload-image.js')
+                script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload-validate.js')

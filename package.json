@@ -1,7 +1,7 @@
 {
   "name": "cantas",
   "author": "HSS-IED-BJ",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "start": "node app",
@@ -40,6 +40,7 @@
     "grunt-contrib-cssmin": "~0.6.1",
     "supertest": "*",
     "sinon": "*",
-    "nodelint": "*"
+    "nodelint": "*",
+    "passport-dummy": "~0.0.1"
   }
 }

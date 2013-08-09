@@ -8,9 +8,15 @@ var SORTABLE = (function (my) {
     return my.mouseY = evt.pageY;
   });
 
+  // refresh position by sortable api
+  my.refreshPositions = function() {
+    $(".board").sortable('refreshPositions');
+    return $(".connectedSortable").sortable('refreshPositions');
+  }
+
   // freshListSortable
   my.refreshListSortable = function() {
-    return $(".board").sortable({
+    $(".board").sortable({
       containment: ".board",
       placeholder: "ui-state-highlight-list",
       tolerance: "pointer",
@@ -41,11 +47,12 @@ var SORTABLE = (function (my) {
         })
       }
     });
+    return $(".board").sortable("refresh");
   };
 
   //refreshCardSortable
   my.refreshCardSortable = function() {
-    return $(".connectedSortable").sortable({
+    $(".connectedSortable").sortable({
       connectWith: ".connectedSortable",
       revert: "100",
       containment: ".board",
@@ -72,6 +79,7 @@ var SORTABLE = (function (my) {
         return my.scrollListFromUI(ui)
       }
     });
+    return $(".connectedSortable").sortable("refresh");
   };
 
   //private methods for scroll

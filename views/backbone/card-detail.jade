@@ -9,26 +9,14 @@ script#template-card-detail-view(type="text/template")
   |      button.btn.js-cancel-title Cancel
   |    section
   |      a.assigned.js-edit-assign.js-assignees= card.assignees
-  |      a.card-label.js-edit-label Label
+  |      a.card-label.js-edit-label
+  |        span Label
   |        div.card-filter.clearfix
-  |      a.card-vote
-  |        span 40
-  |        span agree,
-  |        span 40
-  |        span disagree
-  |      div.modal.window-vote.window-detail
-  |        header.modal-header
-  |          button#close-board-edit.close ×
-  |          h3 Vote
-  |        div.modal-body
-  |          a
-  |            span 30
-  |            span agree
-  |          a
-  |            span 30
-  |            span disagree
+  |      a.card-vote.js-edit-vote
   |      div.modal.window-label.window-detail.hide
   |      div.modal.window-assign.window-detail.hide
+  |      div.modal.window-vote.window-detail.hide
+  |      div.modal.window-attachment.window-detail.hide
   |      a.due-date(style="display: none;") Set due date
   |  div.modal-body
   |    div.card-option-panel
@@ -42,6 +30,9 @@ script#template-card-detail-view(type="text/template")
   |        a.js-add-checklist
   |          span Checklist
   |      section
+  |        a.js-add-attachment
+  |          span Attachment
+  |      section
   |        a.js-add-comment
   |          span Comment
   |    section.card-option.card-description
@@ -52,6 +43,7 @@ script#template-card-detail-view(type="text/template")
   |        button.btn.btn-primary.js-save-desc Save
   |        button.btn.js-cancel-desc Cancel
   |    section.card-option.js-checklist-section
+  |    section.card-option.attachment
   |    section.card-option.comment
   |div.modal-footer
   |   a.btn.js-close-card-detail(data-dismiss="modal", href="javascript: void(0)") Close

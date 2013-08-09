@@ -81,7 +81,11 @@ $(function ($, _, Backbone) {
         var visitor = new cantas.models.BoardVisitor(data.visitor);
         that.collection.add(visitor);
       });
-      sock.on("user-logout", function(data) {
+      sock.on("user-logout:board:"+that.boardId, function(data) {
+        var visitor = new cantas.models.BoardVisitor(data.visitor);
+        that.collection.remove(visitor);
+      });
+      sock.on("user-leave-all-room", function(data) {
         var visitor = new cantas.models.BoardVisitor(data.visitor);
         that.collection.remove(visitor);
       });

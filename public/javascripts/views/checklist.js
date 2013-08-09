@@ -27,6 +27,8 @@ $(function ($, _, Backbone) {
         throw new Error("Missing card object");
 
       this.collection.on("add", this.onChecklistCreated, this);
+
+      this.isConfirmDeleteChecklist = true;
     },
 
     render: function() {
@@ -36,6 +38,7 @@ $(function ($, _, Backbone) {
         success: function(checklists, response, options) {
           checklists.forEach(function(checklist, index) {
             var view = new cantas.views.ChecklistView({
+              parentView: self,
               model: checklist,
               card: self.card
             });
@@ -61,6 +64,7 @@ $(function ($, _, Backbone) {
 
     onChecklistCreated: function(checklist) {
       var view = new cantas.views.ChecklistView({
+        parentView: this,
         model: checklist,
         card: this.card
       });
@@ -92,14 +96,16 @@ $(function ($, _, Backbone) {
     },
 
     events: {
-      "click .delete": "onDeleteClick",
-      "click .js-add-item a": "onAddItemClick"
+      "click .js-checklist-delete": "onDeleteClick",
+      "click .js-add-item a": "onAddItemClick",
+      "click .js-fold-items": "onFoldItems"
     },
 
     initialize: function() {
       this.itemViews = {};
       this.model.itemCollection.on("add", this.onChecklistItemAdded, this);
       this.model.itemCollection.on("remove", this.onChecklistItemRemoved, this);
+      this.model.on('remove', this.onModelRemove, this);
 
       this.isConfirmDeleteChecklistItem = true;
     },
@@ -115,10 +121,16 @@ $(function ($, _, Backbone) {
 
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
+      this.$el.find('a.js-fold-items').hide();
       if (!window.cantas.isBoardMember) {
         this.undelegateEvents();
         this.$el.find('li.js-add-item').hide();
-      };
+        this.$el.find('a.js-checklist-delete').hide();
+      }
+      // Checklist shouldn't be deleted by others
+      if (cantas.utils.getCurrentUser().id !== this.model.attributes.authorId){
+        this.$el.find('a.js-checklist-delete').hide();
+      }
       return this;
     },
 
@@ -132,6 +144,9 @@ $(function ($, _, Backbone) {
       collection.fetch({
         data: {checklistId: this.model.id},
         success: function(checklistItems, response, options) {
+          if (checklistItems.length !== 0) {
+            self.$el.find('a.js-fold-items').show();
+          }
           checklistItems.forEach(function(item, index) {
             self.onChecklistItemAdded(item);
           });
@@ -157,6 +172,10 @@ $(function ($, _, Backbone) {
       this.updateChecklistProgress();
     },
 
+    onModelRemove: function() {
+      this.close();
+    },
+
     appendNewItem: function(checklistItem) {
       var view = new cantas.views.ChecklistItemView({
         model: checklistItem,
@@ -169,6 +188,66 @@ $(function ($, _, Backbone) {
     /*** Response to DOM events ***/
 
     onDeleteClick: function(event) {
+      if (this.model === null) {
+        return;
+      }
+      if (!cantas.utils.getCurrentBoardView().confirmDialogView) {
+        cantas.utils.getCurrentBoardView().confirmDialogView = new cantas.views.ConfirmDialogView();
+      }
+      var checklistSectionView = this.options.parentView;
+      if (checklistSectionView.isConfirmDeleteChecklist) {
+        $(event.target.parentNode).focus();
+        this.confirmDeleteChecklist(event);
+        $(".modal-scrollable").on("scroll", function(){$("body").click();});
+      } else {
+        this.removeChecklist();
+      }
+    },
+
+    confirmDeleteChecklist: function(event) {
+      event.stopPropagation();
+
+      $("body").click();
+
+      var self = this;
+      cantas.utils.getCurrentBoardView().confirmDialogView.render({
+        operationType: "delete",
+        operationItem: "checklist",
+        confirmInfo: "Are you sure to delete this checklist?",
+        captionYes: "Delete",
+        yesCallback: function() {
+          self.removeChecklist();
+
+          if ($("#js-cb-noask:checked").length > 0) {
+            self.options.parentView.isConfirmDeleteChecklist = false;
+          }
+
+          $("#confirm-dialog").hide();
+        },
+        captionNo: "Cancel",
+        noCallback: function() {
+          $("#confirm-dialog").hide();
+        },
+        pageX: event.pageX - 285,
+        pageY: event.pageY
+      });
+    },
+
+    removeChecklist: function() {
+      this.$el.fadeOut();
+      this.removeChecklistItems();
+      this.model.destroy();
+    },
+
+    removeChecklistItems: function() {
+      var deleteItems = {};
+      var removeChecklistItems = this.model.itemCollection;
+      removeChecklistItems.forEach(function(item, index) {
+        deleteItems[index] = item;
+      });
+      for (var index in deleteItems) {
+        deleteItems[index].destroy();
+      }
     },
 
     onAddItemClick: function(event) {
@@ -178,6 +257,11 @@ $(function ($, _, Backbone) {
 
     addNewItem: function() {
       this.$el.find(".js-add-item a").trigger("click");
+    },
+
+    onFoldItems: function() {
+      this.$el.find("ul").toggle("fade");
+      this.$el.find("a.js-fold-items").toggleClass("fold");
     },
 
     /*** Response to Backbone events ***/
@@ -202,6 +286,10 @@ $(function ($, _, Backbone) {
       var iCompletedNumber = this.model.itemCollection.where({checked: true}).length;
       var iTotalNumber = this.model.itemCollection.length;
       var fPercentage = 0;
+      this.$el.find('a.js-fold-items').show();
+      if (iTotalNumber === 0) {
+        this.$el.find('a.js-fold-items').hide();
+      }
       if (iTotalNumber > 0)
         fPercentage = Math.round(iCompletedNumber / iTotalNumber * 100);
       this.$el.find(".checklist-title .progress .bar").width(fPercentage + "%");
@@ -373,6 +461,7 @@ $(function ($, _, Backbone) {
         var itemContent = this.model.get("content");
         var updateOn = this.model.get('updatedOn');
         var createOn = this.model.get('createdOn');
+        var moreActionHtml = "<a class='js-convert-item-to-card'>Convert to Card</a>";
         createOn = cantas.utils.formatDate(createOn);
         updateOn = cantas.utils.formatDate(updateOn);
         this.$el.find('div.js-create-time').text('Creation:  ' + createOn);
@@ -380,10 +469,9 @@ $(function ($, _, Backbone) {
           this.$el.find('div.js-modify-time').text('Last Modified:  ' + updateOn);
         }
         this.$el.find('textarea').val(itemContent);
+        this.$el.find('.js-entryview-cancel').after(moreActionHtml);
       }
 
-      var moreActionHtml = "<a class='js-convert-item-to-card'>Convert to Card</a>";
-      this.$el.find('.js-entryview-cancel').after(moreActionHtml);
       return this;
     },
 
@@ -443,7 +531,12 @@ $(function ($, _, Backbone) {
         creatorId: cantas.utils.getCurrentUser().id,
         listId: listId,
         boardId: boardId,
-        order: order
+        order: order,
+        sourceObject: {
+          model: this.model.urlRoot,
+          id: this.model.id,
+          title: content
+        }
       });
       newCard.save();
 

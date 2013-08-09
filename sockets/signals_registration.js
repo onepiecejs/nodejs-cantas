@@ -10,6 +10,8 @@
   var MemberRelation = require("../models/boardMemberRelation");
   var Comment = require("../models/comment");
   var ChecklistItem = require("../models/checklistItem");
+  var Attachment = require("../models/attachment");
+  var Vote = require("../models/vote");
   var handlers = require('./signalHandlers');
 
   signals.post_delete.connect(MemberRelation, function(sender, args, done) {
@@ -107,11 +109,36 @@
     });
   });
 
+  signals.post_create.connect(Attachment, function(sender, args, done) {
+    var cardId = args.instance.cardId;
+    Card.findById(cardId, function(err, card){
+      if(!err){
+        card.getBadges(function(err, badges){
+          if(!err){
+            args.socket.room.emit("badges:update", {cardId: cardId, badges: badges});
+          }
+        });
+      }
+    });
+  });
+
+  signals.post_delete.connect(Attachment, function(sender, args, done) {
+    var cardId = args.instance.cardId;
+    Card.findById(cardId, function(err, card){
+      if(!err){
+        card.getBadges(function(err, badges){
+          if(!err){
+            args.socket.room.emit("badges:update", {cardId: cardId, badges: badges});
+          }
+        });
+      }
+    });
+  });
+
   /*
    * Attach fixed labels to newly created card
    */
   signals.post_create.connect(Board, function(sender, args, done) {
-    console.log('>>> board is created');
     handlers.attachLabelsToBoard(args.instance, done);
   });
 
@@ -120,6 +147,18 @@
    */
   signals.post_create.connect(Card, function(sender, args, done) {
     handlers.attachLabelsToCard(args.instance, done);
+  });
+
+  signals.post_create.connect(Vote, function(sender, args, done) {
+    handlers.updateCardBadges(args, done);
+  });
+
+  signals.post_patch.connect(Vote, function(sender, args, done) {
+    handlers.updateCardBadges(args, done);
+  });
+
+  signals.post_delete.connect(Vote, function(sender, args, done) {
+    handlers.updateCardBadges(args, done);
   });
 
 })(module);

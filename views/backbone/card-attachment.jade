@@ -1,0 +1,10 @@
+script#template-attachment-view(type="text/template").
+  h4 Attachment
+  table.fileupload-table.table-striped.js-attachment-download-table(role='presentation')
+    tbody
+  if isBoardMember
+    span.btn.btn-success.fileinput-button
+      span Select&nbsp;&nbsp;files...
+      input#attachmentUpload(type="file", multiple="", name="attachment")
+    table.fileupload-table.table-striped.js-attachment-upload-table(role='presentation')
+      tbody

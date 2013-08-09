@@ -1,0 +1,13 @@
+script#template-attachment-download-view(type="text/template").
+  td.download-preview
+  if isBoardMember
+    td.download-name
+      a(href=url, target='_blank')= fileName
+  else
+    td.download-name= fileName
+  td.download-size= size
+  td.download-uploader= uploaderId.username
+  td.download-createdOn= createdOn
+  td.download-control
+    if isUploader
+      button.btn.btn-danger.download-delete.js-download-delete Delete

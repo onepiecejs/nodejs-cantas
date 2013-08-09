@@ -8,6 +8,7 @@ $(function ($, _, Backbone) {
   cantas.socket = io.connect("" + 
     document.location.protocol + 
     "//" + document.location.hostname, {
+    "reconnect": true,
     "max reconnection attempts": 100,
     "max reconnection delay": 32000,
     "reconnection delay": cantas.utils.randomWait(100,1000)
@@ -18,15 +19,16 @@ $(function ($, _, Backbone) {
     window.document.title = "Cantas|" + title;
   };
 
-  //handle timeout event
-  cantas.socket.on('disconnect', function(){
-    cantas.utils.renderTimeoutBox();
-    return;
-  });
+  //FIXME: should be provide better way to handle session timeout 
+  // in socket event(dxiao@redhat.com)
+  // cantas.socket.on('disconnect', function(){
+  //   cantas.utils.renderTimeoutBox();
+  //   return;
+  // });
 
-  cantas.socket.on('connect', function(){
-    cantas.utils.renderClearTimeoutBox();
-    return;
-  });
+  // cantas.socket.on('connect', function(){
+  //   cantas.utils.renderClearTimeoutBox();
+  //   return;
+  // });
 
 }(jQuery, _, Backbone));

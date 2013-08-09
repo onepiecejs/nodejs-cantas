@@ -37,6 +37,7 @@ $(function ($, _, Backbone) {
       this.title = data.title;
       this.boardCollection = new cantas.models.BoardCollection();
       this.listCollection = new cantas.models.ListCollection();
+      this.boardMemberCollection = new cantas.models.BoardMemberCollection();
     },
 
     _childrenViews: [],
@@ -193,7 +194,7 @@ $(function ($, _, Backbone) {
       "click .js-list-setting": "showListMenu",
       "mouseenter header.list-header": "showListSettingIcon",
       "mouseleave header.list-header": "hideListSettingIcon",
-      "click .js-list-title":    "editListTitle",
+      "click .js-list-title-text":    "editListTitle",
       "click .js-add-card":      "showAddForm",
       "click .js-cancel":        "hideAddForm",
       "click .js-btn-submit":    "createCard",
@@ -260,6 +261,24 @@ $(function ($, _, Backbone) {
       return this;
     },
 
+    rememberMe: function () {
+      // For now we only allow one expanded view at a time,
+      // so we need to shift and collapse them.
+      while (this.attributes.expandedViewChain.length > 0) {
+        var view = this.attributes.expandedViewChain.shift();
+        if (view != undefined) {
+          view.collapse();
+        }
+      }
+      this.attributes.expandedViewChain.push(this);
+    },
+
+    forgetMe: function () {
+      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
+        this.attributes.expandedViewChain.pop();
+      }
+    },
+
     render: function () {
       var el = this.$el.empty();
       // dynamically append `listId` in each of the list
@@ -319,9 +338,13 @@ $(function ($, _, Backbone) {
     },
 
     addOne: function(card, index, context){
+      var _expandedViewChain = cantas.utils.getCurrentBoardView()._expandedViewChain;
       var thatCardView = new cantas.views.CardView({
         model: card,
-        attributes: {index: index}
+        attributes: {
+          index: index,
+          expandedViewChain: _expandedViewChain
+        }
       });
       var uniqueId = thatCardView.cid;
       this.cardViewCache[uniqueId] = thatCardView;
@@ -368,7 +391,10 @@ $(function ($, _, Backbone) {
         pageX: event.pageX - offsetX,
         pageY: event.pageY
       });
+
       $(event.target).show();
+
+      this.rememberMe();
     },
 
     showListSettingIcon: function (event) {
@@ -404,6 +430,8 @@ $(function ($, _, Backbone) {
     },
 
     editListTitle: function (event) {
+      event.stopPropagation();
+
       this.editAreaContainer = $(event.target).parent();
       var placeholder = $(event.target).text();
       this.restoreHTML = this.editAreaContainer.html();
@@ -417,19 +445,28 @@ $(function ($, _, Backbone) {
       // FIXME: bind event in view's events attribute.
       this.editAreaContainer.find(".js-save-list-title").on("click", this, this.saveListTitle);
 
-      cantas.utils.getCurrentBoardView()._editRestoreChain.push(this);
-      $("body").trigger("click");
+      this.rememberMe();
     },
 
     saveListTitle: function(event) {
       var view = event.data;
       var title = view.editAreaContainer.find("#title-input").val().trim();
-      if(title){
-        $("body").trigger("click");
-        view.model.patch({title: title});
-      }else{
-        view.editAreaContainer.find("#title-input").select();
+      if (title.length == 0) {
+        alert("Please enter a list title");
+        return false;
+      } else {
+        var origin_title = view.model.get('title');
+        var result = view.model.set({ "title": title },
+                                    { validate: true });
+        if(view.model.hasChanged("title")){
+          $("body").trigger("click");
+          view.model.patch({
+            title: title,
+            original: {title: origin_title}
+          });
+        }
       }
+      return true;
     },
 
     titleInputKeypressed: function(event) {
@@ -440,12 +477,20 @@ $(function ($, _, Backbone) {
 
     titleChanged: function(data){
       var title = data.get("title");
-      $(this.el).find(".js-list-title").text(title).attr("title", title);
+      $(this.el).find(".js-list-title-text").text(title).attr("title", title);
     },
 
-    cancelEdit: function() {
-      this.editAreaContainer.find(".js-save-list-title").off("click", this, this.saveListTitle);
-      this.editAreaContainer.html(this.restoreHTML);
+    collapse: function() {
+      if (this.editAreaContainer) {
+        this.editAreaContainer.find(".js-save-list-title").off("click", this, this.saveListTitle);
+        this.editAreaContainer.html(this.restoreHTML);
+        this.editAreaContainer.find(".js-list-title-text").text(this.model.get('title'));
+      }
+
+      if (this.listMenuView) {
+        this.listMenuView.undelegateEvents();
+      }
+      this.forgetMe();
     },
 
     /*
@@ -565,12 +610,14 @@ $(function ($, _, Backbone) {
     //card calcPos
     calcPos: function() {
       var cardOrder = -1;
-      var cardCount = this.model.cardCollection.length;
+      var activeCardArray = this.model.cardCollection.where({isArchived: false});
+      activeCardArray = activeCardArray.sort(function(a,b) { a - b });
+      var cardCount = activeCardArray.length;
       if(cardCount === 0) {
         cardOrder = cardOrder + 65536;
       }
       if(cardCount > 0) {
-        var lastOrder = _.last(this.model.cardCollection.pluck("order"));
+        var lastOrder = _.last(activeCardArray).get('order');
         cardOrder = lastOrder + 65536;
       }
       return cardOrder;
@@ -621,7 +668,10 @@ $(function ($, _, Backbone) {
     archiveList: function (event) {
       this.hideListMenu(event);
       var list = this._getListModel();
-      list.patch({isArchived: true});
+      list.patch({
+        isArchived: true,
+        original: {isArchived: false}
+      });
     },
 
     archiveAllCards: function(event){

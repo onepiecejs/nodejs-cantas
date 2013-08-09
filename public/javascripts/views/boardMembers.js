@@ -416,6 +416,12 @@ $(function ($, _, Backbone) {
       if (elems.length == 0)
         return;
 
+      // If the user is not board admin, he can not revoke a member, hide the ×.
+      var creator = this.getCurrentBoard().attributes.creatorId;
+      var boardCreatorId = (typeof creator === "object") ? creator._id: creator;
+      if (boardCreatorId !== this.getCurrentUser().id)
+        elems.find("a").remove();
+
       // Move invitees from input area to member list in the bottom of manage area.
       this.getMembersDisplayContainer().append(elems);
 
@@ -493,7 +499,7 @@ $(function ($, _, Backbone) {
     },
 
     getCurrentBoard: function() {
-      return this.getCurrentBoardView().model;
+      return cantas.utils.getCurrentBoardView().model;
     },
 
     getCurrentUser: function() {
@@ -569,7 +575,8 @@ $(function ($, _, Backbone) {
         var lis = this.$el.find(".invite-member li");
         var username = data.data.username;
         lis.each(function(index, li) {
-          if (li.firstChild.textContent === username) {
+          var _liTextContent = li.firstChild.textContent.split('@')[0];
+          if (_liTextContent === username) {
             $(li).remove();
             return true;
           }
@@ -577,14 +584,26 @@ $(function ($, _, Backbone) {
 
         // In the meanwhile, if the removing user is being in the board, notify
         // and bring him/her to board again
-        if (data.data.updated.userId === cantas.utils.getCurrentUser().id) {
+        if (data.data.updated.userId._id === cantas.utils.getCurrentUser().id &&
+            data.data.updated.boardId === cantas.utils.getCurrentBoardId()) {
+
+          var isPublic = cantas.utils.getCurrentBoardModel().attributes.isPublic;
           var dialog = $(".force-alert");
-          dialog.find("p")
-            .text("Your membership is revoked. You are not a member of this board from now.");
-          dialog.find("a")
-            .attr("href", window.location)
-            .text("Rejoin this board");
-          dialog.toggle();
+          if (isPublic) {
+            dialog.find("p")
+              .text("Your membership is revoked. You are not a member of this board from now.");
+            dialog.find("a")
+              .attr("href", window.location)
+              .text("Please reload this board!");
+            dialog.toggle();
+
+            cantas.navigateTo("board/" + data.data.updated.boardId);
+          } else {
+            var boardTitle = cantas.utils.getCurrentBoardModel().get('title');
+            boardTitle = cantas.utils.safeString(boardTitle);
+            alert("Your membership is revoked from a private Board:"+ boardTitle);
+            cantas.navigateTo("/");
+          }
         }
       } else {
         alert(data.data);

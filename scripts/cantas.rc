@@ -5,7 +5,7 @@
 # This is script should run after all dependent services are launched.
 #
 
-# chkconfig: 35 95 05
+# chkconfig: 345 80 20
 # description: script to control Cantas web service.
 #
 # processname: cantas
@@ -14,7 +14,6 @@
 
 # Source function library.
 . /etc/rc.d/init.d/functions
-
 
 export NODE_ENV=${NODE_ENV:="production"}
 
@@ -52,8 +51,9 @@ start()
         [ -d $forever_dir ] || (mkdir -p $forever_dir )
 
         # Launch the application
-        daemon --user=$user \
+        daemon \
             $forever start -p $forever_dir --pidFile $pidfile -l $logfile -e $errlogfile -a --sourceDir $INSTANCE_DIR -c $COMMAND $SOURCE_NAME
+        RETVAL=$?
     else
         echo "Instance already running"
         RETVAL=0
@@ -64,8 +64,7 @@ restart()
 {
     echo -n "Restarting $NAME node instance : "
     if [ "$id" != "" ]; then
-	$sudo -u $user \
-            $forever restart -p $forever_dir $id
+	$forever restart -p $forever_dir $id
         RETVAL=$?
     else
         start
@@ -76,8 +75,7 @@ stop()
 {
     echo -n "Shutting down $NAME node instance : "
     if [ "$id" != "" ]; then
-        $sudo -u $user \
-            $forever stop -p $forever_dir $id
+        $forever stop -p $forever_dir $id
     else
         echo "Instance is not running";
     fi
@@ -89,8 +87,7 @@ getForeverId() {
   chown $user $pidfile
 
   local pid=$(cat $pidfile)
-  $sudo -u $user \
-        $forever list |$sed -e '1,2d' | $sed -e 's/\x1b\[[0-9; ]*m//g' | $awk "\$7 && \$7 == \"$pid\" { gsub(/[\[\]]/, \"\", \$2); print \$2; }";
+  $forever list |$sed -e '1,2d' | $sed -e 's/\x1b\[[0-9; ]*m//g' | $awk "\$7 && \$7 == \"$pid\" { gsub(/[\[\]]/, \"\", \$2); print \$2; }";
 }
 id=$(getForeverId)
 
@@ -102,8 +99,7 @@ case "$1" in
         stop
         ;;
     status)
-        $sudo -u $user \
-            $forever list
+        $forever list
         ;;
     restart)
         restart

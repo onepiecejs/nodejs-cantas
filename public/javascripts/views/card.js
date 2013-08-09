@@ -161,6 +161,7 @@ $(function ($, _, Backbone) {
       this.boardCollection = new cantas.models.BoardCollection();
       this.listCollection = new cantas.models.ListCollection();
       this.cardColleciton = new cantas.models.CardCollection();
+      this.boardMemberCollection = new cantas.models.BoardMemberCollection();
     },
     
     _childrenViews: [],
@@ -329,7 +330,7 @@ $(function ($, _, Backbone) {
       this.model.on('remove', this.remove, this);
 
       this.cardLabelCollection = new cantas.models.CardLabelRelationCollection;
-
+      this.voteCollection = new cantas.models.VoteCollection;
     },
 
     onModelChange: function() {
@@ -371,12 +372,16 @@ $(function ($, _, Backbone) {
 
       // disable edit/add function when user is not board member
       if (!window.cantas.isBoardMember) {
-        this.$el.undelegate('.card-setting', 'click');
-        this.$el.undelegate('.card', 'mouseenter');
-        this.$el.undelegate('.card', 'mouseleave');
+        this.disableEvents();
       };
 
       return this;
+    },
+
+    disableEvents: function() {
+      this.$el.undelegate('.card-setting', 'click');
+      this.$el.undelegate('.card', 'mouseenter');
+      this.$el.undelegate('.card', 'mouseleave');
     },
 
     remove: function(){
@@ -412,18 +417,19 @@ $(function ($, _, Backbone) {
       // if the listView exist in this board
       var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];
 
-      if (data.get('isArchived') === true){
-        // card archived
+
+      // card archived
+      if (data.get('isArchived') === true) {
         $(that.el).fadeOut('slow',function() {
           that.$el.hide();
         });
-      } else {
-        // card unarchived
-        if (inListView.model.get("isArchived") === false){
+
+      // card unarchived
+      } else if (inListView.model.get("isArchived") === false) {
           $(inListView.el).find(".list-content").append(this.render().el);
           this.$el.show();
-        }
       }
+
       //refresh card positions
       SORTABLE.refreshCardSortable();
     },
@@ -435,16 +441,36 @@ $(function ($, _, Backbone) {
 
       this.cardDetailView = new cantas.views.CardDetailsView({
         model: this.model,
-        cardLabelCollection: this.cardLabelCollection
+        cardLabelCollection: this.cardLabelCollection,
+        voteCollection: this.voteCollection
       });
       return this.cardDetailView.render();
+    },
+
+    rememberMe: function () {
+      // we only allow one expanded view at a time
+      while (this.attributes.expandedViewChain.length > 0) {
+        var view = this.attributes.expandedViewChain.shift();
+        if (view !== undefined) {
+          view.collapse();
+        }
+      }
+
+      this.attributes.expandedViewChain.push(this);
+    },
+
+    forgetMe: function() {
+      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
+        this.attributes.expandedViewChain.pop();
+      }
     },
 
     showCardMenu: function (event) {
       event.stopPropagation();
 
-      if(!this.cardMenuView)
+      if (!this.cardMenuView) {
         this.cardMenuView = new cantas.views.CardMenuView();
+      }
 
       $("body").click();
 
@@ -457,6 +483,16 @@ $(function ($, _, Backbone) {
         pageY: event.pageY
       });
       $(event.target).show();
+
+      this.rememberMe();
+    },
+
+    collapse: function() {
+      if (this.cardMenuView) {
+        this.cardMenuView.undelegateEvents();
+      }
+
+      this.forgetMe();
     },
 
     showCardSettingIcon: function (event) {
@@ -472,7 +508,7 @@ $(function ($, _, Backbone) {
     //Card sortable function
     // when card sortable event stop, the methods will fire.
     moveFrom: function(event, ui, fromListView) {
-      var newPosition = ui.item.parent().children(".list-card").index(ui.item);
+      var newPosition = ui.item.parent().children(".list-card:visible").index(ui.item);
       cantas.views.fromListView = fromListView;
       this.model.moveToList(fromListView, newPosition, ui.item);
     },
@@ -512,7 +548,10 @@ $(function ($, _, Backbone) {
       //update cardViewCache in the listView
       inListView.cardViewCache[thatView.cid] = thatView;
       //update chardview order
-      var sortArray = inListView.model.cardCollection.pluck('order');
+      var activeCardArray = inListView.model.cardCollection.where({isArchived: false});
+      var sortArray = _.map(activeCardArray, function(card) {
+        return card.get('order');
+      });
       sortArray = sortArray.sort(function(a,b){return a - b });
       var newPosition = _.indexOf(sortArray,thatModel.get('order'), isSorted = true);
 
@@ -679,7 +718,9 @@ $(function ($, _, Backbone) {
       "click .js-archive-card": "archiveCard",
       "click .js-edit-assign": "toggleAssignWindow",
       "click .js-edit-label": "toggleLabelWindow",
+      "click .js-edit-vote": "toggleVoteWindow",
       "click .js-add-comment": "addComment",
+      "click .js-add-attachment": "addAttachment",
       "hidden": "closeCardDetail",
       "click .js-add-checklist": "onChecklistClick"
     },
@@ -692,6 +733,7 @@ $(function ($, _, Backbone) {
       this.commentTemplate = jade.compile($("#template-comment-item-view").text());
 
       this.cardLabelCollection = options.cardLabelCollection;
+      this.voteCollection = options.voteCollection;
     },
 
     render:function () {
@@ -706,6 +748,15 @@ $(function ($, _, Backbone) {
 
       this.renderCommentView();
 
+      this.renderAttachmentView();
+
+      this.cardVotesTotalView = new cantas.views.CardVotesTotalView({
+        el: $("a.card-vote"),
+        collection: this.voteCollection,
+        card: this.model
+      });
+      this.cardVotesTotalView.render();
+
       // Initialize views used in detail view.
       this.checklistSectionView = new cantas.views.ChecklistSectionView({
         el: $("section.js-checklist-section"),
@@ -719,12 +770,7 @@ $(function ($, _, Backbone) {
 
       //disable add/update function when user is not board member.
       if (!window.cantas.isBoardMember) {
-        this.$el.undelegate('.js-edit-title', 'click');
-        this.$el.undelegate('.js-edit-assign', 'click');
-        this.$el.undelegate('.js-edit-label', 'click');
-        this.$el.undelegate('.js-add-checklist', 'click');
-        this.$el.undelegate('.js-edit-desc', 'click');
-        this.$el.find('a .js-edit-desc').hide();
+        this.disableEvents();
       };
 
       this.detailsNeonLightsView = new cantas.views.LabelNeonLightsView({
@@ -734,13 +780,103 @@ $(function ($, _, Backbone) {
       });
 
       this.detailsNeonLightsView.turnOn();
+      this.listenTo(this.detailsNeonLightsView, 'setLabelCpation', this.toggleLabelCaption);
+
+      var _this = this;
+
+      this.fileupload = this.$el.find('#attachmentUpload').fileupload({
+        autoUpload: false,
+        url: '/upload/' + card._id,
+        maxFileSize: 10000000,
+        dataType: 'json'
+      }).on('fileuploadadd', function (e, data) {
+        var newAttachmentUploadItemView = new cantas.views.AttachmentUploadItemView({
+          'model': data.files[0],
+          'data': data,
+          'parentView': _this
+        });
+        data.context = newAttachmentUploadItemView.render().$el;
+        var uploadTableEl = _this.$('.js-attachment-upload-table');
+        if(uploadTableEl.find('tbody tr').length == 0) {
+          uploadTableEl.prepend('<thead><tr><th>Preview</th><th>File Name</th><th>Size</th></tr></thead>');
+        }
+        _this.$('.js-attachment-upload-table tbody').append(data.context);
+      }).on('fileuploadprocessalways', function (e, data) {
+        var file = data.files[0];
+        if(file.preview) {
+          data.context.find('.upload-preview').append(file.preview);
+        }
+        if(file.error) {
+          data.context.find('.upload-control').append($('<p>',{
+            'class': 'upload-errormessage',
+            'text': file.error
+          })).find('.upload-errormessage').prepend($('<span>', {
+            'class': 'label label-important',
+            'text': 'Error'
+          }));
+        }
+        data.context.find('.js-upload-start').text('Start').prop('disabled', !!file.error);
+      }).on('fileuploadprogress', function (e, data) {
+        var progress = Math.floor(data.loaded / data.total * 100);
+        data.context.find('.js-upload-progress').prop('aria-valuenow', progress)
+          .find('.bar').css('width', progress + '%');
+
+      }).on('fileuploaddone', function (e, data) {
+        data.context.find('.upload-errormessage').remove();
+
+        if(data.result.user_error) {
+          _this.reportUploadError(data.context, data.result.user_error);
+          throw new Error(data.result.maintainer_error);
+        } else {
+          data.context.find('.js-upload-abort').text('Finished').prop('disabled', true);
+          data.context.fadeOut().remove();
+          var uploadTableEl = _this.$('.js-attachment-upload-table');
+          if (uploadTableEl.find('tbody tr').length === 0) {
+            uploadTableEl.find('thead').remove();
+          }
+
+          var newAttachment = new cantas.models.Attachment(data.result.attachment);
+          newAttachment.save();
+        }
+
+      }).on('fileuploadfail', function (e, data) {
+        data.context.find('.upload-errormessage').remove();
+        _this.reportUploadError(data.context, 'Uploading attachment failed');
+      });
 
       return this;
+    },
+
+    reportUploadError: function(context, errorMessage) {
+      context.find('.js-abort').removeClass('js-abort').addClass('js-start')
+        .text('Start').prop('disabled', false);
+      context.find('.upload-control').append($('<p>',{
+        'class': 'upload-errormessage',
+        'text': errorMessage,
+      })).find('.upload-errormessage').prepend($('<span>', {
+        'class': 'label label-important',
+        'text': 'Error'
+      }));
+    },
+
+    disableEvents: function() {
+      this.$el.undelegate('.js-edit-title', 'click');
+      this.$el.undelegate('.js-edit-assign', 'click');
+      this.$el.undelegate('.js-edit-label', 'click');
+      this.$el.undelegate('.js-add-checklist', 'click');
+      this.$el.undelegate('.js-add-attachment', 'click');
+      this.$el.undelegate('.js-edit-desc', 'click');
+      this.$el.find('a .js-edit-desc').hide();
     },
 
     renderCommentView: function(){
       this.commentView = new cantas.views.CommentView({model: this.model});
       this.commentView.render();
+    },
+
+    renderAttachmentView: function(){
+      this.attachmentView = new cantas.views.AttachmentView({model: this.model});
+      this.attachmentView.render();
     },
 
     openEditTitleDialog: function (event) {
@@ -816,6 +952,9 @@ $(function ($, _, Backbone) {
       if (typeof this.cardAssignView === "undefined"){
         this.cardAssignView = new cantas.views.CardAssignView({model: this.model});
       }
+      if (typeof this.cardVoteView !== "undefined" && this.cardVoteView.isRendered) {
+        this.cardVoteView.closeVoteWindow(event);
+      }
       if (typeof this.labelAssignView !== "undefined" && this.labelAssignView.isRendered){
           this.labelAssignView.closeLabelWindow(event);
       }
@@ -833,8 +972,12 @@ $(function ($, _, Backbone) {
       if (typeof this.labelAssignView === "undefined"){
         this.labelAssignView = new cantas.views.LabelAssignView({
           collection: new cantas.models.CardLabelRelationCollection,
-          card: this.model
+          card: this.model,
+          parentView: this
         });
+      }
+      if (typeof this.cardVoteView !== "undefined" && this.cardVoteView.isRendered) {
+          this.cardVoteView.closeVoteWindow(event);
       }
       if (typeof this.cardAssignView !== "undefined" && this.cardAssignView.isRendered){
           this.cardAssignView.closeAssignWindow(event);
@@ -847,14 +990,64 @@ $(function ($, _, Backbone) {
       }
     },
 
+    toggleLabelCaption: function(labelCaptionDisplay) {
+      var labelCaption = this.$('.js-edit-label span').eq(0);
+      if(labelCaptionDisplay === true)
+        labelCaption.show();
+      else
+        labelCaption.hide();
+    },
+
+    toggleVoteWindow: function(event){
+      event.stopPropagation();
+      if (typeof this.cardVoteView === "undefined") {
+        this.cardVoteView = new cantas.views.CardVoteView({
+          collection: this.voteCollection,
+          card: this.model
+        });
+      }
+      if (typeof this.labelAssignView !== "undefined" && this.labelAssignView.isRendered) {
+          this.labelAssignView.closeLabelWindow(event);
+      }
+      if (typeof this.cardAssignView !== "undefined" && this.cardAssignView.isRendered) {
+        this.cardAssignView = new cantas.views.CardAssignView({model: this.model});
+      }
+      if (this.cardVoteView.isRendered){
+        this.cardVoteView.closeVoteWindow(event);
+      }else{
+        this.cardVoteView.render();
+        $('.modal-scrollable').scrollTop(0);
+      }
+    },
+
     assigneesChanged: function(data){
       var assignees = this._concatAssignees();
       this.$el.find(".js-assignees").html(assignees);
     },
 
+    canComment: function() {
+      var commentStatus = cantas.utils.getCurrentCommentStatus();
+      if (commentStatus == 'disabled') {
+        return false;
+      } else {
+        if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
+          return false;
+        }
+      }
+      return true;
+    },
+
     addComment: function(event){
+      if (this.canComment()) {
+        event.stopPropagation();
+        this.$el.find('.js-add-comment-input').focus();
+      }
+    },
+
+    addAttachment: function(event){
       event.stopPropagation();
-      this.$el.find('.js-add-comment-input').focus();
+      this.$('input[type="file"]').click();
+      
     },
 
     closeCardDetail: function () {
@@ -1050,12 +1243,24 @@ $(function ($, _, Backbone) {
 
     selectedChanged: function(model) {
       this.$("#" + model.id).toggleClass("checked");
+      if(this.$('ul.label-items li.checked').length > 0)
+        this.toggleLabelCaption(false);
+      else
+        this.toggleLabelCaption(true);
     },
 
     closeLabelWindow: function(event){
       event.stopPropagation();
       this.$el.hide();
       this.isRendered = false;
+    },
+
+    toggleLabelCaption: function(labelCaptionDisplay) {
+      var labelCaption = this.options.parentView.$('.js-edit-label span').eq(0);
+      if(labelCaptionDisplay === true)
+        labelCaption.show();
+      else
+        labelCaption.hide();
     },
 
     loadLabelsOnlyOnce: function(callback) {
@@ -1112,7 +1317,10 @@ $(function ($, _, Backbone) {
     archiveCard: function(event){
       this.hideCardMenu(event);
       var card = this._getCardModel();
-      card.patch({isArchived: true});
+      card.patch({
+        isArchived: true,
+        original: {isArchived: false}
+      });
     },
 
     moveCard: function(event) {
@@ -1154,7 +1362,7 @@ $(function ($, _, Backbone) {
     template: jade.compile($("#template-card-labels-neonlights").text()),
 
     initialize: function() {
-      this.collection.on("change:selected", this.render, this)
+      this.collection.on("change:selected", this.render, this);
     },
 
     render: function() {
@@ -1174,9 +1382,13 @@ $(function ($, _, Backbone) {
       this.collection.fetch({
         data: {cardId: this.options.card.id},
         success: function(collection, response, options) {
+          var labelCaptionDisplay = true;
           collection.forEach(function(relation) {
             relation.on('update:selected', self.render, self);
+            if(relation.toJSON().selected === true)
+              labelCaptionDisplay = false;
           });
+          self.trigger('setLabelCpation', labelCaptionDisplay);
           self.collectionFetched = true;
           self.render();
         }
@@ -1187,6 +1399,175 @@ $(function ($, _, Backbone) {
       this.collection.dispose();
       this.remove();
     }
+  });
+
+  cantas.views.CardVotesTotalView = Backbone.View.extend({
+    template: jade.compile($("#template-card-votes-total-view").text()),
+
+    initialize: function() {
+      this.collection.on("add", this.render, this);
+      this.collection.on("change", this.render, this);
+      this.collection.on("remove", this.render, this);
+    },
+
+    render: function() {
+      var self = this;
+      this.collection.fetch({
+        data: {cardId: this.options.card.id},
+        success: function(collection, response, options) {
+          var voteYesNum = collection.where({yesOrNo: true}).length;
+          var voteNoNum = collection.length - voteYesNum;
+          var votes = {voteYes: voteYesNum, voteNo: voteNoNum};
+          self.$el.html(self.template(votes));
+          var myVote = collection.findWhere({
+            authorId: cantas.utils.getCurrentUser().id
+          });
+          if (myVote !== undefined) {
+            var yesOrNo = myVote.attributes.yesOrNo;
+            if (yesOrNo === true) {
+              self.$el.find('span.agree').addClass('checked');
+            } else if (yesOrNo === false) {
+              self.$el.find('span.disagree').addClass('checked');
+            }
+          }
+          return self;
+        }
+      });
+    }
+  });
+
+  cantas.views.CardVoteView = Backbone.View.extend({
+    el: "div.window-vote",
+
+    template: jade.compile($("#template-card-vote-view").text()),
+
+    events: {
+      "click .js-close-vote-window": "closeVoteWindow",
+      "click .js-vote-agree": "voteYes",
+      "click .js-vote-disagree": "voteNo"
+    },
+
+    initialize: function(){
+      this.isRendered = false;
+      this.voteFlag = '';
+    },
+
+    render: function() {
+      var self = this;
+      var voteControl = this.canVote();
+
+      if (voteControl === 'opened') {
+        this.collection.fetch({
+        data: {
+          cardId: this.options.card.id,
+          authorId: cantas.utils.getCurrentUser().id
+        },
+        success: function(collection, response, options) {
+          var myVote = collection.findWhere({
+            authorId: cantas.utils.getCurrentUser().id
+          });
+          if(myVote !== undefined) {
+            var yesOrNo = myVote.attributes.yesOrNo;
+            self.renderMyVote(yesOrNo);
+          }
+        }
+        });
+      }
+      this.$el.html(this.template({voteControl: voteControl}));
+      this.$el.show();
+      this.isRendered = true;
+      return this;
+    },
+
+    canVote: function() {
+      var curBoard = cantas.utils.getCurrentBoardModel();
+      var result;
+      if (curBoard.attributes.voteStatus === 'opened') {
+        result = 'opened';
+      } else if (curBoard.attributes.voteStatus === 'disabled') {
+        result = 'closed';
+      } else if(curBoard.attributes.voteStatus === 'enabled' && window.cantas.isBoardMember) {
+        result = 'opened';
+      } else {
+        result = 'disabled';
+      }
+      return result;
+    },
+
+    renderMyVote: function(yesOrNo) {
+      switch (yesOrNo) {
+        case true:
+          $('#card-agree, span.agree').addClass('checked');
+          this.voteFlag = 'agree';
+          break;
+        case false:
+          $('#card-disagree, span.dis').addClass('checked');
+          this.voteFlag = 'disagree';
+          break;
+      }
+    },
+
+    voteYes: function() {
+      var myVote = this.collection.findWhere({
+        authorId: cantas.utils.getCurrentUser().id
+      });
+      switch(this.voteFlag) {
+        case 'agree':
+          $('#card-agree, span.agree').removeClass('checked');
+          this.voteFlag = '';
+          myVote.destroy();
+          break;
+        case 'disagree':
+          $('#card-disagree, span.disagree').removeClass('checked');
+          $('#card-agree, span.agree').addClass('checked');
+          this.voteFlag = 'agree';
+          myVote.patch({yesOrNo: true});
+          break;
+        default:
+          $('#card-agree, span.agree').addClass('checked');
+          this.voteFlag = 'agree';
+          var newVote = new cantas.models.Vote({
+            cardId: this.options.card.id,
+            authorId: cantas.utils.getCurrentUser().id
+          });
+          newVote.save();
+      }
+    },
+
+    voteNo: function() {
+      var myVote = this.collection.findWhere({
+        authorId: cantas.utils.getCurrentUser().id
+      });
+      switch(this.voteFlag) {
+        case 'agree':
+          $('#card-agree, span.agree').removeClass('checked');
+          $('#card-disagree, span.disagree').addClass('checked');
+          this.voteFlag = 'disagree';
+          myVote.patch({yesOrNo: false});
+          break;
+        case 'disagree':
+          $('#card-disagree, span.disagree').removeClass('checked');
+          this.voteFlag = '';
+          myVote.destroy();
+          break;
+        default:
+          $('#card-disagree, span.disagree').addClass('checked');
+          this.voteFlag = 'disagree';
+          var newVote = new cantas.models.Vote({
+            yesOrNo: false,
+            cardId: this.options.card.id,
+            authorId: cantas.utils.getCurrentUser().id
+          });
+          newVote.save();
+      }
+    },
+
+    closeVoteWindow: function(event) {
+      event.stopPropagation();
+      this.$el.hide();
+      this.isRendered = false;
+    }
+
   });
 
 }(jQuery, _, Backbone));

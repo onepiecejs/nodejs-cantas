@@ -38,11 +38,11 @@ var options = {
     sloppy:     true,  // if the 'use strict'; pragma is optional // TODO: fix this later
     stupid:     true,  // if really stupid practices are tolerated // TODO: fix this later
     sub:        false, // if all forms of subscript notation are tolerated
-    vars:       false, // if multiple var statements per function should be allowed
+    vars:       true,  // if multiple var statements per function should be allowed
     white:      false, // if sloppy whitespace is tolerated
     widget:     false, // if the Yahoo Widgets globals should be predefined
     windows:    false, // if MS Windows-specific globals should be predefined
 
     // the names of predefined global variables:
-    "predef":   ['cantas', '_', 'jQuery', 'Backbone', '$']
+    "predef":   ['cantas', '_', 'jQuery', 'Backbone', '$', 'window']
 };

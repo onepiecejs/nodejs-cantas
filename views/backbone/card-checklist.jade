@@ -2,6 +2,8 @@ script#template-card-checklist(type="text/template")
   |a.delete
   |div.checklist-title
   |  h4= cantas.utils.safeString(title)
+  |    a.js-fold-items.extend
+  |  a.delete.delete-checklist.js-checklist-delete
   |  div.progress
   |    div.bar.bar-success.bar-self(style="width: 0%;")
   |      a 0%

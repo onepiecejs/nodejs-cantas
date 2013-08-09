@@ -1,0 +1,42 @@
+<script id="template-card-detail-view" type="text/template">
+div(id= card._id)
+ div.modal-header
+   button.close(data-dismiss="modal")×
+   h3.card-detail-title.card-title.js-edit-title.js-title(title="Click to edit...")= card.title
+   div.card-option-edit.hidden.js-edit-title-area
+     textarea.js-title-input
+     button.btn.btn-primary.js-save-title Save
+     button.btn.js-cancel-title Cancel
+   section
+     a.assigned.js-edit-assign.js-assignees= card.assignees
+     a.card-label.js-edit-label Label
+       div.card-filter.clearfix
+     div.modal.window-label.window-detail.hide
+     div.modal.window-assign.window-detail.hide
+     a.due-date(style="display: none;") Set due date
+ div.modal-body
+   div.card-option-panel
+     section
+       a.js-edit-assign
+         span Assign
+     section(style="display: none;")
+       a.js-add-duedate
+         span Due Date
+     section(title="Add a checklist")
+       a.js-add-checklist
+         span Checklist
+     section
+       a.js-add-comment
+         span Comment
+   section.card-option.card-description
+     h4.desc.card-detail-desc.js-edit-desc.js-desc(title="Click to edit...")!= card.description
+     a: span.new-item.js-edit-desc Edit Card Description
+     div.card-option-edit.js-edit-desc-area
+       textarea.js-desc-input(placeholder="Add description")
+       button.btn.btn-primary.js-save-desc Save
+       button.btn.js-cancel-desc Cancel
+   section.card-option.js-checklist-section
+   section.card-option.comment
+div.modal-footer
+a.btn.js-close-card-detail(data-dismiss="modal", href="javascript: void(0)") Close
+</script>

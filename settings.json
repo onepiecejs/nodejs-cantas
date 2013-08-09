@@ -17,14 +17,18 @@
         "ttl": 86400
     },
     "links": {
-        "bugzilla": ""
+        "bugzilla": "XXX",
+        "hssPortal": "XXX"
     },
+  "auth": {
+    "strategy": "remote_user"
+  },
   "mailServices": {
     "Zimbra": {
-      "host": "",
+      "host": "XXX",
       "port": 25,
       "secureConnection": true,
-      "domains": ["xxx.com"]
+      "domains": ["XXX.com"]
     }
   },
   "sites": {
