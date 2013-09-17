@@ -41,6 +41,7 @@
         updateCard.getBadges(function(err, badges) {
           var badgesCard = updateCard.toJSON();
           badgesCard.badges = badges;
+          badgesCard.cover = updateCard.cover;
 
           if ( isSameBoard == true ) {
             socket.room.emit(eventName, badgesCard);
@@ -142,7 +143,10 @@
         //if the board is another board, remove assignees
         if (!isSameBoard) {
           Card.findByIdAndUpdate(origCard._id, {'assignees': []}, function(err, updateCard){
-            callback(err, origCard, updateCard);
+            origCard.getCover(function(err, cover){
+              updateCard.cover = cover;
+              callback(err, origCard, updateCard);
+            });
           });
         } else {
           callback(null, origCard, updateCard);

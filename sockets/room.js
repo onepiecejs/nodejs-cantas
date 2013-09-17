@@ -36,8 +36,32 @@
     return userList;
   };
 
+  Room.prototype.leaveBoard = function (boardId) {
+    var roomName = this.boardIdToRoomName(boardId);
+    this.socket.leave(roomName);
+    this.board = null;
+  }
+
   Room.prototype.myRooms = function () {
     return this.io.sockets.manager.roomClients[this.socket.id];
+  };
+
+  // list all clients in one board room
+  Room.prototype.allClients = function() {
+    return this.io.sockets.clients(this.board);
+  };
+
+  // list all my clients in one board room
+  Room.prototype.myClients = function() {
+    var that = this;
+    var clients = this.allClients();
+    var myClients = [];
+    clients.forEach(function(client) {
+      if (that.socket.handshake.user.id === client.handshake.user.id) {
+        myClients.push(client);
+      }
+    });
+    return myClients;
   };
 
   /*

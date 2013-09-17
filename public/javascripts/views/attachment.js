@@ -12,6 +12,9 @@ $(function ($, _, Backbone) {
 
     initialize: function() {
       this.listenTo(this.model.attachmentCollection, 'add', this.renderAttachmentDownloadItem);
+      this.model.attachmentCollection.fetch({
+        data: {cardId: this.model.id}
+      });
 
       this.isConfirmDeleteAttatchment = true;
     },
@@ -27,13 +30,8 @@ $(function ($, _, Backbone) {
 
     renderAllAttachmentDownloadItems: function(){
       var _this = this;
-      this.model.attachmentCollection.fetch({
-        data: {cardId: this.model.id},
-        success: function(collection, response, options){
-          collection.each(function(attachment){
-            _this.renderAttachmentDownloadItem(attachment);
-          });
-        }
+      this.model.attachmentCollection.each(function(attachment){
+        _this.renderAttachmentDownloadItem(attachment);
       });
     },
 
@@ -44,7 +42,7 @@ $(function ($, _, Backbone) {
       });
       var downloadTable = this.$('.js-attachment-download-table');
       if(downloadTable.find('tbody tr').length == 0) {
-        downloadTable.prepend('<thead><tr><th></th><th>File Name</th><th>Size</th>'
+        downloadTable.prepend('<thead><tr><th>Cover</th><th>Thumbnail</th><th>File Name</th><th>Size</th>'
           +'<th>Uploader Name</th><th>Upload Time</th><th></th></tr></thead>');
       }
       this.$('.js-attachment-download-table tbody').prepend(downloadItemView.render().el);
@@ -86,6 +84,9 @@ $(function ($, _, Backbone) {
 
       this.options.data.abort();
       $(event.target).removeClass('js-upload-abort').addClass('js-upload-start').text('Start');
+      $(event.target).closest('tr.js-template-upload').children('td.upload-size')
+        .find('.js-upload-progress').prop('aria-valuenow', 0)
+      .find('.bar').css('width', 0 + '%');
     },
 
     deleteUpload: function(event) {
@@ -112,22 +113,41 @@ $(function ($, _, Backbone) {
 
     events: {
       'click .js-download-delete': 'onDeleteClick',
+      "click .js-download-cover": "toggleCover"
     },
 
     initialize: function() {
       this.listenTo(this.model, 'remove', this.onModelRemove);
-
+      this.listenTo(this.model, 'change:isCover', this.isCoverChanged);
     },
 
     render: function() {
       var attachment = this.model.toJSON();
       attachment.fileName = attachment.name.slice(attachment.name.indexOf('-') + 1);
       attachment.url= '/attachments/' + attachment.cardId + '/' + attachment.name;
+      if(attachment.cardDetailThumbPath) {
+        attachment.thumbnail= window.location.protocol + '//' + window.location.host
+          + attachment.cardDetailThumbPath.slice(attachment.cardDetailThumbPath.indexOf('/attachments'));
+      }
+      else {
+        attachment.thumbnail = '';
+      }
       attachment.size = cantas.utils.formatFileSize(attachment.size);
       attachment.createdOn = cantas.utils.formatDate(attachment.createdOn);
       attachment.isBoardMember = window.cantas.isBoardMember;
       attachment.isUploader = (attachment.uploaderId._id.toString() === cantas.utils.getCurrentUser().id.toString()) ? true : false;
+      var creator = cantas.utils.getCurrentBoardView().model.attributes.creatorId;
+      var boardCreatorId = (typeof creator === "object") ? creator._id: creator;
+      attachment.isBoardAdmin = (cantas.user.id === boardCreatorId) ? true : false;
       this.$el.html(this.template(attachment));
+
+      if(this.model.get("isCover")){
+        this.$el.addClass("checked");
+      }
+
+      if (!window.cantas.isBoardMember) {
+        this.undelegateEvents();
+      };
 
       return this;
     },
@@ -186,6 +206,16 @@ $(function ($, _, Backbone) {
         pageX: event.pageX - 290,
         pageY: event.pageY
       });
+    },
+
+    isCoverChanged: function(data){
+      this.$el.toggleClass("checked");
+    },
+
+    toggleCover: function() {
+      // only board members can do this.
+      var isCover = !this.model.get("isCover");
+      this.model.patch({'isCover': isCover, 'cardId': this.model.toJSON().cardId});
     }
 
   });

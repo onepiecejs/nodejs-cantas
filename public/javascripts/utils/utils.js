@@ -47,6 +47,12 @@ $(function ($, _, Backbone) {
     $('div.force-alert').fadeOut('slow');
   };
 
+  utils.renderImportTrelloBox = function() {
+    $('.force-alert').find('p')
+      .text('New content has been appended to the current board, please refresh to check out.')
+      .end().toggle();
+  };
+
   utils.randomWait = function(base, max){
     return Math.floor(base + Math.random() * max)
   };
@@ -93,6 +99,26 @@ $(function ($, _, Backbone) {
     return emailRegExp.test(email);
   };
 
+  utils.getBrowserVersionInfo = function(){
+    var browser = {
+      msie: false, firefox: false, opera: false, safari: false,
+      name: 'unknown', version: 0
+    },
+    userAgent = window.navigator.userAgent.toLowerCase();
+    if(/(msie|firefox|opera|chrome)\D+(\d[\d.]*)/.test(userAgent)) {
+      browser[RegExp.$1] = true;
+      browser.name = RegExp.$1;
+      browser.version = RegExp.$2;
+    } 
+    else if(/version\D+(\d[\d.]*).*safari/.test(userAgent)) {
+      browser.safari = true;
+      browser.name = 'safari';
+      browser.version = RegExp.$2;
+    }
+    return browser;
+  }
+
+
   utils.formatFileSize = function (bytes) {
     if(typeof bytes !== 'number') {
       return '';
@@ -121,6 +147,15 @@ $(function ($, _, Backbone) {
           _this.$el.find(moveItemsPath).append(itemView.render().el);
         });
         _this.$el.find(checkedItemPath).parent('li').addClass('checked');
+
+        var parentUl = _this.$el.find(checkedItemPath).closest('ul');
+        var selectedLi = _this.$el.find(checkedItemPath).parent('li');
+        var count = parentUl.children('li').index(selectedLi);
+        var liHeight = selectedLi.outerHeight(true);
+        var ulHeight = parentUl.innerHeight();
+        if(liHeight * count > ulHeight) {
+          parentUl.scrollTop(liHeight * count);
+        }
       }
     });
   };
@@ -198,6 +233,24 @@ $(function ($, _, Backbone) {
     }
     return offsetY;
   };
+
+  utils.rememberMe = function(currentView, expandedViewChain) {
+    while (expandedViewChain && expandedViewChain.length > 0) {
+      var expandedView = expandedViewChain.shift();
+      if (expandedView !== undefined) {
+        expandedView.collapse();
+      }
+    }
+    expandedViewChain.push(currentView);
+    return expandedViewChain;
+  };
+
+  utils.forgetMe = function(currentView, expandedViewChain) {
+    if (expandedViewChain.indexOf(currentView) >= 0) {
+      expandedViewChain.pop();
+    }
+    return expandedViewChain;
+  }
 
   /**
    *  global cantas.utils declare

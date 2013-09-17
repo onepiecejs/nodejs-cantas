@@ -9,12 +9,12 @@ $(function ($, _, Backbone) {
   /*
    * Represent the area of each board member in member list to view.
    */
-  cantas.views.MemberView = Backbone.View.extend({
+  cantas.views.MemberView = cantas.views.BaseView.extend({
     tagName: "li",
-    template: _.template("<%= username %><a>×</a>"),
+    template: _.template("<%= email %><a>×</a>"),
 
     render: function() {
-      var data = { username: this.model.get("userId").username };
+      var data = { email: this.model.get("userId").email };
       this.$el.html(this.template(data)).attr("tabindex", -1);
 
       var creator = cantas.utils.getCurrentBoardModel().get("creatorId")._id;
@@ -66,11 +66,11 @@ $(function ($, _, Backbone) {
     events: {
       "keydown .input-member": "onMemberInputKeyup",
       "keyup .input-member": "onMemberInputKeyup",
-      "click .invite-new li a": "closeMemberTag",
+      "click ul.toBeInvitedUsers li a": "closeMemberTag",
       "click .invite-member li a": "revokeMembership",
       "keyup .invite-new .invite-display": "deleteMemberTag",
       "keydown .invite-new .invite-display": "focusMemberTag",
-      "click .invite-new li:not(:has(input))": "selectMemberTag",
+      "click ul.toBeInvitedUsers li:not(:has(input))": "selectMemberTag",
       "click .invite-new .invite-display": "focusOnMemberInput",
       "click #btn-invite": "onInviteClick",
       "click .collapse-bar": "toggleInviteMember",
@@ -98,7 +98,7 @@ $(function ($, _, Backbone) {
           }
           $(".invite-tip").hide();
         });
- 
+
       var iCursorPosition = 0;
       this.bConfirmDeleteMember = true;
 
@@ -109,6 +109,8 @@ $(function ($, _, Backbone) {
     socketInit: function() {
       var that = this;
       var sock = cantas.socket;
+
+      sock.removeAllListeners("user-exists-resp");
       sock.on("user-exists-resp", function(data) {
         var resp = data.data;
         if (!resp.exists){
@@ -124,6 +126,7 @@ $(function ($, _, Backbone) {
         that.toggleInviteButton();
       });
 
+      sock.removeAllListeners("revoke-membership-resp");
       sock.on("revoke-membership-resp", function(data) {
         that.revokeMembershipResp(data);
       });
@@ -167,6 +170,7 @@ $(function ($, _, Backbone) {
         }
 
         memberInput.val("").attr("size", 2);
+        this.$('div.responseData ul').hide();
 
         if(cantas.utils.checkEmail(trimName)) {
           $(event.target.parentNode).before('<li tabindex="-1">' + trimName + '<a>×</a></li>');
@@ -190,9 +194,9 @@ $(function ($, _, Backbone) {
     getCandidateMembers: function(options) {
       var opts = options || { effective: true };
       if (opts.effective)
-        return this.$el.find(".invite-new li:not(.warning)").not(":has(input)");
+        return this.$el.find("ul.toBeInvitedUsers li:not(.warning)").not(":has(input)");
       else
-        return this.$el.find(".invite-new li").not(":has(input)");
+        return this.$el.find("ul.toBeInvitedUsers li").not(":has(input)");
     },
 
     getMemberCandidateName: function(elem) {
@@ -289,6 +293,16 @@ $(function ($, _, Backbone) {
       memberCandidates.last().remove();
     },
 
+    sortMembers: function(memberA, memberB) {
+      var keyword = $('input.input-member').val();
+      if(memberA.label.indexOf(keyword) === 0 || memberB.label.indexOf(keyword) === 0) {
+        return memberA.label.indexOf(keyword) - memberB.label.indexOf(keyword);
+      }
+      else {
+        return memberA.label - memberB.label;
+      }
+    },
+
     onMemberInputKeyup: function(event) {
       var txt_inputMember = this.$el.find(".input-member");
       var _this = this;
@@ -319,6 +333,23 @@ $(function ($, _, Backbone) {
             _this.validateRecentCandidate();
 
           return false;
+        },
+        response: function( event, ui ) {
+          ui.content.sort(_this.sortMembers);
+          var inviteDisplay = _this.$('div.invite-new div.invite-display');
+          var userList = inviteDisplay.find('div.responseData');
+          if(userList.length === 0) {
+            $('ul.ui-autocomplete').css({
+              'position':'absolute',
+              'top': inviteDisplay.height(),
+              'left': 0})
+            .wrap('<div class="responseData"></div>')
+            .parent()
+            .appendTo(inviteDisplay);
+          }
+          else {
+            $('ul.ui-autocomplete').appendTo(userList);
+          }
         }
       });
 
@@ -459,6 +490,10 @@ $(function ($, _, Backbone) {
     },
 
     remove: function(){
+      _.forEach(this.memberViews, function(thatView) {
+        thatView.close();
+      });
+      this.collection.dispose();
       this.undelegateEvents();
       this.stopListening();
       return this;
@@ -475,22 +510,10 @@ $(function ($, _, Backbone) {
       if (this.membersLoadedAndShown !== undefined)
         return;
 
-      var that = this;
-      var container = this.getMembersDisplayContainer();
-
       this.collection.fetch({
         data: {
           boardId: cantas.utils.getCurrentBoardModel().id,
           $or: [{status: "available"}, {status: "inviting"}]
-        },
-        success: function(memberRelations, response, options) {
-          memberRelations.each(function(memberRelation) {
-            that.showBoardMember(memberRelation);
-          });
-        },
-        error: function(memberRelations, response, options) {
-          // FIXME: Use a more friendly message and behavior to notify user.
-          alert("Canot show board members, now. Please try again.");
         }
       });
 

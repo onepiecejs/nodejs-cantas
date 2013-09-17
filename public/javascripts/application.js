@@ -22,8 +22,6 @@ $(function ($, _, Backbone) {
   //FIXME: should be provide better way to handle session timeout 
   // in socket event(dxiao@redhat.com)
   // cantas.socket.on('disconnect', function(){
-  //   cantas.utils.renderTimeoutBox();
-  //   return;
   // });
 
   // cantas.socket.on('connect', function(){

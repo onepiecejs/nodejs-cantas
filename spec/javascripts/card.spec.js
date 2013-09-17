@@ -71,6 +71,13 @@ describe('Card detail page test', function() {
       assignees: []
     });
 
+    var board = new cantas.models.Board({});
+    var boardView = new cantas.views.BoardView({
+      model: board,
+      isMember: true,
+      visitors: [],
+    });
+
     cardLabelRelationCollection = new cantas.models.CardLabelRelationCollection;
     voteCollection = new cantas.models.VoteCollection;
 
@@ -85,6 +92,7 @@ describe('Card detail page test', function() {
 
     window.cantas.isBoardMember = false;
     spyOn(cantas.utils, 'getCurrentCommentStatus').andReturn('opened');
+    spyOn(cantas.utils, 'getCurrentBoardView').andReturn(boardView);
     cardDetailView.render();
 
     spyOn(cardDetailView, 'addComment').andCallFake(function() {});

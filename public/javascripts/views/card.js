@@ -272,7 +272,9 @@ $(function ($, _, Backbone) {
             _this._childrenViews.push(itemView)
             _this.$el.find(positionItemsPath).append(itemView.render().el);
           });
-          _this.$el.find(checkedPositionPath).parent('li').addClass('checked');
+
+          var targetEl = _this.$el.find('.choose-position .js-move-position li:first');
+          _this._highlightBox(targetEl);
         }
       });
     },
@@ -384,7 +386,7 @@ $(function ($, _, Backbone) {
       this.$el.undelegate('.card', 'mouseleave');
     },
 
-    remove: function(){
+    close: function(){
       if (this.cardMenuView) {
         this.cardMenuView.remove();
       }
@@ -397,9 +399,10 @@ $(function ($, _, Backbone) {
         this.cardNeonLightsView.close();
       }
 
-      this.undelegateEvents();
-      this.stopListening();
-      this.$el.remove();
+      this.model.dispose();
+      this.cardLabelCollection.dispose();
+      this.voteCollection.dispose();
+      this.remove();
       return this;
     },
 
@@ -447,24 +450,6 @@ $(function ($, _, Backbone) {
       return this.cardDetailView.render();
     },
 
-    rememberMe: function () {
-      // we only allow one expanded view at a time
-      while (this.attributes.expandedViewChain.length > 0) {
-        var view = this.attributes.expandedViewChain.shift();
-        if (view !== undefined) {
-          view.collapse();
-        }
-      }
-
-      this.attributes.expandedViewChain.push(this);
-    },
-
-    forgetMe: function() {
-      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
-        this.attributes.expandedViewChain.pop();
-      }
-    },
-
     showCardMenu: function (event) {
       event.stopPropagation();
 
@@ -484,7 +469,9 @@ $(function ($, _, Backbone) {
       });
       $(event.target).show();
 
-      this.rememberMe();
+      this.attributes.expandedViewChain = cantas.utils.rememberMe(
+        this, this.attributes.expandedViewChain);
+
     },
 
     collapse: function() {
@@ -492,7 +479,9 @@ $(function ($, _, Backbone) {
         this.cardMenuView.undelegateEvents();
       }
 
-      this.forgetMe();
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this, this.attributes.expandedViewChain);
+
     },
 
     showCardSettingIcon: function (event) {
@@ -710,6 +699,7 @@ $(function ($, _, Backbone) {
     events:{
       "click .js-edit-title": "openEditTitleDialog",
       "click .js-edit-desc": "openEditDescDialog",
+      "click .js-edit-desc a": "openNewTab",
       "click .js-save-title": "onTitleSaveClick",
       "click .js-cancel-title": "onTitleCancelClick",
       "click .js-save-desc": "onDescriptionSaveClick",
@@ -734,17 +724,21 @@ $(function ($, _, Backbone) {
 
       this.cardLabelCollection = options.cardLabelCollection;
       this.voteCollection = options.voteCollection;
+      this._expandedViewChain = [];
     },
 
     render:function () {
       var card = this.model.toJSON();
       card.assignees = this._concatAssignees();
-      card.description = cantas.utils.safeString(card.description);
-      card.description = cantas.utils.escapeString(card.description);
+      card.description = markdown.toHTML(card.description);
 
       this.$el.html(this.template({card: card}));
       this.$el.modal();
       cantas.setTitle("Card|"+this.model.get("title"));
+
+      this.renderAssignView();
+      this.renderLabelView();
+      this.renderVoteView();
 
       this.renderCommentView();
 
@@ -788,7 +782,12 @@ $(function ($, _, Backbone) {
         autoUpload: false,
         url: '/upload/' + card._id,
         maxFileSize: 10000000,
-        dataType: 'json'
+        minFileSize: 1,
+        dataType: 'json',
+        messages: {
+          maxFileSize: 'File is too large, the maximum size is 10M.',
+          minFileSize: 'File is too small, the minimum size is 1B.'
+        }
       }).on('fileuploadadd', function (e, data) {
         var newAttachmentUploadItemView = new cantas.views.AttachmentUploadItemView({
           'model': data.files[0],
@@ -841,7 +840,16 @@ $(function ($, _, Backbone) {
 
       }).on('fileuploadfail', function (e, data) {
         data.context.find('.upload-errormessage').remove();
-        _this.reportUploadError(data.context, 'Uploading attachment failed');
+
+        if (data.errorThrown !== 'abort') {
+          _this.reportUploadError(data.context, 'Uploading attachment failed');
+        }
+      }).on('fileuploadsubmit', function (e, data) {
+        if (data.files[0].size === 0) {
+          _this.reportUploadError(data.context, 'Uploading attachment failed');
+          data.context.find('.js-upload-start')[0].setAttribute('disabled', 'disabled');
+          return false;
+        }
       });
 
       return this;
@@ -917,14 +925,16 @@ $(function ($, _, Backbone) {
       this.$el.find(".js-desc-input").val(this.model.get("description")).select();
     },
 
+    openNewTab: function(event){
+      event.stopPropagation();
+      event.preventDefault();
+      window.open($(event.target).attr('href'));
+    },
+
     onDescriptionSaveClick: function(event) {
       event.stopPropagation();
-      var newValue = this.$el.find(".js-desc-input").val();
+      var newValue = this.$el.find(".js-desc-input").val().trim();
 
-      // empty desc
-      if (!newValue) {
-        return false;
-      }
       this.model.set("description", newValue);
       if (this.model.hasChanged("description")) {
         this.model.patch({description: newValue});
@@ -935,8 +945,7 @@ $(function ($, _, Backbone) {
     },
 
     descriptionChanged: function(data){
-      var desc = cantas.utils.safeString(this.model.get("description"));
-      desc = cantas.utils.escapeString(desc);
+      var desc = markdown.toHTML(this.model.get("description"));
       this.$el.find(".js-desc").html(desc);
     },
 
@@ -947,46 +956,53 @@ $(function ($, _, Backbone) {
       return false;
     },
 
+    renderAssignView: function() {
+      this.cardAssignView = new cantas.views.CardAssignView({
+        model: this.model,
+        attributes: {
+          expandedViewChain: this._expandedViewChain
+        }
+      });
+      this.cardAssignView.render();
+    },
+
     toggleAssignWindow: function(event){
       event.stopPropagation();
-      if (typeof this.cardAssignView === "undefined"){
-        this.cardAssignView = new cantas.views.CardAssignView({model: this.model});
-      }
-      if (typeof this.cardVoteView !== "undefined" && this.cardVoteView.isRendered) {
-        this.cardVoteView.closeVoteWindow(event);
-      }
-      if (typeof this.labelAssignView !== "undefined" && this.labelAssignView.isRendered){
-          this.labelAssignView.closeLabelWindow(event);
-      }
-      if (this.cardAssignView.isRendered){
-        this.cardAssignView.closeAssignWindow(event);
-      }else{
+      if (this.cardAssignView.isExpanded === false) {
         this.cardAssignView.render();
+        this.cardAssignView.$el.show();
+        this.cardAssignView.isExpanded = true;
         // FIXME: scroll to cardAssignView
         $('.modal-scrollable').scrollTop(0);
+        this.cardAssignView.attributes.expandedViewChain = cantas.utils.rememberMe(
+          this.cardAssignView, this.cardAssignView.attributes.expandedViewChain);
+      } else {
+        this.cardAssignView.collapse();
       }
+    },
+
+    renderLabelView: function() {
+      this.labelAssignView = new cantas.views.LabelAssignView({
+        collection: new cantas.models.CardLabelRelationCollection,
+        card: this.model,
+        parentView: this,
+        attributes: {
+          expandedViewChain: this._expandedViewChain
+        }
+      });
+      this.labelAssignView.render();
     },
 
     toggleLabelWindow: function(event){
       event.stopPropagation();
-      if (typeof this.labelAssignView === "undefined"){
-        this.labelAssignView = new cantas.views.LabelAssignView({
-          collection: new cantas.models.CardLabelRelationCollection,
-          card: this.model,
-          parentView: this
-        });
-      }
-      if (typeof this.cardVoteView !== "undefined" && this.cardVoteView.isRendered) {
-          this.cardVoteView.closeVoteWindow(event);
-      }
-      if (typeof this.cardAssignView !== "undefined" && this.cardAssignView.isRendered){
-          this.cardAssignView.closeAssignWindow(event);
-      }
-      if (this.labelAssignView.isRendered){
-        this.labelAssignView.closeLabelWindow(event);
-      }else{
-        this.labelAssignView.render();
+      if (this.labelAssignView.isExpanded === false) {
+        this.labelAssignView.$el.show();
+        this.labelAssignView.isExpanded = true;
         $('.modal-scrollable').scrollTop(0);
+        this.labelAssignView.attributes.expandedViewChain = cantas.utils.rememberMe(
+          this.labelAssignView, this.labelAssignView.attributes.expandedViewChain);
+      } else {
+        this.labelAssignView.collapse();
       }
     },
 
@@ -998,25 +1014,27 @@ $(function ($, _, Backbone) {
         labelCaption.hide();
     },
 
+    renderVoteView: function() {
+      this.cardVoteView = new cantas.views.CardVoteView({
+        collection: this.voteCollection,
+        card: this.model,
+        attributes: {
+          expandedViewChain: this._expandedViewChain
+        }
+      });
+      this.cardVoteView.render();
+    },
+
     toggleVoteWindow: function(event){
       event.stopPropagation();
-      if (typeof this.cardVoteView === "undefined") {
-        this.cardVoteView = new cantas.views.CardVoteView({
-          collection: this.voteCollection,
-          card: this.model
-        });
-      }
-      if (typeof this.labelAssignView !== "undefined" && this.labelAssignView.isRendered) {
-          this.labelAssignView.closeLabelWindow(event);
-      }
-      if (typeof this.cardAssignView !== "undefined" && this.cardAssignView.isRendered) {
-        this.cardAssignView = new cantas.views.CardAssignView({model: this.model});
-      }
-      if (this.cardVoteView.isRendered){
-        this.cardVoteView.closeVoteWindow(event);
-      }else{
-        this.cardVoteView.render();
+      if (this.cardVoteView.isExpanded === false) {
+        this.cardVoteView.$el.show();
+        this.cardVoteView.isExpanded = true;
         $('.modal-scrollable').scrollTop(0);
+        this.cardVoteView.attributes.expandedViewChain = cantas.utils.rememberMe(
+          this.cardVoteView, this.cardVoteView.attributes.expandedViewChain);
+      } else {
+        this.cardVoteView.collapse();
       }
     },
 
@@ -1047,7 +1065,6 @@ $(function ($, _, Backbone) {
     addAttachment: function(event){
       event.stopPropagation();
       this.$('input[type="file"]').click();
-      
     },
 
     closeCardDetail: function () {
@@ -1083,8 +1100,6 @@ $(function ($, _, Backbone) {
       var slug = $.slug(boardTitle);
       cantas.appRouter.navigate("board/" + boardId + "/" + slug);
       cantas.setTitle("Board|"+boardTitle);
-
-      this.checklistSectionView.close();
     },
 
     archiveCard: function(event){
@@ -1138,18 +1153,17 @@ $(function ($, _, Backbone) {
     events: {
       "click .js-select-assignee": "selectAssignee",
       "click .js-save-assignee": "saveAssignee",
-      "click .js-close-assign-window": "closeAssignWindow"
+      "click .js-close-assign-window": "collapse",
+      "click .js-cancel-assign-window": "onAssignCancelClick"
     },
 
     initialize: function(){
-      this.isRendered = false;
+      this.isExpanded = false;
     },
 
     render: function(){
       var members = this._getMembersToAssign();
       this.$el.html(this.template({members: members}));
-      this.$el.show();
-      this.isRendered = true;
     },
 
     _getMembersToAssign: function(){
@@ -1191,10 +1205,16 @@ $(function ($, _, Backbone) {
       this.$el.find(".js-close-assign-window").trigger("click");
     },
 
-    closeAssignWindow: function(event){
+    onAssignCancelClick: function(event) {
       event.stopPropagation();
+      this.collapse();
+    },
+
+    collapse: function() {
       this.$el.hide();
-      this.isRendered = false;
+      this.isExpanded = false;
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this, this.attributes.expandedViewChain);
     }
 
   });
@@ -1208,12 +1228,12 @@ $(function ($, _, Backbone) {
     template: jade.compile($("#template-label-assign-view").text()),
 
     events: {
-      "click .js-close-label-window": "closeLabelWindow",
+      "click .js-close-label-window": "collapse",
       "click .label-items li": "toggleSelectStatus"
     },
 
     initialize: function(){
-      this.isRendered = false;
+      this.isExpanded = false;
       this.collection.on("change:selected", this.selectedChanged, this);
 
     },
@@ -1224,10 +1244,7 @@ $(function ($, _, Backbone) {
         var relations = self.collection.toJSON();
         var template_data = {relations: relations};
         self.$el.html(self.template(template_data));
-        self.$el.show();
-        self.isRendered = true;
       });
-
       return this;
     },
 
@@ -1235,10 +1252,10 @@ $(function ($, _, Backbone) {
       event.stopPropagation();
 
       var relation = this.collection.get($(event.target).closest("li").attr("id"));
-      var selected = !relation.get("selected");
-      relation.patch({selected: selected});
-
-      this.isRendered = false;
+      if (relation !== undefined) {
+        var selected = !(relation.get("selected"));
+        relation.patch({selected: selected});
+      }
     },
 
     selectedChanged: function(model) {
@@ -1249,10 +1266,11 @@ $(function ($, _, Backbone) {
         this.toggleLabelCaption(true);
     },
 
-    closeLabelWindow: function(event){
-      event.stopPropagation();
+    collapse: function() {
       this.$el.hide();
-      this.isRendered = false;
+      this.isExpanded = false;
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this, this.attributes.expandedViewChain);
     },
 
     toggleLabelCaption: function(labelCaptionDisplay) {
@@ -1442,13 +1460,13 @@ $(function ($, _, Backbone) {
     template: jade.compile($("#template-card-vote-view").text()),
 
     events: {
-      "click .js-close-vote-window": "closeVoteWindow",
+      "click .js-close-vote-window": "collapse",
       "click .js-vote-agree": "voteYes",
       "click .js-vote-disagree": "voteNo"
     },
 
     initialize: function(){
-      this.isRendered = false;
+      this.isExpanded = false;
       this.voteFlag = '';
     },
 
@@ -1474,8 +1492,6 @@ $(function ($, _, Backbone) {
         });
       }
       this.$el.html(this.template({voteControl: voteControl}));
-      this.$el.show();
-      this.isRendered = true;
       return this;
     },
 
@@ -1531,6 +1547,7 @@ $(function ($, _, Backbone) {
             authorId: cantas.utils.getCurrentUser().id
           });
           newVote.save();
+          this.collection.add(newVote);
       }
     },
 
@@ -1559,13 +1576,15 @@ $(function ($, _, Backbone) {
             authorId: cantas.utils.getCurrentUser().id
           });
           newVote.save();
+          this.collection.add(newVote);
       }
     },
 
-    closeVoteWindow: function(event) {
-      event.stopPropagation();
+    collapse: function() {
       this.$el.hide();
-      this.isRendered = false;
+      this.isExpanded = false;
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this, this.attributes.expandedViewChain);
     }
 
   });

@@ -66,7 +66,7 @@ block append scripts
   include backbone/comment-config
 
   - if (process.env.NODE_ENV == 'production')
-    script(type="text/javascript", src="/javascripts/dist/cantas-app.js")
+    script(type="text/javascript", src="/javascripts/dist/cantas-app.min.js")
   - else
     //- script section
     script(type="text/javascript", src="/javascripts/constants.js")

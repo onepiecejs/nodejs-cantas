@@ -21,8 +21,8 @@
       description: { type: String, default: '' },
       isClosed: { type: Boolean, default: false },
       created: { type: Date, default: Date.now },
-      creatorId: { type: ObjectId, required: true, ref: 'User' },
-      groupId: { type: ObjectId },
+      creatorId: { type: ObjectId, required: true, ref: 'User', index: true },
+      groupId: { type: ObjectId, index: true },
       isPublic: {type: Boolean, default: true},
       voteStatus: {type: String, default: 'enabled'},
       commentStatus: {type:String, default: 'enabled'},
@@ -66,7 +66,7 @@
     async.waterfall([
       function (callback) {
         that.findById(boardId,
-                      "_id isPublic creatorId",
+                      "_id isPublic creatorId isClosed",
                       function (err, board) {
           if (err || board === null) {
             result = {ok: 1, message: 'no valid board'};
@@ -79,6 +79,10 @@
       function (board, callback) {
         if (user === null) {
           result = {ok: 1, message: 'no user defined'};
+          return callback(result, null);
+        }
+        if (board.isClosed) {
+          result = {ok: 1, message: 'closed', board: board};
           return callback(result, null);
         }
         board.getMemberStatus(user._id, function (err, status) {

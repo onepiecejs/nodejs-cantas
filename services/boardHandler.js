@@ -85,14 +85,8 @@
         });
       },
       function(member, callback) {
-        BoardMemberRelation.find({userId: member.id, status: BoardMemberStatus.available}).
-          exec(function(err, boardRelation) {
-            if (!boardRelation) { return callback('error: no invitedBoards', null) };
-            var invitedBoardIds = [];
-            boardRelation.forEach(function(relation) {
-              invitedBoardIds.push(relation.boardId);
-            });
-            callback(err, invitedBoardIds, member);
+        BoardMemberRelation.getInvitedBoardsByMember(member.id, function(err, invitedBoardIds) {
+          callback(err, invitedBoardIds, member);
         });
       },
       function(invitedBoardIds, member, callback) {
@@ -125,14 +119,8 @@
         });
       },
       function(member, callback) {
-        BoardMemberRelation.find({userId: member.id, status: BoardMemberStatus.available}).
-          exec(function(err, boardRelation) {
-            if (!boardRelation) { return callback('error: no invitedBoards', null) };
-            var invitedBoardIds = [];
-            boardRelation.forEach(function(relation) {
-              invitedBoardIds.push(relation.boardId);
-            });
-            callback(err, invitedBoardIds);
+        BoardMemberRelation.getInvitedBoardsByMember(member.id, function(err, invitedBoardIds) {
+          callback(err, invitedBoardIds);
         });
       },
       function(invitedBoardIds, callback) {
@@ -175,8 +163,14 @@
         });
       },
       function(member, callback) {
+        // query board list whose board member is user
+        BoardMemberRelation.getInvitedBoardsByMember(member.id, function(err, boardIds) {
+          callback(err, member, boardIds);
+        })
+      },
+      function(member, boardIds, callback) {
         //query closed boards
-        Board.find( { $or:[{'creatorId': member.id}, { members: {$in: [ member.id ]} }, {'isPublic': true}], 'isClosed': true}).
+        Board.find( {_id: {$in: boardIds}, 'isClosed': true}).
           populate('creatorId', 'username').
           sort('-created').
           exec(function(err, closedBoards){

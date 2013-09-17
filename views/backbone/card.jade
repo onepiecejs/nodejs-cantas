@@ -3,6 +3,20 @@ script#template-card-view(type="text/template")
   |  div.card.clearfix
   |    a.setting.card-setting
   |    p= title
+  |    - if(typeof cover === 'string') {
+  |    -   if(cover) {
+  |    -     var coverURL = 'url("' + window.location.protocol + '//' + window.location.host  + cover.slice(cover.indexOf('/attachments')) + '")';
+  |    -     if(coverURL.indexOf('thumb-card') > -1) {
+  |    div.card-cover(style='background-image:\#{coverURL};')
+  |    -     }
+  |    -     else {
+  |    div.card-cover.original-size(style='background-image:\#{coverURL};')
+  |    -     }
+  |    -   }
+  |    -   else {
+  |    div.card-cover.hide
+  |    -   }
+  |    - }
   |    section.card-items
   |      - assignees.forEach(function(assignee){
   |      span.card-assignee(title="Assignee: "+assignee.username + "")= assignee.username

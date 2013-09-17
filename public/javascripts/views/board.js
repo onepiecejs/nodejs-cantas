@@ -48,24 +48,6 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    rememberMe: function() {
-      // For now we only allow one expanded view at a time,
-      // so we need to shift and collapse them.
-      while (this.attributes.expandedViewChain.length > 0) {
-        var view = this.attributes.expandedViewChain.shift();
-        if (view != undefined) {
-          view.collapse();
-        }
-      }
-      this.attributes.expandedViewChain.push(this);
-    },
-    forgetMe: function () {
-      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
-        this.attributes.expandedViewChain.pop();
-      }
-    },
-
-
     /*
      * Get current board title from the textbox with ID #board-title-input
      */
@@ -96,7 +78,8 @@ $(function ($, _, Backbone) {
         .focus()
         .select();
 
-      this.rememberMe();
+      this.attributes.expandedViewChain = cantas.utils.rememberMe(
+        this, this.attributes.expandedViewChain);
     },
 
     saveTitle: function() {
@@ -196,23 +179,6 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    rememberMe: function() {
-      // For now we only allow one expanded view at a time,
-      // so we need to shift and collapse them.
-      while (this.attributes.expandedViewChain.length > 0) {
-        var view = this.attributes.expandedViewChain.shift();
-        if (view != undefined) {
-          view.collapse();
-        }
-      }
-      this.attributes.expandedViewChain.push(this);
-    },
-    forgetMe: function () {
-      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
-        this.attributes.expandedViewChain.pop();
-      }
-    },
-
     toggleInfoEdition: function(event) {
       // Prevents the click event from bubbling up.
       event.stopPropagation();
@@ -232,7 +198,8 @@ $(function ($, _, Backbone) {
       $("div#board-description").removeClass("hide");
       $("#board-description-text")
         .val(this.model.get("description"));
-      this.rememberMe();
+      this.attributes.expandedViewChain = cantas.utils.rememberMe(
+        this, this.attributes.expandedViewChain);
     },
 
     descriptionChangedFromOthers: function(model, description) {
@@ -258,7 +225,8 @@ $(function ($, _, Backbone) {
       $("div#board-description").addClass("hide");
       if (this.model.hasChanged("description"))
         $("textarea#board-description-text").val(this.model.get("description"));
-      this.forgetMe();
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this, this.attributes.expandedViewChain);
     }
   });
 
@@ -505,6 +473,51 @@ $(function ($, _, Backbone) {
 
   });
 
+  var ImportTrelloDialogView = Backbone.View.extend({
+    el: 'div#import-trello-dialog',
+
+    events: {
+      'click #import-trello-complete': 'reloadBoard'
+    },
+
+    initialize: function(options){
+
+    },
+
+    render: function(){
+      this.$el.modal({
+        'keyboard': false
+      });
+
+      this.$('#import-trello-processing').children().show();
+
+      return this;
+    },
+
+    remove: function(){
+      this.undelegateEvents();
+      this.stopListening();
+      this.$el.hide();
+      return this;
+    },
+
+    reloadBoard: function(event) {
+      event.stopPropagation();
+      var importTrelloMessage = this.$('#import-trello-message').text();
+      if(importTrelloMessage.indexOf('completed') > -1) {
+        window.location.reload();
+      }
+      else if(importTrelloMessage.indexOf('Error:') > -1) {
+        if(importTrelloMessage.indexOf('check file content') === -1) {
+          window.location.reload();
+        }
+      }
+
+      this.$el.modal("hide");
+    }
+
+  });
+
   cantas.views.BoardView = Backbone.View.extend({
     el: '.content',
     // Delegated events for creating new items, and clearing completed ones.
@@ -514,6 +527,7 @@ $(function ($, _, Backbone) {
     events: {
       'updatesort': 'updateSort',
       "click .js-archived-items": "openArchivedItems",
+      'click .js-import-trello': 'importTrelloJSON',
       "click .js-add-list": "addList",
       "dblclick .board-content": "addList",
       "click .js-select-private": "toggleVisibility",
@@ -542,7 +556,6 @@ $(function ($, _, Backbone) {
       this.model.on("change:isClosed", this.onBoardClosed, this);
 
       this.memberCollection = new cantas.models.BoardMemberCollection;
-      this.memberCollection.fetch({data: {boardId: this.model.id}});
       this.activityCollection = new cantas.models.ActivityCollection;
 
       // we won't render the whole board each time when it's changed.
@@ -588,28 +601,37 @@ $(function ($, _, Backbone) {
       archivedView.render();
     },
 
+    importTrelloJSON: function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      $('#import-trello').click();
+      $("div.board-menu").hide();
+    },
+
     addList: function(event){
       event.preventDefault();
       //event.stopPropagation();
       this.addListView.render();
     },
 
-    close: function() {
-      this.remove();
-    },
-
-    remove: function(){
+    close: function(){
       this.addListView.remove();
       this.boardTitleView.remove();
       this.boardDescriptionView.remove();
+      this.boardMembersManageView.collection.dispose();
       this.boardMembersManageView.remove();
+      this.boardActiveUserView.collection.dispose();
       this.boardActiveUserView.remove();
+      this.activityView.collection.dispose();
+      this.activityView.remove();
       this.listViewCollection.forEach(function(view){
         view.remove();
       });
+      this.model.dispose();
       this.$el.empty();
       this.undelegateEvents();
       this.stopListening();
+
       return this;
     },
 
@@ -657,6 +679,8 @@ $(function ($, _, Backbone) {
          }
        });
 
+      this.importTrelloDialogView = new ImportTrelloDialogView();
+
       this.activityView = new cantas.views.ActivityCollectionView({
         // The collection activities is used for other purpose except listening
         // activities event coming from server-side, so just pass the instance
@@ -666,6 +690,51 @@ $(function ($, _, Backbone) {
 
       this.boardMembersManageView = new cantas.views.BoardMembersManageView({
         collection: this.memberCollection
+      });
+
+      // initialize fileupload control which is used to upload json file exported from Trello
+      var importTrelloMessage = this.importTrelloDialogView.$('#import-trello-message');
+      var importTrelloComplete = this.importTrelloDialogView.$('#import-trello-complete');
+      var importTrelloProcessing = this.importTrelloDialogView.$('#import-trello-processing');
+      $('#import-trello').fileupload({
+        autoUpload: true,
+        url: '/import/' + this.model.id,
+        acceptFileTypes: /(\.|\/)(json)$/i,
+        maxFileSize: 10000000,
+        minFileSize: 1,
+        dataType: 'json'
+      }).on('fileuploadprocessalways', function (e, data) {
+        that.importTrelloDialogView.render();
+
+        var file = data.files[0];        
+        if(file.error) {
+          importTrelloMessage.text('Hint: ' + file.error);
+          importTrelloProcessing.hide();
+          importTrelloComplete.attr('disabled',false).text('Close');
+        }
+      }).on('fileuploaddone', function (e, data) {
+        if(data.result.user_error) {
+          importTrelloMessage.text('Error: ' + data.result.user_error);
+          importTrelloProcessing.hide();
+          importTrelloComplete.attr('disabled',false).text('Close');
+          throw new Error(data.result.maintainer_error);
+        } else {
+          cantas.socket.emit('import-trello-complete', {'boardId': that.model.id});
+          importTrelloMessage.text(data.result.success);
+          importTrelloProcessing.hide();
+          importTrelloComplete.attr('disabled',false).text('Completed');
+        }
+
+      }).on('fileuploadfail', function (e, data) {
+        importTrelloMessage.text('Error: Importing the json file from Trello failed');
+        importTrelloProcessing.hide();
+        importTrelloComplete.attr('disabled',false).text('Close');
+      }).on('fileuploadsubmit', function (e, data) {
+        if (data.files[0].size === 0) {
+          importTrelloMessage.text('Hint: Importing the json file from Trello failed');
+          importTrelloProcessing.hide();
+          return false;
+        }
       });
 
       //render active users
@@ -1029,16 +1098,22 @@ $(function ($, _, Backbone) {
     },
 
     closeBoardClicked: function(event) {
+      $('.js-toggle-board-menu').trigger('click');
       if (confirm("Are you sure to close this board?")) {
         this.model.off("change:isClosed");
         this.model.patch({isClosed: true});
-        cantas.appRouter.navigate("boards/mine", {
+        cantas.appRouter.navigate("boards/closed", {
           trigger: true, replace: true});
       }
     },
 
     onBoardClosed: function() {
-      $(".force-alert").toggle("slow");
+      var currentUser = cantas.utils.getCurrentUser();
+      if (this.model.get("creatorId") !== currentUser.id && this.model.attributes.isClosed) {
+        alert('This board is closed by board creator. Any further operation, please contact the creator.');
+        cantas.appRouter.navigate("boards/mine", {
+          trigger: true, replace: true});
+      }
     }
   });
 

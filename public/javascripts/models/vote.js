@@ -35,15 +35,17 @@ $(function ($, _, Backbone) {
 
   });
 
-  cantas.models.VoteCollection = BaseCollection.extend({
+  cantas.models.VoteCollection = cantas.models.BaseCollection.extend({
     model: cantas.models.Vote,
     url: '/vote',
 
     initialize: function(models, options) {
       _.bindAll(this, "serverCreate");
+      this.socket.removeAllListeners("/vote:create");
       if (!this.noIoBind)
-        this.ioBind("create", this.socket, this.serverCreate, this);
+        this.socket.on('/vote:create', this.serverCreate, this);
     }
+
   });
 
 }(jQuery, _, Backbone));

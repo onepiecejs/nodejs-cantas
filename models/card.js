@@ -19,10 +19,10 @@
     created: { type: Date, default: Date.now },
     dueDate: { type: Date, default: Date.now },
     order: { type: Number, default: -1},
-    creatorId: { type: ObjectId, required: true },
-    assignees: [ {type: ObjectId, ref: 'User'} ],
-    listId: { type: ObjectId, required: true, ref: 'List' },
-    boardId: { type: ObjectId, required: true, ref: 'Board' },
+    creatorId: { type: ObjectId, required: true, index: true },
+    assignees: [ {type: ObjectId, ref: 'User', index: true} ],
+    listId: { type: ObjectId, required: true, ref: 'List', index: true },
+    boardId: { type: ObjectId, required: true, ref: 'Board', index: true },
     perms: {
       delete: {
         users: [ ObjectId ],
@@ -48,6 +48,19 @@
   // model methods
   CardSchema.method('getOrder', function() {
     return this.order;
+  });
+
+  CardSchema.method('getCover', function(callback) {
+    var cardId = this.id;
+    var cover = '';
+    Attachment.findOne({ cardId: cardId, isCover: true }, 'cardThumbPath path',
+      function (err, attachment) {
+        if(attachment) {
+          cover = attachment.cardThumbPath ? attachment.cardThumbPath : attachment.path;
+        }
+
+        callback(err, cover);
+    });
   });
 
   CardSchema.method('getBadges', function(callback) {

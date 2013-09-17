@@ -6,7 +6,7 @@
     _ = require('underscore');
     Backbone = require('backbone');
     exports = Backbone;
-    if (module) module.exports = exports;
+    if (typeof module !== 'undefined') module.exports = exports;
   } else {
     $ = this.$;
     _ = this._;
@@ -24,7 +24,7 @@
 /*!
  * Version
  */
-Backbone.Model.prototype.ioBindVersion = '0.4.5';
+Backbone.Model.prototype.ioBindVersion = '0.4.6';
 
 /**
  * # .ioBind(event, callback, [context])
@@ -62,7 +62,7 @@ Backbone.Model.prototype.ioBindVersion = '0.4.5';
 
 Backbone.Model.prototype.ioBind = function (eventName, io, callback, context) {
   var ioEvents = this._ioEvents || (this._ioEvents = {})
-    , globalName = this.url() + ':' + eventName
+    , globalName = _.result(this, 'url') + ':' + eventName
     , self = this;
   if ('function' == typeof io) {
     context = callback;
@@ -126,6 +126,7 @@ Backbone.Model.prototype.ioUnbind = function (eventName, io, callback) {
     } else {
       this.unbind(eventName);
       io.removeAllListeners(globalName);
+      delete io.$events[globalName];
     }
     if (events.length === 0) {
       delete ioEvents[eventName];
@@ -167,7 +168,7 @@ Backbone.Model.prototype.ioUnbindAll = function (io) {
  * Version
  */
 
-Backbone.Collection.prototype.ioBindVersion = '0.4.5';
+Backbone.Collection.prototype.ioBindVersion = '0.4.6';
 
 /**
  * # ioBind
@@ -206,7 +207,7 @@ Backbone.Collection.prototype.ioBindVersion = '0.4.5';
 
 Backbone.Collection.prototype.ioBind = function (eventName, io, callback, context) {
   var ioEvents = this._ioEvents || (this._ioEvents = {})
-    , globalName = this.url + ':' + eventName
+    , globalName = _.result(this, 'url') + ':' + eventName
     , self = this;
   if ('function' == typeof io) {
     context = callback;
@@ -270,6 +271,7 @@ Backbone.Collection.prototype.ioUnbind = function (eventName, io, callback) {
     } else {
       this.unbind(eventName);
       io.removeAllListeners(globalName);
+      delete io.$events[globalName];
     }
     if (events.length === 0) {
       delete ioEvents[eventName];

@@ -16,6 +16,7 @@ $(function ($, _, Backbone) {
 
     initialize: function() {
       this.model.commentCollection.on('add', this.renderComment, this);
+      this.model.commentCollection.fetch({data: {cardId: this.model.id}});
     },
 
     render: function() {
@@ -37,12 +38,10 @@ $(function ($, _, Backbone) {
     },
 
     renderCommentItems: function(){
-      var that = this;
-      this.model.commentCollection.fetch({data: {cardId: this.model.id}, success: function(collection, response, options){
-        collection.forEach(function(comment){
-          that.renderComment(comment);
-        });
-      }});
+      var _this = this;
+      this.model.commentCollection.forEach(function(comment) {
+        _this.renderComment(comment);
+      });
     },
 
     renderComment: function(comment){
@@ -83,7 +82,8 @@ $(function ($, _, Backbone) {
     template: jade.compile($("#template-comment-item-view").text()),
 
     events: {
-      "click .js-edit-comment": "editComment"
+      "click .js-edit-comment": "editComment",
+      'click span.speaker-detail a': 'openNewTab'
     },
 
     initialize: function() {
@@ -105,7 +105,7 @@ $(function ($, _, Backbone) {
       } else {
         if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
           this.$el.find('a.js-edit-comment').hide();
-        };
+        }
       }
     },
 
@@ -116,7 +116,12 @@ $(function ($, _, Backbone) {
       var editView = new cantas.views.CommentItemEditView({model: this.model});
       this.$el.find("dd").after(editView.render().el);
       editView.$el.find(".js-comment-input").select();
-    }
+    },
+
+    openNewTab: function(event){
+      event.preventDefault();
+      window.open($(event.target).attr('href'));
+    },
 
   });
 

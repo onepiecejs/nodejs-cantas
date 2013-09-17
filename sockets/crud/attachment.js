@@ -80,9 +80,50 @@
           }
         },
         function (removedObject, callback) {
-          fs.unlink(removedObject.path, function (err) {
-            callback(err, removedObject);
+          fs.exists(removedObject.path, function (exists) {
+            if(exists) {
+              fs.unlink(removedObject.path, function (err) {
+                callback(err, removedObject);
+              });
+            }
+            else {
+              callback(null, removedObject);
+            }
           });
+        },
+        function (removedObject, callback) {
+          if(removedObject.cardThumbPath){
+            fs.exists(removedObject.cardThumbPath, function (exists) {
+              if(exists) {
+                fs.unlink(removedObject.cardThumbPath, function (err) {
+                  callback(err, removedObject);
+                 });
+              }
+              else {
+                callback(null, removedObject);
+              }
+            });
+          }
+          else {
+            callback(null, removedObject);
+          }
+        },
+        function (removedObject, callback) {
+          if(removedObject.cardDetailThumbPath){
+            fs.exists(removedObject.cardDetailThumbPath, function (exists) {
+              if(exists) {
+                fs.unlink(removedObject.cardDetailThumbPath, function (err) {
+                  callback(err, removedObject);
+                 });
+              }
+              else {
+                callback(null, removedObject);
+              }
+            });
+          }
+          else {
+            callback(null, removedObject);
+          }
         }
       ], function (err, removedObject) {
         if (err) {
@@ -96,6 +137,57 @@
         }
       });
     }
+  };
+
+  AttachmentCRUD.prototype._patch = function(data, callback) {
+    var self = this;
+    var _id = data._id || data.id;
+    var _cardId = data.cardId;
+    var name = '/' + this.key + '/' + _id + ':update';
+
+    // _id is not modifiable
+    delete data['_id'];
+    delete data['cardId'];
+
+    async.waterfall([
+      function(callback){
+        self.isBoardMember(function(err, isMember) {
+          callback(err, isMember);
+        });
+      },
+      function(isMember, callback){
+        if(isMember){
+          self.modelClass.findOneAndUpdate({'cardId': _cardId, 'isCover': true}, {'isCover': false}, 
+            function (err, updatedData) {
+              if(updatedData) {
+                self.emitMessage('/' + self.key + '/' + updatedData._id + ':update', updatedData);
+              }
+              callback(err, true);
+          });
+        }else{
+          callback(err, false);
+        }
+      },
+      function(isUpdate, callback){
+        if(isUpdate){
+          data.updatedOn = Date.now();
+          self.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
+            callback(err, updatedData);
+          });
+        }else{
+          callback(true, null);
+        }
+      }
+    ], function(err, updatedData){
+      if (err) {
+        callback(err, null);
+      } else {
+        self.emitMessage(name, updatedData);
+
+        signals.post_patch.send(updatedData, {
+          instance: updatedData, socket: self.socket}, function(err, result){});
+      }
+    });
   };
 
   module.exports = AttachmentCRUD;

@@ -10,6 +10,9 @@
   var Notification = require("../../services/notification");
   var BoardMemberRelation = require("../../models/boardMemberRelation");
   var utils = require("../../services/utils");
+  var configDescription = require("../../models/configStatus").configDescription;
+  var LogActivity = require("../../services/activity").Activity;
+  var Sites = require("../../services/sites");
 
   function BoardCRUD(options) {
     BaseCRUD.call(this, options);
@@ -20,27 +23,49 @@
 
   util.inherits(BoardCRUD, BaseCRUD);
 
-  BoardCRUD.prototype.logActivity = function(boardId, content) {
-    var self = this;
-    var creatorId = this.socket.handshake.user._id;
-    var activityData = {
-      'content': content,
-      'creatorId': creatorId,
-      'boardId': boardId
-    };
-
-    new Activity(activityData).save(function(err, activity) {
-      if (err) {
-        console.log(err);
-      } else {
-        self.emitMessage('/activity:create', activity);
+  BoardCRUD.prototype.generateActivityContent = function(model, action, data, callback) {
+    var content = null;
+    var username = this.handshake.user.username;
+    if (action === 'create') {
+      var createdObject = data['createdObject'];
+      var sourceObject = data['sourceObject'];
+      content = util.format('%s added %s "%s"', username, model, createdObject.title);
+      if (sourceObject) {
+        content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
+                  sourceObject.title, model, createdObject.title);
       }
-    });
+    }
+    if (action === 'update') {
+      content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
+                data.field, data.origin_data[data.field], data.changed_data[data.field]);
+      if (data.field === 'isPublic') {
+        if (data.changed_data[data.field] === true) {
+          content = util.format('%s set this board to public', username);
+        }
+        if (data.changed_data[data.field] === false) {
+          content = util.format('%s set this board to private', username);
+        }
+
+      }
+      if (data.field === 'voteStatus'){
+        var origin_config = data.origin_data[data.field];
+        var changed_config = data.changed_data[data.field]
+        content = util.format('%s changed vote permission from "%s" to "%s"',
+                  username, configDescription[origin_config], configDescription[changed_config]);
+      }
+      if (data.field === 'commentStatus'){
+        var origin_config = data.origin_data[data.field];
+        var changed_config = data.changed_data[data.field]
+        content = util.format('%s changed comment permission from "%s" to "%s"',
+                  username, configDescription[origin_config], configDescription[changed_config]);
+      }
+    }
+    callback(null, content);
   };
 
   BoardCRUD.prototype._read = function(data, callback) {
     if (data) {
-      if (data._id) {
+      if (data._id && typeof(data._id) === 'string') {
         this.modelClass
           .findOne(data)
           .populate("creatorId")
@@ -62,31 +87,57 @@
 
   BoardCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id;
+    var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
     delete data['_id']; // _id is not modifiable
+    var origin_data = data['original'];
+    var change_fields = [];
+    for (var key in origin_data) {
+      change_fields.push(key);
+    }
+    delete data['original'];
 
     this.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
       if (err) {
         callback(err, updatedData);
       } else {
-        // TODO:
-        self.emitMessage(name, updatedData);
+        // create activity log
+        if (change_fields.length >= 1 ) {
+          for (var i = 0; i < change_fields.length; i++) {
+            var changeInfo = {
+              field: change_fields[i],
+              origin_data: origin_data,
+              changed_data: updatedData
+            };
+            self.generateActivityContent(self.key, 'update', changeInfo, function(err, content){
+              if (err) {
+                console.log(err);
+              } else {
+                if (content) {
+                  self.logActivity(content);
+                }
+              }
+            });
+          }
+        }
 
         // All custom actions are written here.
         // It's a bad way. Signal might be better.
 
         if ("isClosed" in data) {
-          if (data.isClosed) {
-            self._notifyWhenClose();
-            self._logActivityWhenClose(updatedData);
+          if (updatedData.isClosed) {
+            self.emitMessage(name, updatedData);
           }
+          self._boardNotification(updatedData);
+          self._logActivityWhenCloseOpen(updatedData);
+        } else {
+          self.emitMessage(name, updatedData);
         }
-
       }
     });
 
-    BoardCRUD.prototype._notifyWhenClose = function(boardId) {
+    BoardCRUD.prototype._boardNotification = function(board) {
+      var boardId = board._id;
       async.waterfall([
         function(callback) {
           BoardMemberRelation.getBoardMembers(boardId, function(err, memberRelations) {
@@ -100,27 +151,55 @@
         if (err)
           console.log(err);
         else {
+          var type = "information";
+          var user = self.socket.handshake.user;
+          if (board.isClosed === true) {
+            var message = util.format('Board [%s](%s) is closed by %s',
+                          board.title, board.url, user.username);
+            var email_message = util.format('Board %s(%s) is closed by %s',
+                          board.title, Sites.currentSite() + board.url, user.username);
+          };
+          if (board.isClosed === false) {
+            var message = util.format('Board [%s](%s) is opened by %s',
+                          board.title, board.url, user.username);
+            var email_message = util.format('Board %s(%s) is opened by %s',
+                          board.title, Sites.currentSite() + board.url, user.username);
+          }
           var numberOfRelations = memberRelations.length;
           for (var i = 0; i < numberOfRelations; i++) {
             var memberRelation = memberRelations[i];
-            // Do send notification to the one who are closing the board.
+            // Do not send notification to the one who are closing the board.
             var isWhoClosing = utils.idEquivalent(
-              memberRelation.userId._id,
-              self.socket.handshake.user._id);
+              memberRelation.userId._id, user._id);
             if (isWhoClosing)
               continue;
-            var message = "Board \"" + memberRelation.boardId.title +  "\" is closed";
-            var type = "information";
-            Notification.notify(self.socket, memberRelation.userId, message, type);
+            var emailContext = {
+              body: {
+                username: memberRelation.userId.username,
+                message: email_message
+              },
+              template: "notification.jade"
+            };
+            Notification.notify(self.socket, memberRelation.userId, message, type, emailContext);
           }
         }
       });
     };
 
-    BoardCRUD.prototype._logActivityWhenClose = function(board) {
+    BoardCRUD.prototype._logActivityWhenCloseOpen = function(board) {
+      var self = this;
       var username = this.handshake.user.username;
-      var content = "Board \"" + board.title + "\" is closed by " + username;
-      this.logActivity(board._id, content);
+      if (board.isClosed) {
+        var content = util.format('Board "%s" is closed by %s', board.title, username);
+      }
+      if (board.isClosed === false){
+        var content = util.format('Board "%s" is opened by %s', board.title, username);
+      }
+      var activity = new LogActivity({
+        socket: self.socket,
+        exceptMe: self.exceptMe
+      });
+      activity.log({content: content, boardId: board._id});
     };
 
   };

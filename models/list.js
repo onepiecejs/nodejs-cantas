@@ -12,9 +12,9 @@
     title: { type: String, required: true },
     isArchived: { type: Boolean, default: false },
     created: { type: Date, default: Date.now },
-    creatorId: { type: ObjectId, required: true },
+    creatorId: { type: ObjectId, required: true, index: true },
     order: { type: Number, default: -1},
-    boardId: { type: ObjectId, required: true },
+    boardId: { type: ObjectId, required: true, index: true },
     perms: {
       delete: {
         users: [ ObjectId ],

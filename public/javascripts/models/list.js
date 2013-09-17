@@ -12,15 +12,24 @@ $(function ($, _, Backbone) {
     },
 
     initialize: function () {
-      // Get card collections
-      this.cardCollection = new cantas.models.CardCollection;
-      // this.on('serverChange', this.serverChange, this);
-      // this.on('serverDelete', this.serverDelete, this);
-      this.on('modelCleanup', this.modelCleanup, this);
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
         this.ioBind('delete', this.serverDelete, this);
       }
+
+      // Attach card collections
+      this.cardCollection = new cantas.models.CardCollection();
+    },
+
+    dispose: function() {
+      this.off();
+      this.cardCollection.off();
+      if (!this.noIoBind) {
+        this.ioUnbindAll();
+        this.cardCollection.dispose();
+      }
+
+      return this;
     },
 
     validate: function(attrs, options) {
@@ -64,16 +73,22 @@ $(function ($, _, Backbone) {
     url: "/list",
 
     initialize: function () {
-      this.on('collectionCleanup', this.collectionCleanup, this);
-      // this.socket.on('/list:create', this.serverCreate, this);
-      this.bindCreateEvent(this.socket);
+      _.bindAll(this, 'serverCreate', 'serverMove');
+      if (!this.noIoBind) {
+        this.ioBind('create', this.socket, this.serverCreate, this);
+        this.ioBind('move', this.socket, this.serverMove, this);
+      }
     },
 
-    bindCreateEvent: function(socket) {
-      socket.removeAllListeners("/list:create");
-      socket.removeAllListeners("/list:move");
-      socket.on('/list:create', this.serverCreate, this);
-      socket.on('/list:move', this.serverMove, this);
+    dispose: function() {
+      this.forEach(function(item) {
+        item.dispose();
+      });
+      this.off();
+      if (!this.noIoBind) {
+        this.ioUnbindAll();
+      }
+      return this;
     },
 
     serverMove: function(data) {

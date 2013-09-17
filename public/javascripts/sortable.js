@@ -17,14 +17,14 @@ var SORTABLE = (function (my) {
   // freshListSortable
   my.refreshListSortable = function() {
     $(".board").sortable({
-      containment: ".board",
+      appendTo: "#wrapper",
       placeholder: "ui-state-highlight-list",
       tolerance: "pointer",
       revert: "100",
       handle:".list-header",
       delay: "75",
       distance: "7",
-      scroll: true,
+      scroll: false,
       helper: 'clone',
       start: function(event, ui) {
         var thatWidth = ui.helper.width();
@@ -55,12 +55,13 @@ var SORTABLE = (function (my) {
     $(".connectedSortable").sortable({
       connectWith: ".connectedSortable",
       revert: "100",
-      containment: ".board",
+      appendTo: "#wrapper",
+      tolerance: "pointer",
       placeholder: "ui-state-highlight",
       delay: "75",
       distance: "7",
       items: ".js-list-card",
-      scroll: true,
+      scroll: false,
       helper: 'clone',
       start: function(event, ui) {
         my.sorting = true;

@@ -17,13 +17,21 @@ $(function ($, _, Backbone) {
       // ref: http://backbonejs.org/#FAQ-nested
       this.listCollection = new cantas.models.ListCollection;
 
-      // this.on('serverChange', this.serverChange, this);
-      // this.on('serverDelete', this.serverDelete, this);
-      this.on('modelCleanup', this.modelCleanup, this);
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
         this.ioBind('delete', this.serverDelete, this);
       }
+    },
+
+    dispose: function() {
+      this.off();
+      this.listCollection.off();
+      if (!this.noIoBind) {
+        this.ioUnbindAll();
+        this.listCollection.dispose();
+      }
+
+      return this;
     },
 
     validate: function(attrs, options) {

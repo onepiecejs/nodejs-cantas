@@ -31,21 +31,49 @@ $(function ($, _, Backbone) {
       if (this.currentView && this.currentView.boardTitleView) {
         //logout the board
         var leaveBoardId = this.currentView.model.id;
-        sock.emit('user-logout', {boardId: leaveBoardId, user: cantas.utils.getCurrentUser });
+        sock.emit('user-logout', {boardId: leaveBoardId, user: cantas.utils.getCurrentUser()});
       }
 
       this.currentView = view;
       this.currentView.render(context);
 
-      // check the switch view is baordView
+      // check the switch view is boardView
       if (view && view.boardTitleView) {
         var joinBoardId = view.model.id;
         sock.emit('join-board', joinBoardId);
       }
     },
 
+    browserVersionPrompt: function() {
+      var browserVersionInfo = cantas.utils.getBrowserVersionInfo();
+      var browserName = browserVersionInfo.name;
+      var version = browserVersionInfo.version;
+      var majorVersion = version.slice(0,version.indexOf('.'));
+      var isLow = false;
+      if(browserVersionInfo.chrome && majorVersion < 10) {
+        isLow = true;
+      }
+      else if(browserVersionInfo.firefox && majorVersion < 4) {
+        isLow = true;
+      }
+      else if(browserVersionInfo.safari && majorVersion < 6) {
+        isLow = true;
+      }
+      if(isLow) {
+        $('.force-alert').find('p')
+          .text('Your browser '+ browserName + ' ' + version + ' is too low to run Cantas stably. '
+            +'We recommend Chrome 10+, FireFox 4+, Safari 6+ etc.')
+          .end().find('a').text('Close').attr('onclick','').click(function(event) {
+            event.preventDefault();
+            $(this).parent().toggle(); 
+          })
+          .end().toggle();
+      }
+    },
+
     home: function(){
       this.navigate("boards/mine", {trigger: true, replace: true});
+      this.browserVersionPrompt();
     },
 
     listBoards: function(query) {
@@ -73,13 +101,20 @@ $(function ($, _, Backbone) {
 
       sock.once('joined-board', function(result) {
         if (result.ok === 1) {
-          that.navigate("boards/mine",{
-            trigger: true, replace: true
-          });
-          cantas.utils.renderTimeoutBox();
+          if (result.message === 'closed') {
+            alert('This board is closed by board creator. Any further operation, please contact the creator.');
+            that.navigate("boards/mine",{
+              trigger: true, replace: true
+            });
+          } else {
+            that.navigate("boards/mine",{
+              trigger: true, replace: true
+            });
+            cantas.utils.renderTimeoutBox();
+          }
         } else if (result.ok === 0) {
           if (result.message === 'nologin') {
-            that.navigate("boards/mine",{
+            that.navigate("boards/mine", {
               trigger: true, replace: true
             });
             alert('You can\'t access a private Board! Please let Board admin invite you as an board member firstly!');
@@ -96,10 +131,11 @@ $(function ($, _, Backbone) {
           alert('You came across a unknown bug, please file a bug to cantas-dev-list@redhat.com and help cantas project, thanks a lot.');
         }
       });
-      sock.once('reconnect', function() {
-        sock.emit('join-board', boardId);
-      });
+      // sock.once('reconnect', function() {
+      //   sock.emit('join-board', boardId);
+      // });
       sock.emit('join-board', boardId);
+      this.browserVersionPrompt();
     },
 
     setupVisitorCollection: function(visitors) {
@@ -193,9 +229,25 @@ $(function ($, _, Backbone) {
     cantas.appRouter.notificationView.notificationCollection.add(data);
   });
 
+  cantas.socket.on("cover:update", function(data){
+    var card = cantas.utils.getCardModelById(data.cardId);
+    card.set("cover", data.cover);
+  });
+
   cantas.socket.on("badges:update", function(data){
     var card = cantas.utils.getCardModelById(data.cardId);
     card.set("badges", data.badges);
+  });
+
+  /*
+   * FIXME: import-trello-complete is trigger by a specifed board,here we
+   * should be add a boardId to eventName, it will help every board recevied
+   * a dedicate msg, and in context, the message only happen in one board,
+   * not in router, the global interface, So sometime, we need move this bind
+   * to board level declaration
+   */
+  cantas.socket.on("alert-import-trello-complete", function(data){
+    cantas.utils.renderImportTrelloBox();
   });
 
 }(jQuery, _, Backbone));

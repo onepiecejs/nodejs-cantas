@@ -15,16 +15,6 @@ $(function ($, _, Backbone) {
   cantas.models.BoardMemberCollection = cantas.models.BaseCollection.extend({
     url: "/boardmemberrelation",
     model: cantas.models.BoardMember,
-
-    initialize: function () {
-      this.ioBind('create', this.serverCreate, this);
-      this.ioBind('update', this.serverUpdate, this);
-    },
-
-    serverUpdate: function(relation) {
-      var model = this.get(relation._id);
-      this.remove(model);
-    }
   });
 
 }(jQuery, _, Backbone));

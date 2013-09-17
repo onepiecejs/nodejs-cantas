@@ -9,8 +9,8 @@
 
   var ChecklistSchema = new Schema({
     title: {type: String, default: "New Checklist"},
-    cardId: {type: ObjectId, required: true, ref: "Card"},
-    authorId: {type: ObjectId, required: true, ref: "User"},
+    cardId: {type: ObjectId, required: true, ref: "Card", index: true},
+    authorId: {type: ObjectId, required: true, ref: "User", index: true},
     createdOn: {type: Date, default: Date.now},
     updatedOn: {type: Date, default: Date.now}
   });

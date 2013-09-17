@@ -124,11 +124,35 @@
 
   signals.post_delete.connect(Attachment, function(sender, args, done) {
     var cardId = args.instance.cardId;
+    var isCover = args.instance.isCover;
     Card.findById(cardId, function(err, card){
       if(!err){
         card.getBadges(function(err, badges){
           if(!err){
             args.socket.room.emit("badges:update", {cardId: cardId, badges: badges});
+          }
+        });
+        // if user deleted the attachment, whose thumbnail is used as the cover of this card
+        if(isCover) {
+          card.getCover(function(err, cover){
+            if(!err){
+              args.socket.room.emit("cover:update", {'cardId': cardId, 'cover': cover});
+            }
+          });
+        }
+      }
+    });
+
+
+  });
+
+  signals.post_patch.connect(Attachment, function(sender, args, done) {
+    var cardId = args.instance.cardId;
+    Card.findById(cardId, function(err, card){
+      if(!err){
+        card.getCover(function(err, cover){
+          if(!err){
+            args.socket.room.emit("cover:update", {'cardId': cardId, 'cover': cover});
           }
         });
       }

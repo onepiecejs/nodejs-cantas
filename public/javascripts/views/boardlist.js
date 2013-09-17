@@ -7,18 +7,29 @@ $(function ($, _, Backbone) {
     el: '.content',
 
     events: {
-      "click .js-close-board": "closeBoard"
+      "click .js-close-board": "closeBoard",
+      "click .js-open-board": "openBoard"
     },
 
     template: jade.compile($("#template-board-list-view").text()),
 
-    closeBoard: function(evt) {
-      var boardId = $(evt.target).data('board');
+    closeBoard: function(event) {
+      var boardId = $(event.target).data('board');
       var board = new cantas.models.Board({ _id: boardId});
       board.patch({'isClosed': true}, {validate:false});
 
-      $(evt.target).closest('li').fadeOut('slow', function() {
-        $(evt.target).closest('li').remove();
+      $(event.target).closest('li').fadeOut('slow', function() {
+        $(event.target).closest('li').remove();
+      });
+    },
+
+    openBoard: function(event) {
+      var boardId = $(event.target).data('board');
+      var board = new cantas.models.Board({ _id: boardId});
+      board.patch({'isClosed': false}, {validate:false});
+
+      $(event.target).closest('li').fadeOut('slow', function() {
+        $(event.target).closest('li').remove();
       });
     },
 

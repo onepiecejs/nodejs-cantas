@@ -7,7 +7,6 @@
   var util = require("util");
   var BaseCRUD = require("./base");
   var signals = require("../signals");
-  var BoardMemberRelation = require("../../models/boardMemberRelation");
 
   function ChecklistItemCRUD(options) {
     BaseCRUD.call(this, options);
@@ -20,19 +19,28 @@
 
   util.inherits(ChecklistItemCRUD, BaseCRUD);
 
-  ChecklistItemCRUD.prototype.isBoardMember = function(callback) {
+  ChecklistItemCRUD.prototype._create = function(data, callback) {
+    var t = new this.modelClass(data)
+      , name = '/' + this.key + ':create';
+    var self = this;
 
-    // check member relation
-    var user = this.socket.getCurrentUser();
-    var boardId = this.socket.getCurrentBoardId();
-    BoardMemberRelation.isBoardMember(user._id, boardId, function(err, isMember) {
-      callback(err, isMember);
+    t.save(function (err, savedObject) {
+      if (err) {
+        callback(err, savedObject);
+      } else {
+
+        // TODO: log activity
+        self.emitMessage(name, t);
+
+        signals.post_create.send(savedObject, {
+          instance: savedObject, socket: self.socket}, function(err, result){});
+      }
     });
   };
 
   ChecklistItemCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id;
+    var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
 
     // _id is not modifiable

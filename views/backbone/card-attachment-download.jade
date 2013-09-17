@@ -1,5 +1,11 @@
 script#template-attachment-download-view(type="text/template").
+  td.download-cover
+    if fileType === 'picture'
+      div.checkbox.js-download-cover
+        span
   td.download-preview
+    if thumbnail
+      img(src= thumbnail)
   if isBoardMember
     td.download-name
       a(href=url, target='_blank')= fileName
@@ -9,5 +15,5 @@ script#template-attachment-download-view(type="text/template").
   td.download-uploader= uploaderId.username
   td.download-createdOn= createdOn
   td.download-control
-    if isUploader
+    if isBoardAdmin || (isBoardMember && isUploader)
       button.btn.btn-danger.download-delete.js-download-delete Delete

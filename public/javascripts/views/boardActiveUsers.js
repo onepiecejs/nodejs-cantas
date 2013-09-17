@@ -12,7 +12,6 @@ $(function ($, _, Backbone) {
     initialize: function(options) {
       this.render = _.bind(this.render, this);
       this.model.on("change:username", this.render);
-      this.model.on('remove', this.serverRemove, this);
     },
 
     render: function() {
@@ -22,17 +21,11 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    serverRemove: function(){
-      var that = this;
-      $(this.el).fadeOut('slow',function() {
-        that.remove();
-      });
-    },
-
     remove: function(){
       this.undelegateEvents();
       this.stopListening();
       this.$el.remove();
+      this.model.dispose();
       return this;
     }
 
@@ -40,64 +33,78 @@ $(function ($, _, Backbone) {
 
   cantas.views.BoardActiveUserCollectionView = Backbone.View.extend({
     initialize : function(data) {
-      this._visitorViews = [];
+      this._visitorViews = {};
 
-      var that = this;
-      this.collection.each(function(visitor) {
-        that._visitorViews.push(new VisitorView({
-          model : visitor
-        }));
-      });
-
-      this.collection.on('add', this.updateRender, this);
+      this.collection.on('add', this.addChange, this);
+      this.collection.on('remove', this.removeChange, this);
       this.boardId = data.boardId;
       //bind socket event to update collection
       this.socketInit();
     },
 
     remove: function(){
-      this._visitorViews.forEach(function(view){
+      _.each(this._visitorViews, function(view) {
         view.remove();
       });
+      this._visitorViews = {};
       this.$el.empty();
       this.undelegateEvents();
       this.stopListening();
       return this;
     },
 
-    updateRender: function(visitor){
+    removeChange: function(visitor) {
+      var that = this;
+      if (that._visitorViews[visitor.id]) {
+        var visitorView = that._visitorViews[visitor.id];
+        delete that._visitorViews[visitor.id];
+        $(visitorView.el).fadeOut('slow',function() {
+          visitorView.remove();
+        });
+      }
+    },
+
+    addChange: function(visitor) {
       var that = this;
       var visitorView = new VisitorView({
           model : visitor
         });
-      that._visitorViews.push(visitorView);
+      that._visitorViews[visitor.id] = visitorView;
       that.$el.find('.scroll-content').append(visitorView.render().el);
     },
 
     socketInit: function() {
       var that = this;
       var sock = cantas.socket;
+
+      sock.removeAllListeners("user-login:board:"+that.boardId);
+      sock.removeAllListeners("user-logout:board:"+that.boardId);
+      sock.removeAllListeners("user-leave-all-room");
+
       sock.on("user-login:board:"+that.boardId, function(data) {
         var visitor = new cantas.models.BoardVisitor(data.visitor);
         that.collection.add(visitor);
       });
       sock.on("user-logout:board:"+that.boardId, function(data) {
-        var visitor = new cantas.models.BoardVisitor(data.visitor);
+        var visitor = that.collection.get({id: data.visitor._id})
         that.collection.remove(visitor);
       });
       sock.on("user-leave-all-room", function(data) {
-        var visitor = new cantas.models.BoardVisitor(data.visitor);
+        var visitor = that.collection.get({id: data.visitor._id})
         that.collection.remove(visitor);
       });
     },
 
     render : function() {
-      var that = this;
       $(this.el).empty();
-      // Render each sub-view and append it to the parent view's element.
-      _(this._visitorViews).each(function(view) {
-        $(that.el).append(view.render().el);
+      var that = this;
+      this.collection.forEach(function(visitor) {
+        var thatView = new VisitorView({model : visitor});
+        that._visitorViews[visitor.id] = thatView;
+        // Render each sub-view and append it to the parent view's element.
+        $(that.el).append(thatView.render().el);
       });
+
       return this;
     }
   });

@@ -40,20 +40,14 @@ $(function ($, _, Backbone) {
 
 
   //Collection
-  cantas.models.CommentCollection = Backbone.Collection.extend({
+  cantas.models.CommentCollection = cantas.models.BaseCollection.extend({
     model: cantas.models.Comment,
     socket: cantas.socket,
-
     url: "/comment",
 
     initialize: function () {
-      this.on('collectionCleanup', this.collectionCleanup, this);
-      this.bindCreateEvent(this.socket);
-    },
-
-    bindCreateEvent: function(socket) {
-      socket.removeAllListeners("/comment:create");
-      socket.on('/comment:create', this.serverCreate, this);
+      this.socket.removeAllListeners("/comment:create");
+      this.socket.on('/comment:create', this.serverCreate, this);
     },
 
     serverCreate: function (data) {

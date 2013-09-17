@@ -8,6 +8,10 @@ $(function ($, _, Backbone) {
    */
   cantas.views.BaseView = Backbone.View.extend({
     close: function() {
+      if (this.model) {
+        this.model.dispose();
+      }
+
       this.remove();
     }
   });

@@ -5,6 +5,7 @@
   exports.init = function (app, passport, sessionStore) {
 
     var boardHandler = require('../services/boardHandler');
+    var importTrello = require('../services/importTrello');
     var moment = require('moment');
     var utils = require('../services/utils');
     var Activity = require('../models/activity');
@@ -12,6 +13,7 @@
     var User = require("../models/user");
     var settings = require('../settings');
     var fs = require('fs');
+    var easyimg = require('easyimage');
 
     var checkForSessionTimeout = function (req, res, next){
       var sessionID = req.cookies['express.sid'];
@@ -176,25 +178,121 @@
       // remove filename string's extension type
       var unSanitizedString = renameParams.targetFilename.replace(/(.*)\.[^.]+$/, "$1");
       var sanitizedFilename = utils.formatForUrl(unSanitizedString) + filenameExt;
-      fs.rename(renameParams.tmpPath, renameParams.targetPath + '/' + sanitizedFilename,
+      var fullPath = renameParams.targetPath + '/' + sanitizedFilename;
+      fs.rename(renameParams.tmpPath, fullPath,
         function(err){
           if (err) {
             renameParams.res.json({'user_error':'Uploading attachment failed',
               'maintainer_error': 'Renaming path failed'});
           }
           else {
-            renameParams.res.json({'attachment': {
-              'cardId': renameParams.cardId,
-              'uploaderId': renameParams.uploaderId,
-              'name': sanitizedFilename,
-              'size': renameParams.size,
-              'path': renameParams.targetPath + '/' + renameParams.targetFilename
-            }});
+            var imageRegExp = /(\.|\/)(bmp|gif|jpe?g|png)$/i;
+            if(imageRegExp.test(filenameExt)){
+              var thumbPath_card = fullPath + '-thumb-card' + filenameExt;
+              var thumbPath_cardDetail = fullPath + '-thumb-cardDetail' + filenameExt;
+              easyimg.info(fullPath, function(err, stdout, stderr) {
+                if (err) {
+                  renameParams.res.json({'user_error':'Uploading attachment failed',
+                    'maintainer_error': 'Reading image info failed'});
+                }
+                else {
+                  var originalWidth = stdout.width;
+                  var originalHeight = stdout.height;
+                  var ratio = 5/3;
+                  var resizeWidth = 0;
+                  var resizeHeight = 0;
+
+                  if(originalWidth > 250 || originalHeight > 150) {
+                    if(originalWidth/originalHeight >= ratio) {
+                      resizeHeight = 150;
+                    }
+                    else {
+                      resizeWidth = 250;
+                    }
+                     
+                    easyimg.rescrop({
+                        src: fullPath,
+                        dst: thumbPath_card,
+                        width: resizeWidth ? resizeWidth : originalWidth,
+                        height: resizeHeight ? resizeHeight : originalHeight,
+                        cropwidth: 250, 
+                        cropheight: 150
+                      },
+                      function(err, image) {
+                        if (err) {
+                          renameParams.res.json({'user_error':'Uploading attachment failed',
+                            'maintainer_error': 'Generating thumbnail for the card view failed'});
+                        }
+                        else {
+                          easyimg.resize({
+                              src: thumbPath_card,
+                              dst: thumbPath_cardDetail,
+                              width: 70,
+                              height: 42
+                            },
+                            function(err, image) {
+                              if (err) {
+                                renameParams.res.json({'user_error':'Uploading attachment failed',
+                                  'maintainer_error': 'Generating thumbnail for the card details view failed'});
+                              }
+                              else {
+                                renameParams.res.json({'attachment': {
+                                  'cardId': renameParams.cardId,
+                                  'uploaderId': renameParams.uploaderId,
+                                  'name': sanitizedFilename,
+                                  'fileType': 'picture',
+                                  'size': renameParams.size,
+                                  'path': fullPath,
+                                  'cardThumbPath': thumbPath_card,
+                                  'cardDetailThumbPath': thumbPath_cardDetail
+                                }});
+                              }
+                          });
+                        }
+                    });
+                  }
+                  else {
+                    easyimg.resize({
+                        src: fullPath,
+                        dst: thumbPath_cardDetail,
+                        width: 70,
+                        height: 42
+                      },
+                      function(err, image) {
+                        if (err) {
+                          renameParams.res.json({'user_error':'Uploading attachment failed',
+                            'maintainer_error': 'Generating thumbnail for the card details view failed'});
+                        }
+                        else {
+                          renameParams.res.json({'attachment': {
+                            'cardId': renameParams.cardId,
+                            'uploaderId': renameParams.uploaderId,
+                            'name': sanitizedFilename,
+                            'fileType': 'picture',
+                            'size': renameParams.size,
+                            'path': fullPath,
+                            'cardDetailThumbPath': thumbPath_cardDetail
+                          }});
+                        }
+                    });
+                  }
+                }
+              });
+            }
+            else {
+              renameParams.res.json({'attachment': {
+                'cardId': renameParams.cardId,
+                'uploaderId': renameParams.uploaderId,
+                'name': sanitizedFilename,
+                'size': renameParams.size,
+                'path': fullPath
+              }});
+            }
           }
       });
     }
 
-    // rote to upload
+    // rote to upload attachments for card
     app.post('/upload/:cardId', function(req, res) {
       var tmpPath = req.files.attachment.path;
       var targetPath = __dirname + '/../public/attachments/' + req.params.cardId;
@@ -236,6 +334,63 @@
       });
     });
 
+    // rote to import json file exported from Trello
+    app.post('/import/:boardId', function(req, res) {
+      var tmpPath = req.files.trelloJSON.path;
+
+      fs.readFile(tmpPath, 'utf8', function (err, data) {
+        if (err) {
+          res.json({'user_error':'Importing the json file from Trello failed.',
+            'maintainer_error': 'Reading the json file failed'});
+        }
+        else {      
+          fs.unlink(tmpPath, function(err) {
+            if (err) {
+              res.json({'user_error':'Importing the json file from Trello failed.',
+                'maintainer_error': 'Deleting the temparary version of json file failed'});
+            }
+            else {
+              /* add up how many times the callback function is called(including two cases:
+               * with error and without error). the callback function will be fired every time
+               * the append content ation(including: create or update) is finished.
+              */
+              var errCount = 0;
+              var successCount = 0;
+              var importDatasource = {};
+              var targetSuccessCount = 0;
+              try {
+                importDatasource = JSON.parse(data);
+                targetSuccessCount = importTrello.addupSuccessCount(importDatasource);
+              }
+              catch(err) {
+                res.json({'user_error':'Importing the json file from Trello failed, please check file content.',
+                  'maintainer_error': err.message});
+                return;
+              }
+
+              importTrello.appendContentToBoard(req.user._id, req.params.boardId, importDatasource, function(err) {
+                if(err) {
+                  errCount++;
+                  // once getting the first error, return failure response to the front view 
+                  if(errCount === 1) {
+                    res.json({'user_error':'Importing the json file from Trello failed.',
+                      'maintainer_error': err});
+                  }
+                }
+                else {
+                  successCount++;
+                  // only all the append content actions are completed sucessfully, return success response
+                  if(successCount === targetSuccessCount) {
+                    res.json({'success': 'Importing the json file from Trello completed.'});
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+
     // TODO:when timeout, user should be relogin,and server will redirect to
     // original url, this is not ajax, should be add this mapping.we can
     // implement a SPA design, it will reduce  this annoying url mapping.
@@ -261,7 +416,7 @@
     // route to query user email
     app.get('/api/search_member', ensureAuthenticated, function (req, res) {
       var regex = new RegExp(req.query["term"], 'i');
-      var query = User.find({email: regex}, {'email': 1}).sort({"updated_at": -1}).sort({"created_at": -1}).limit(20);
+      var query = User.find({email: regex}, {'email': 1}).sort({"updated_at": -1}).sort({"created_at": -1}).limit(80);
 
       query.exec(function(err, users) {
         if (!err) {
@@ -287,7 +442,7 @@
     var strategyName = settings.auth.strategy;
     app.get('/',
       passport.authenticate(strategyName, { failureRedirect:'/login' }),
-      checkForSessionTimeout, ensureAuthenticated, function (req, res) {
+      ensureAuthenticated, function (req, res) {
       res.render('application', {title: 'Cantas'});
     });
 

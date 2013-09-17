@@ -29,7 +29,7 @@ describe('BoardHandler', function() {
   beforeEach(function(done) {
     member = new User({
       username: 'dxiao',
-           email: 'dxiao@redhat.com'
+      email: 'dxiao@redhat.com'
     });
     member.save(function(err) {
       done();
@@ -63,7 +63,7 @@ describe("BoardHandler API", function() {
     function(callback){
       member = new User({
         username: 'dxiao',
-             email: 'dxiao@redhat.com'
+        email: 'dxiao@redhat.com'
       });
       member.save(function(err){
         callback(err, member);
@@ -72,9 +72,9 @@ describe("BoardHandler API", function() {
     function(callback) {
       myBoard = new Board({
         title: "test myBoard",
-      isClosed: false,
-      creatorId: member.id,
-      isPublic: false
+        isClosed: false,
+        creatorId: member.id,
+        isPublic: false
       });
 
       myBoard.save(function(err){
@@ -84,9 +84,9 @@ describe("BoardHandler API", function() {
     function(callback) {
       invitedBoard = new Board({
         title: "test invitedBoard",
-      isClosed: false,
-      creatorId: "4eea50bc91e31d174600016d",
-      isPublic: false
+        isClosed: false,
+        creatorId: "4eea50bc91e31d174600016d",
+        isPublic: false
       });
 
       invitedBoard.save(function(err){
@@ -97,8 +97,8 @@ describe("BoardHandler API", function() {
     function(callback) {
       boardMemberRelation = new BoardMemberRelation({
         boardId: invitedBoard.id,
-      userId: member.id,
-      status: BoardMemberStatus.available
+        userId: member.id,
+        status: BoardMemberStatus.available
       });
 
       boardMemberRelation.save(function(err){
@@ -109,9 +109,9 @@ describe("BoardHandler API", function() {
     function(callback) {
       publicBoard = new Board({
         title: "test publicBoard",
-      isClosed: false,
-      creatorId: "4eea50bc91e31d174600016d",
-      isPublic: true
+        isClosed: false,
+        creatorId: "4eea50bc91e31d174600016d",
+        isPublic: true
       });
 
       publicBoard.save(function(err){
@@ -122,13 +122,25 @@ describe("BoardHandler API", function() {
     function(callback){
       closedBoard = new Board({
         title: "test closedBoard",
-      isClosed: true,
-      creatorId: "4eea50bc91e31d174600016d",
-      isPublic: true
+        isClosed: true,
+        creatorId: "4eea50bc91e31d174600016d",
+        isPublic: true
       });
 
       closedBoard.save(function(err){
         callback(err,closedBoard);
+      });
+    },
+
+    function(callback) {
+      boardMemberRelation = new BoardMemberRelation({
+        boardId: closedBoard.id,
+        userId: member.id,
+        status: BoardMemberStatus.available
+      });
+
+      boardMemberRelation.save(function(err){
+        callback(err,boardMemberRelation);
       });
     }
     ],

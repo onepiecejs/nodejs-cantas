@@ -8,8 +8,8 @@
 
   var ActivitySchema = new Schema({
     content: { type: String, required: true },
-    creatorId: { type: ObjectId, required: true, ref: 'User' },
-    boardId: { type: ObjectId, required: true, ref: 'Board' },
+    creatorId: { type: ObjectId, required: true, ref: 'User', index: true },
+    boardId: { type: ObjectId, required: true, ref: 'Board', index: true },
     createdOn: { type: Date, default: Date.now }
   });
 

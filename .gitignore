@@ -10,3 +10,5 @@ public/stylesheets/*.min.css
 .grunt
 uploads
 public/attachments
+redhat
+settings.json

@@ -56,7 +56,7 @@
 
   CommentCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id;
+    var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
     delete data['_id']; // _id is not modifiable
 

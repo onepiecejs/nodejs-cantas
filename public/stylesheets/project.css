@@ -11,6 +11,10 @@ body{
     word-wrap: break-word;
     min-width: auto;
 }
+#wrapper{
+    height: 100%;
+    width: 100%;
+}
 textarea{
     resize: none;
 }
@@ -185,6 +189,9 @@ a:link, a:visited {
 .dropdown-board{
     left: -40px;
     top: 25px;
+}
+#import-trello{
+    display: none;
 }
 .notification{
     background: url("../images/notification.png") no-repeat 2px 4px / 80% transparent;
@@ -659,11 +666,13 @@ input:focus, textarea:focus{
     width: 278px!important;
     background: #444;
     border-radius: 0 0 3px  3px;
-    max-height: 400px;
-    overflow: hidden;
+    max-height: 395px;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding: 3px 0;
     margin-left: -3px!important;
     margin-top: 3px;
+    z-index: 100;
 }
 .ui-autocomplete li{
 }
@@ -685,9 +694,6 @@ input:focus, textarea:focus{
     margin-top: 9px;
     box-shadow: 1px 1px 4px #333333 inset;
     border: 1px solid #111111;
-}
-.invite .invite-display ul{
-    overflow: hidden;
 }
 .invite .invite-member .invite-display{
     border: none;
@@ -759,7 +765,7 @@ input:focus, textarea:focus{
 .alert-window{
     background: #fff;
     margin: 9px;
-    padding: 9px 18px 9px 9px;
+    padding: 9px;
     border-radius: 3px;
     border: 1px solid #fff;
     position: absolute;
@@ -768,20 +774,25 @@ input:focus, textarea:focus{
     z-index: 9999;
     width: 240px;
     display: none;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 }
-.alert-window .alert-checkbox{
-    margin-left: 113px;
-}
-.alert-window .alert-checkbox *{
+.alert-window .alert-checkbox label{
     display: inline-block;
     margin: 0 3px 0 0;
-    vertical-align: middle;
+    color: #777;
 }
 .alert-window p{
-    font-weight: bold;
+  margin-bottom: 0;
+  color: #555;
+  font-weight: bold;
 }
 .alert-window button{
     margin: 9px 9px 0 0;
+}
+.alert-window h4{
+  margin: 0 -9px 6px;
+  padding: 0 9px 6px;
+  border-bottom: 1px solid #cdcdcd;
 }
 .invite .btn{
     margin: 9px 1px 0 9px;
@@ -890,15 +901,17 @@ input:focus, textarea:focus{
     line-height: 16px;
     padding: 0 5px;
     font-weight: normal;
-    margin-left: 6px;
     font-size: 12px;
+    position: absolute;
+    right: 6px;
 }
 .list-panel > header h4{
-    padding: 4px 0;
+    padding: 4px 20px 4px 0;
     text-overflow: ellipsis;
     overflow: hidden;
     width: 82%;
     margin: 0 9px;
+    position: relative;
 }
 .list-panel > header:hover{
     cursor: move;
@@ -912,7 +925,7 @@ input:focus, textarea:focus{
     border: 1px solid #3170A6;
     border-top: none;
     background: #f8f8f8;
-    min-height:20px;
+    min-height: 30px;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -996,6 +1009,20 @@ input:focus, textarea:focus  .list-panel>li{
 }
 .list-new .modal-footer{
       padding: 9px;
+}
+#import-trello-dialog{
+    width: 330px;
+    margin: -220px 0 0 -230px!important;
+}
+#import-trello-processing{
+    position: relative;
+    height: 50px;
+}
+#import-trello-dialog p{
+    width: 290px;
+}
+#import-trello-dialog .modal-footer{
+    padding: 9px;
 }
 /*==============================card===================================*/
 /*.list-card:nth-child(2n) .card{
@@ -1148,6 +1175,17 @@ input:focus, textarea:focus  .list-panel>li{
     text-align: center;
     margin-top: -20px;
 }
+.card .card-cover {
+    width: 100%;
+    height: 148px;
+    white-space: normal;
+    background-repeat: no-repeat;
+    margin-bottom: 9px;
+}
+.card-cover.original-size {
+    background-position: center center;
+    background-size: auto auto;
+}
 .card .card-items{
     width: 100%;
     white-space: normal;
@@ -1186,7 +1224,7 @@ input:focus, textarea:focus  .list-panel>li{
 }
 .card .card-items .card-attachment{
     background: #ccc url("../images/cantas-attachment.png") no-repeat 2px 1px;
-    background-size: 14px auto;
+    background-size: 12px auto;
 }
 .add-plugein, .add-list, .add-list-none{
     color: #888;
@@ -1506,13 +1544,13 @@ z-index: 10000
 .board-ul li:last-child{
     border-bottom: none;
 }
-.board-ul li .board-list-delete{
+.board-ul li .board-list-status{
     position: absolute;
     top: 10px;
     right: 5px;
     display: none;
 }
-.board-ul li:hover .board-list-delete{
+.board-ul li:hover .board-list-status{
     display: block;
 }
 .board-ul li .board-name{
@@ -1554,6 +1592,21 @@ z-index: 10000
     color: #333;
     text-decoration: none;
 }
+.board-ul .reopen{
+  background: url("../images/sent.png") no-repeat;
+  background-size: 90%;
+  height: 16px;
+  width: 16px;
+}
+
+/*===================board-close=================*/
+.board-ul .board-close div{
+  text-decoration: none;
+}
+.board-ul .board-close:hover {
+  cursor: auto;
+}
+
 .board-list .board-option{
     height: 100%;
     background: #6094D0;
@@ -1888,6 +1941,39 @@ z-index: 10000
   display: block;
   background-images: url(../images/cantas-check.png);
 }
+#card-detail .modal-body .attachment-download-table tbody tr .checkbox{
+    float: left;
+    padding: 0 5px;
+    background: #fff;
+    border: 1px solid #ccc;
+    width: 8px;
+    position: relative;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-left: 18px;
+}
+#card-detail .modal-body .attachment-download-table tbody tr .checkbox span{
+  display: none; 
+  position: absolute;
+  left: -2px;
+  top: -4px;
+  height: 20px;
+  width: 25px;
+  background: url(../images/cantas-check.png) no-repeat 0 0;
+  background-size: 100%;
+}
+#card-detail .modal-body .attachment-download-table tbody tr .checkbox:hover{
+  border-color: #45B992;
+}
+#card-detail .modal-body .attachment-download-table tbody tr.checked .checkbox{
+  border-color: #45B992;
+}
+#card-detail .modal-body .attachment-download-table tbody tr .checkbox:hover span{
+  display: none;
+}
+#card-detail .modal-body .attachment-download-table tbody tr.checked .checkbox span{
+  display: block;
+}
 .card-title:hover{
   cursor: pointer;
 }
@@ -1958,6 +2044,9 @@ z-index: 10000
 }
 #card-detail .modal-body .card-option-panel section:nth-child(4):hover{
   background-color: #a58fe5;
+}
+#card-detail .modal-body .card-option-panel section:nth-child(5):hover{
+  background-color: #EA586F;
 }
 #card-detail .modal-body .card-option-panel section:hover span{
   text-decoration: underline;
@@ -2708,12 +2797,12 @@ card{
     display: none;
 }
 .loader { 
-  width:35px; 
-  height:35px; 
+  width:28px; 
+  height:28px; 
   position: relative;
 }
 .process-loading .loader .bar {
-    background-color:#99aaca;
+    background-color:#FFDA76;
     float:left;
     margin-right:2%; 
     width:15%;
@@ -2783,7 +2872,7 @@ card{
 } 
 
 @keyframes loadingbar {
-  100% { height:30%; border-color:#d1d7e2; background-color:#c6ccda;} 
+  100% { height:30%; border-color:#fbb450; background-color:#f89406;} 
 }
 /*===============Responsible Page==============*/
 @media only screen and (max-width:580px) {
@@ -2806,7 +2895,7 @@ card{
 .board-ul-wapper span:nth-child(2), .board-ul-wapper span:nth-child(3){
     display: none;
 }
-.board-ul li .board-list-delete{
+.board-ul li .board-list-status{
   display: inline-block;
 }
 .board{

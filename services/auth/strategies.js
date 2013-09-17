@@ -65,7 +65,7 @@
     var username = token.split('@')[0];
     User.findOne({username: username}, function (err, user) {
       if (err) {
-        fn(new Error('User ' + id + ' does not exist'));
+        fn(new Error('User ' + token + ' does not exist'));
       }
 
       if (user == null) {

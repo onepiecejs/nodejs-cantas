@@ -12,7 +12,6 @@ $(function ($, _, Backbone) {
     },
 
     initialize: function () {
-      this.on('modelCleanup', this.modelCleanup, this);
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
         this.ioBind('delete', this.serverDelete, this);
@@ -40,20 +39,15 @@ $(function ($, _, Backbone) {
 
 
   //Collection
-  cantas.models.AttachmentCollection = Backbone.Collection.extend({
+  cantas.models.AttachmentCollection = cantas.models.BaseCollection.extend({
     model: cantas.models.Attachment,
     socket: cantas.socket,
 
     url: "/attachment",
 
     initialize: function () {
-      this.on('collectionCleanup', this.collectionCleanup, this);
-      this.bindCreateEvent(this.socket);
-    },
-
-    bindCreateEvent: function(socket) {
-      socket.removeAllListeners("/attachment:create");
-      socket.on('/attachment:create', this.serverCreate, this);
+      this.socket.removeAllListeners("/attachment:create");
+      this.socket.on('/attachment:create', this.serverCreate, this);
     },
 
     serverCreate: function (data) {

@@ -1,18 +1,67 @@
-extends layout
+!!! 5
+html
+  head
+    title= title
+    meta(content="width=device-width, minimum-scale=1.0, maximum-scale=1.0", name="viewport")
+    link(href="/images/favicon.ico",type="image/x-icon",rel="shortcut icon")
+    - if (process.env.NODE_ENV == 'production')
+      link(rel='stylesheet', href='/stylesheets/eso-theme.min.css')
+      link(rel='stylesheet', href='/stylesheets/project.min.css')
+    - else
+      link(rel='stylesheet', href='/stylesheets/eso-theme.css')
+      link(rel='stylesheet', href='/stylesheets/project.css')
+  body(onload='init()')
+    section(class='login')
+        - if (message)
 
-block header
+        div(class="login-input card")
+          header
+            img(class="login-header",src="/images/cantas-login.png")
+          form(action='/login', method='POST')
+            input(type="text",name="username",id="username-login",placeholder="kerberos Name",tabindex="1",a  utocomplete="off",autocorrect="off",spellcheck="false",autocapitalize="off",autofocus="")
+            input(type="password",placeholder="Password",name="password",id="password-login",tabindex="2")
+            button(type="submit",class="btn btn-inverse login-button",tabindex="3") Log In
+        p= message
+    div#browser-version-alert.force-alert.hide.fade
+      div.alert-content
+        p Your browser <span id='currentVersion'></span> is too low to run Cantas stably. We recommend Chrome 10+, FireFox 4+, Safari 6+ etc.
+    script(type="text/javascript").
+      function init(){
+        var browserVersionInfo = {
+          msie: false, firefox: false, opera: false, safari: false,
+          name: 'unknown', version: 0
+        },
+        userAgent = window.navigator.userAgent.toLowerCase();
+        if(/(msie|firefox|opera|chrome)\D+(\d[\d.]*)/.test(userAgent)) {
+          browserVersionInfo[RegExp.$1] = true;
+          browserVersionInfo.name = RegExp.$1;
+          browserVersionInfo.version = RegExp.$2;
+        }
+        else if(/version\D+(\d[\d.]*).*safari/.test(userAgent)) {
+          browserVersionInfo.safari = true;
+          browserVersionInfo.name = 'safari';
+          browserVersionInfo.version = RegExp.$2;
+        }
 
-block content
-  section(class='login')
-      - if (message)
-      
-      div(class="login-input card")
-        header
-          img(class="login-header",src="/images/cantas-login.png")
-        form(action='/login', method='POST')
-          input(type="text",name="username",id="username-login",placeholder="kerberos Name",tabindex="1",autocomplete="off",autocorrect="off",spellcheck="false",autocapitalize="off",autofocus="")
-          input(type="password",placeholder="Password",name="password",id="password-login",tabindex="2")
-          button(type="submit",class="btn btn-inverse login-button",tabindex="3") Log In
-      p= message
+        var browserName = browserVersionInfo.name;
+        var version = browserVersionInfo.version;
+        var majorVersion = version.slice(0,version.indexOf('.'));
+        var isLow = false;
+        if(browserVersionInfo.chrome && majorVersion < 10) {
+          isLow = true;
+        }
+        else if(browserVersionInfo.firefox && majorVersion < 4) {
+          isLow = true;
+        }
+        else if(browserVersionInfo.safari && majorVersion < 6) {
+          isLow = true;
+        }
+        if(isLow) {
+          window.document.getElementById('currentVersion').textContent = browserName + ' ' + version;
+          window.document.getElementById('browser-version-alert').setAttribute('class','force-alert fade');
 
-block footer
+          var loginForm = window.document.body.getElementsByTagName('form')[0];
+          loginForm.parentNode.removeChild(loginForm);
+        }
+
+      };

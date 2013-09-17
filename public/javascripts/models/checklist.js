@@ -34,7 +34,6 @@ $(function ($, _, Backbone) {
     model: cantas.models.Checklist,
 
     initialize: function(models, options) {
-      _.bindAll(this, "serverCreate");
       if (!this.noIoBind)
         this.ioBind("create", this.socket, this.serverCreate, this);
 
@@ -55,6 +54,9 @@ $(function ($, _, Backbone) {
 
     dispose: function() {
       this.card = null;
+      if (!this.noIoBind) {
+        this.ioUnbindAll();
+      }
 
       var parent = cantas.models.BaseCollection;
       parent.prototype.dispose.apply(this, arguments);
@@ -70,7 +72,6 @@ $(function ($, _, Backbone) {
     model: cantas.models.ChecklistItem,
 
     initialize: function(models, options) {
-      _.bindAll(this, "serverCreate");
       if (!this.noIoBind)
         this.ioBind("create", this.socket, this.serverCreate, this);
 
@@ -88,7 +89,8 @@ $(function ($, _, Backbone) {
 
     comparator: function(item) {
       return item.get("order");
-    }
+    },
+
   });
 
 }(jQuery, _, Backbone));

@@ -6,9 +6,13 @@
 
   "use strict";
 
-  var mongoose = require('mongoose');
+  var mongoose = require("mongoose");
+  var util = require("util");
+  var async = require("async");
   var Activity = require("../../models/activity");
   var List = require("../../models/list");
+  var BoardMemberRelation = require("../../models/boardMemberRelation");
+  var LogActivity = require("../../services/activity").Activity;
   var signals = require("../signals");
 
   /*
@@ -41,7 +45,17 @@
      */
     // The user's session id is found in the handshake
     this.sessionID = this.handshake.sessionID;
-  }
+  };
+
+  BaseCRUD.prototype.isBoardMember = function(callback) {
+
+    // check member relation
+    var user = this.socket.getCurrentUser();
+    var boardId = this.socket.getCurrentBoardId();
+    BoardMemberRelation.isBoardMember(user._id, boardId, function(err, isMember) {
+      callback(err, isMember);
+    });
+  };
 
   /*
    * A convenient way to send message back to client via socket
@@ -50,65 +64,42 @@
     this.socket.room.emit(eventName, data, { exceptMe: this.exceptMe });
   };
 
-  BaseCRUD.prototype.logActivity = function(key, data, action) {
-    var username, content, boardId, creatorId, activityData, list;
-    var self = this;
-
-    // TODO: content should contain more info
-    username = this.handshake.user.username
-    boardId = this.socket.room.board.split(':')[1];
-    creatorId = this.socket.handshake.user._id;
-
-    if (key === 'list') {
-      content = username + ' ' + action + ' ' + data.title + ' ' + 'in board';
-      activityData = {
-        'content': content,
-        'creatorId': creatorId,
-        'boardId': boardId
-      };
-
-      var t = new Activity(activityData)
-      , name = '/activity:create';
-
-      t.save(function (err) {
-        if (err) {
-          console.log(err);
-        } else {
-          self.socket.room.emit(name, t, { exceptMe: self.exceptMe });
-        }
-      });
-
-    } else {
-
-      // FIXME: why these code?
-      if (data.listId) {
-        List.findOne({_id : data.listId}, 'title', function(err, list) {
-          if (err) {
-            console.log(err)
-          } else {
-            content = username + ' ' + action + ' ' +  data.title + ' ' + 'in' + ' ' + list.title;
-            activityData = {
-              'content': content,
-              'creatorId': creatorId,
-              'boardId': boardId
-            };
-
-            var t = new Activity(activityData)
-            , name = '/activity:create';
-
-            t.save(function (err) {
-              if (err) {
-                console.log(err);
-              } else {
-                self.socket.room.emit(name, t, { exceptMe: self.exceptMe });
-              }
-            });
-          }
-        });
+  BaseCRUD.prototype.generateActivityContent = function(model, action, data, callback) {
+    var content = null;
+    var username = this.handshake.user.username;
+    if (action === 'create') {
+      var createdObject = data['createdObject'];
+      var sourceObject = data['sourceObject'];
+      content = util.format('%s added %s "%s"', username, model, createdObject.title);
+      if (sourceObject) {
+        content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
+                  sourceObject.title, model, createdObject.title);
       }
-
     }
-  }
+    if (action === 'update') {
+      content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
+                field, data.origin_data[data.field], data.changed_data[data.field]);
+    }
+    callback(null, content);
+  };
+
+  BaseCRUD.prototype.logActivity = function(content) {
+    var self = this;
+    var username = this.handshake.user.username;
+    var boardId = this.socket.room.board.split(':')[1];
+    var creatorId = this.socket.handshake.user._id;
+    var data = {
+      content: content,
+      creatorId: creatorId,
+      boardId: boardId
+    };
+    var activity = new LogActivity({
+      socket: self.socket,
+      exceptMe: self.exceptMe
+    });
+
+    activity.log(data);
+  };
 
   /*
    * FIXME: what the purpose of these code???
@@ -133,20 +124,36 @@
    * operations after subclass-specific things done.
    */
   BaseCRUD.prototype._create = function(data, callback) {
+    var sourceObject = data['sourceObject'];
+    if (sourceObject) {
+      delete data['sourceObject'];
+    }
+
     var t = new this.modelClass(data)
       , name = '/' + this.key + ':create';
     var self = this;
 
-    t.save(function (err, savedObject) {
+    t.save(function (err, createdObject) {
       if (err) {
-        callback(err, savedObject);
+        callback(err, createdObject);
       } else {
-        // TODO:
-        self.logActivity(self.key, t, 'create');
+        var data = {
+          createdObject: createdObject,
+          sourceObject: sourceObject
+        }
+        self.generateActivityContent(self.key, 'create', data, function(err, content){
+          if (err) {
+            console.log(err);
+          } else {
+            if (content) {
+              self.logActivity(content);
+            }
+          }
+        });
         self.emitMessage(name, t);
 
-        signals.post_create.send(savedObject, {
-          instance: savedObject, socket: self.socket}, function(err, result){});
+        signals.post_create.send(createdObject, {
+          instance: createdObject, socket: self.socket}, function(err, result){});
       }
     });
   };
@@ -182,21 +189,49 @@
 
   BaseCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id;
-    var name = '/' + this.key + '/' + _id + ':update';
+    var _id = data._id || data.id;
+    var eventKey = '/' + this.key + '/' + _id + ':update';
     delete data['_id']; // _id is not modifiable
+    var origin_data = data['original'];
+    var change_fields = [];
+    for (var key in origin_data) {
+      change_fields.push(key);
+    }
+    delete data['original'];
 
-    this.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
+    this.modelClass.findByIdAndUpdate(_id,
+                                      {$set : data},
+                                      function (err, updatedData) {
       if (err) {
         callback(err, updatedData);
       } else {
-        // TODO:
-        self.logActivity(self.key, updatedData, 'update');
-        self.emitMessage(name, updatedData);
+
+        // create activity log
+        if (change_fields.length >= 1) {
+          for (var i = 0; i < change_fields.length; i++) {
+            var changeInfo = {
+              field: change_fields[i],
+              origin_data: origin_data,
+              changed_data: updatedData
+            };
+            self.generateActivityContent(self.key, 'update', changeInfo, function(err, content){
+              if (err) {
+                console.log(err);
+              } else {
+                if (content) {
+                  self.logActivity(content);
+                }
+              }
+            });
+          }
+        }
+
+        self.emitMessage(eventKey, updatedData);
 
         signals.post_patch.send(updatedData, {
           instance: updatedData, socket: self.socket}, function(err, result) {});
       }
+
     });
   };
 
@@ -234,8 +269,6 @@
 
   BaseCRUD.prototype._delete = function(data, callback) {
     var self = this;
-
-    this.logActivity(this.key, data, 'delete');
 
     if (data && data._id) {
       var field = data._id;

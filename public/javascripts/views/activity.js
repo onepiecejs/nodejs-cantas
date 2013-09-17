@@ -66,23 +66,19 @@ $(function ($, _, Backbone) {
     showActivitiesOnlyOnce: function() {
       if (this.activitiesLoaded)
         return;
-      var view = this;
+      this.activitiesLoaded = true;
       this.collection.fetch({
         data: { boardId: this.getCurrentBoardId() },
-        success: function(activities, response, options) {
-          // Show all activities in activity side bar
-          activities.each(function(activity) {
-            view.showOneActivity(activity);
-          });
-
-          view.activitiesLoaded = true;
-        },
-        error: function(activities, response, options) {
-          // FIXME: Use a more friendly way to tell user what happens.
-          alert("Cannot show current board's activities.");
-        }
       });
+    },
+
+    remove: function(){
+      this.collection.dispose();
+      this.undelegateEvents();
+      this.stopListening();
+      return this;
     }
+
   });
 
 }(jQuery, _, Backbone));

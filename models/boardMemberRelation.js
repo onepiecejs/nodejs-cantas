@@ -12,15 +12,16 @@
 
   var Board = require('./board');
   var memberStatus = require('./boardMemberStatus');
+  var util = require('util');
 
   /*
    * Board member schema to remember the history and relationship between an
    * user and a board.
    */
   var BoardMemberRelationSchema = new Schema({
-    boardId: { type: ObjectId, require: true, ref: 'Board' },
+    boardId: { type: ObjectId, require: true, ref: 'Board', index: true },
     // Reference to the real User schema
-    userId: { type: ObjectId, required: true, ref: 'User' },
+    userId: { type: ObjectId, required: true, ref: 'User', index: true },
     // When member is added into board in whatever way
     addedOn: { type: Date, default: Date.now },
     // When member is kicked off from board
@@ -106,6 +107,24 @@
       $or: [ {status: memberStatus.available}, {status: memberStatus.inviting} ]
     };
     this.find(conditions).populate("boardId userId").exec(callback);
+  };
+
+  BoardMemberRelationSchema.statics.getInvitedBoardsByMember = function(userId, callback) {
+    var conditions = {
+      userId: userId,
+      status: memberStatus.available
+    };
+    this.find(conditions).populate("boardId userId").exec(function(err, boardRelation) {
+      if (!boardRelation) {
+        var err = util.format('error: no invitedBoards');
+        return callback(err, null);
+      }
+      var invitedBoardIds = [];
+      boardRelation.forEach(function(relation) {
+        invitedBoardIds.push(relation.boardId);
+      });
+      callback(err, invitedBoardIds);
+    });
   };
 
   module.exports = mongoose.model("BoardMemberRelation",

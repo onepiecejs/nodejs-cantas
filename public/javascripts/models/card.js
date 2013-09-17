@@ -11,15 +11,24 @@ $(function ($, _, Backbone) {
     },
 
     initialize: function (attributes, options) {
-      // this.on('serverChange', this.serverChange, this);
-      // this.on('serverDelete', this.serverDelete, this);
       this.commentCollection = new cantas.models.CommentCollection;
       this.attachmentCollection = new cantas.models.AttachmentCollection;
-      this.on('modelCleanup', this.modelCleanup, this);
+
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
         this.ioBind('delete', this.serverDelete, this);
       }
+    },
+
+    dispose: function() {
+      this.off();
+      this.commentCollection.off();
+      this.attachmentCollection.off();
+      if (!this.noIoBind)
+        this.ioUnbindAll();
+        this.commentCollection.dispose();
+        this.attachmentCollection.dispose();
+      return this;
     },
 
     // Remove this Card and delete its view.
@@ -194,15 +203,24 @@ $(function ($, _, Backbone) {
     url: "/card",
 
     initialize: function () {
-      this.on('collectionCleanup', this.collectionCleanup, this);
-      // this.socket.on('/card:create', this.serverCreate, this);
-      this.bindCreateEvent(this.socket);
+
+      this.socket.removeAllListeners("/card:create");
+      this.socket.removeAllListeners("/card:move");
+      if (!this.noIoBind) {
+        this.ioBind('create', this.socket, this.serverCreate, this);
+        this.ioBind('move', this.socket, this.serverMove, this);
+      }
     },
 
-    bindCreateEvent: function(socket) {
-      socket.removeAllListeners("/card:create");
-      socket.on('/card:create', this.serverCreate, this);
-      socket.on('/card:move', this.serverMove, this);
+    dispose: function() {
+      this.forEach(function(item) {
+        item.dispose();
+      });
+      this.off();
+      if (!this.noIoBind) {
+        this.ioUnbindAll();
+      }
+      return this;
     },
 
     serverMove: function(data) {
@@ -252,7 +270,5 @@ $(function ($, _, Backbone) {
       return card.get('order');
     }
   });
-
-
 
 }(jQuery, _, Backbone));

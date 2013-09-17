@@ -24,9 +24,17 @@ script#template-board-list-view(type="text/template")
   |        span Owner
   |    ul.board-ul
   |      each board in boards
-  |        li
-  |          a.owner.board-name(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
-  |          span= cantas.utils.formatDate(board.created)
-  |          span= board.creatorId.username
-  |          if board.creatorId._id == cantas.user.id
-  |            a.js-close-board.delete.board-list-delete(data-board= board._id, title="Close this board")
+  |        if board.isClosed == true
+  |          li.board-close
+  |            div.owner.board-name= board.title
+  |            span= cantas.utils.formatDate(board.created)
+  |            span= board.creatorId.username
+  |            if board.creatorId._id == cantas.user.id
+  |              a.js-open-board.reopen.board-list-status(data-board= board._id, title="Open this board")
+  |        else
+  |          li
+  |            a.owner.board-name(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
+  |            span= cantas.utils.formatDate(board.created)
+  |            span= board.creatorId.username
+  |            if board.creatorId._id == cantas.user.id
+  |              a.js-close-board.delete.board-list-status(data-board= board._id, title="Close this board")

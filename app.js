@@ -27,7 +27,8 @@ var express = require('express')
     , redisClient: redis.createClient(
         settings.redis.port, 
         settings.redis.host)
-  };
+  }
+  , siteId = 0;
 
 app.configure(function () {
   app.set('views', __dirname + '/views');
@@ -61,7 +62,19 @@ app.configure('production', function(){
   app.set("production", true);
 });
 
-app.helpers({links: settings.links, version: utils.get_version()});
+if (app.settings.production) {
+  siteId = settings.piwikSiteId.product;
+  siteUrl = settings.piwikSiteId.productUrl;
+} else {
+  siteId = settings.piwikSiteId.stage;
+  siteUrl = settings.piwikSiteId.stageUrl;
+}
+
+app.helpers({
+  links: settings.links,
+  version: utils.get_version(),
+  siteId: siteId,
+});
 
 routes.init(app, passport, sessionStore);
 mongoose.connect(

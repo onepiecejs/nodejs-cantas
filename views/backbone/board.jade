@@ -21,11 +21,13 @@ script#template-board-view(type="text/template")
   |        ul
   |          li.js-add-list: a Add a List
   |          li.js-archived-items: a Archived Items
+  |          li.js-import-trello: a Import From Trello
   |          if creatorId._id == cantas.user.id
   |            if isClosed
   |              li.js-open-board: a Open this board
   |            else
   |              li.js-close-board: a Close this board
+  |        input#import-trello(type="file", name="trelloJSON")
   |    button.btn.btn-warning.new-list.js-add-list New List
   |    a#toggleActivities.setting.activity-link(title="Activity")
   |div#app.board-content.clearfix
@@ -47,10 +49,10 @@ script#template-board-view(type="text/template")
   |  header <h4>Invitation</h4> <a>×</a>
   |  div.invite-new
   |    div.invite-display
-  |      ul
+  |      ul.toBeInvitedUsers
   |        li
   |           input.input-member(type="text", size="2", maxlength="21")
-  |    span 'Space' or 'Enter' is needed to activate and add more.
+  |    span 'Comma', 'Space' or 'Enter' is needed to activate and add more.
   |    button#btn-invite.btn(disabled="disabled") Invite
   |  header <h4>Member</h4> 
   |  div.invite-member
@@ -71,3 +73,25 @@ script#template-board-view(type="text/template")
   |  footer.modal-footer
   |    button.js-create-new-list.btn.btn-primary Add
   |    button.btn(data-dismiss="modal") Cancel
+  |div#import-trello-dialog.modal.hide(data-backdrop='static')
+  |  header.modal-header
+  |    h3 Import Trello's JSON File
+  |  div.modal-body
+  |    div#import-trello-processing
+  |      div.process-loading
+  |        div.loader
+  |          div.top
+  |            div.bar
+  |            div.bar
+  |            div.bar
+  |            div.bar
+  |            div.bar
+  |          div.bottom
+  |            div.bar
+  |            div.bar
+  |            div.bar
+  |            div.bar
+  |            div.bar
+  |    p#import-trello-message
+  |  footer.modal-footer
+  |    button#import-trello-complete.btn.btn-primary(disabled='disabled') Processing...

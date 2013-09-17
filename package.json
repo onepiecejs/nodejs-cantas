@@ -1,46 +1,48 @@
 {
-  "name": "cantas",
-  "author": "HSS-IED-BJ",
-  "version": "0.5.0",
-  "private": true,
-  "scripts": {
-    "start": "node app",
-    "lintcheck": "scripts/lintcheck"
-  },
-  "dependencies": {
-    "express": "2.5.x",
-    "jade": "*",
-    "mongoose": "*",
-    "socket.io": "*",
-    "redis": "*",
-    "connect-redis": "*",
-    "passport": "*",
-    "passport-local": "*",
-    "async": "*",
-    "moment": "*",
-    "node-krb5": "*",
-    "nodemailer": "*",
-    "markdown": "*",
-    "xmlrpc": "~1.1.0",
-    "gss": "git://github.com/davidben/node-gss.git"
-  },
-  "engines": {
-    "node": "0.8.x",
-    "npm": "1.1.x"
-  },
-  "devDependencies": {
-    "grunt": "~0.4.0",
-    "grunt-contrib-jasmine": "*",
-    "grunt-contrib-watch": "~0.4.3",
-    "grunt-contrib-uglify": "*",
-    "grunt-contrib-concat": "*",
-    "grunt-simple-mocha": "~0.4.0",
-    "expect.js": "*",
-    "mongoose-fakery": "*",
-    "grunt-contrib-cssmin": "~0.6.1",
-    "supertest": "*",
-    "sinon": "*",
-    "nodelint": "*",
-    "passport-dummy": "~0.0.1"
-  }
+    "author": "HSS-IED-BJ",
+    "dependencies": {
+        "async": "*",
+        "connect-redis": "*",
+        "express": "2.5.x",
+        "gss": "git://github.com/davidben/node-gss.git",
+        "jade": "*",
+        "markdown": "*",
+        "moment": "*",
+        "mongoose": "*",
+        "node-krb5": "*",
+        "nodemailer": "*",
+        "passport": "*",
+        "passport-local": "*",
+        "redis": "*",
+        "socket.io": "*",
+        "xmlrpc": "~1.1.0",
+        "easyimage": "*"
+    },
+    "devDependencies": {
+        "expect.js": "*",
+        "grunt": "~0.4.0",
+        "grunt-contrib-concat": "*",
+        "grunt-contrib-cssmin": "~0.6.1",
+        "grunt-contrib-jasmine": "*",
+        "grunt-contrib-uglify": "*",
+        "grunt-contrib-watch": "~0.4.3",
+        "grunt-simple-mocha": "~0.4.0",
+        "mongoose-fakery": "*",
+        "nodelint": "*",
+        "optimist": "~0.6.0",
+        "passport-dummy": "~0.0.1",
+        "sinon": "*",
+        "supertest": "*"
+    },
+    "engines": {
+        "node": "0.8.x",
+        "npm": "1.1.x"
+    },
+    "name": "cantas",
+    "private": true,
+    "scripts": {
+        "lintcheck": "scripts/lintcheck",
+        "start": "node app"
+    },
+    "version": "0.6.0"
 }

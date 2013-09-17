@@ -8,7 +8,7 @@
   var NotificationSchema;
 
   NotificationSchema = new Schema({
-    userId: { type: ObjectId, required: true },
+    userId: { type: ObjectId, required: true, index: true},
     message: { type: String, required: true },
     type: { type: String, required: true },    // values: subscription, invitation, mentioned
     isUnread: {type: Boolean, default: true},

@@ -42,7 +42,7 @@ $(function ($, _, Backbone) {
     },
 
     initialize: function (attributes, options) {
-      this.on('modelCleanup', this.modelCleanup, this);
+
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
         this.ioBind('delete', this.serverDelete, this);
@@ -126,37 +126,7 @@ $(function ($, _, Backbone) {
     noIoBind: false,
 
     initialize: function() {
-      /*
-       * FIXME: it seems this line of code is not necessary due to serverCreate
-       * is defined in `this` already.
-       *
-       * Ref: http://underscorejs.org/#bindAll
-       */
-      _.bindAll(this, "serverCreate");
-      this.bindCreateEvent(this.socket);
-    },
-
-    getServerCreateEventName: function() {
-      return this.url + ":create";
-    },
-
-    /*
-     * FIXME: use ioBind method to bind socket events.
-     *
-     * This implementation has limitation of use of arbitrary Collection. That
-     * is only the last created object of a Collection can receive expecting
-     * socket event, such as create, update or others.
-     *
-     * By calling function dispose of a Model or Collection, all event
-     * listeners registered while initializing within a View are removed and
-     * event polution can be avoided in a natural way.
-     *
-     * Ref: https://github.com/logicalparadox/backbone.iobind#iobind
-     */
-    bindCreateEvent: function(socket) {
-      var serverChangeName = this.getServerCreateEventName();
-      socket.removeAllListeners(serverChangeName);
-      socket.on(serverChangeName, this.serverCreate, this);
+      this.ioBind("create", this.serverCreate, this);
     },
 
     /*
@@ -176,12 +146,13 @@ $(function ($, _, Backbone) {
      * - remove event listners registered on and for this collection.
      */
     dispose: function() {
-      this.forEach(function(item, index) {
+      this.forEach(function(item) {
         item.dispose();
       });
       this.off();
-      if (!this.noIoBind)
-        this.ioUnbindAll();
+      if (!this.noIoBind) {
+        this.ioUnbind("create", this.serverCreate);
+      }
       return this;
     }
 

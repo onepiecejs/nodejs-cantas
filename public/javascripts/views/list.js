@@ -97,11 +97,6 @@ $(function ($, _, Backbone) {
         "position": position
       };
 
-      // var listViewCollection = cantas.utils.getCurrentBoardView().listViewCollection;
-      // var viewIdArray = _.map(listViewCollection,function(child){ return child.model.id });
-      // var inListViewIndex = _.indexOf(viewIdArray, listId );
-      // var inListView = listViewCollection[inListViewIndex];
-
       cantas.socket.emit("move-list", moveData);
       this.$el.modal('hide');
     },
@@ -221,6 +216,7 @@ $(function ($, _, Backbone) {
       this.model.cardCollection.on('remove', this.updateCardQuantity, this);
       this.model.cardCollection.on('reset', this.updateCardQuantity, this);
       this.model.cardCollection.on('change:isArchived', this.updateCardQuantity, this);
+      this.model.cardCollection.on('change:isArchived', this.addAll, this);
 
       this.cardViewCache = {};
     },
@@ -252,31 +248,14 @@ $(function ($, _, Backbone) {
       }
 
       _.each(this.cardViewCache, function(cardView) {
-          cardView.remove();
+          cardView.close();
       });
 
       this.undelegateEvents();
       this.stopListening();
       this.$el.remove();
+      this.model.dispose();
       return this;
-    },
-
-    rememberMe: function () {
-      // For now we only allow one expanded view at a time,
-      // so we need to shift and collapse them.
-      while (this.attributes.expandedViewChain.length > 0) {
-        var view = this.attributes.expandedViewChain.shift();
-        if (view != undefined) {
-          view.collapse();
-        }
-      }
-      this.attributes.expandedViewChain.push(this);
-    },
-
-    forgetMe: function () {
-      if (this.attributes.expandedViewChain.indexOf(this) >= 0) {
-        this.attributes.expandedViewChain.pop();
-      }
     },
 
     render: function () {
@@ -323,7 +302,6 @@ $(function ($, _, Backbone) {
 
     addAll: function(){
       var that = this;
-      this.$('.list-content').empty();
       var index = 0;
       this.model.cardCollection.forEach(function (card) {
         if (card.get("isArchived") === false)
@@ -339,19 +317,30 @@ $(function ($, _, Backbone) {
 
     addOne: function(card, index, context){
       var _expandedViewChain = cantas.utils.getCurrentBoardView()._expandedViewChain;
-      var thatCardView = new cantas.views.CardView({
-        model: card,
-        attributes: {
-          index: index,
-          expandedViewChain: _expandedViewChain
-        }
+      var cardIdsCache = {};
+      _.each(this.cardViewCache, function(cardView) {
+        cardIdsCache[cardView.model.id]= cardView.cid;
       });
-      var uniqueId = thatCardView.cid;
-      this.cardViewCache[uniqueId] = thatCardView;
+      var cardViewCid = cardIdsCache[card.id];
+      if (!cardViewCid) {
+        var thatCardView = new cantas.views.CardView({
+          model: card,
+          attributes: {
+            index: index,
+            expandedViewChain: _expandedViewChain
+          }
+        });
+        var uniqueId = thatCardView.cid;
+        this.cardViewCache[uniqueId] = thatCardView;
+      } else {
+        var thatCardView = this.cardViewCache[cardViewCid];
+        thatCardView.attributes.index = index;
+      }
 
       // only render not archived cards
       if (card.get("isArchived") === false){
         $(this.el).find(".list-content").append(thatCardView.render().el);
+        thatCardView.$el.show();
       }
 
       if (context) {
@@ -394,7 +383,8 @@ $(function ($, _, Backbone) {
 
       $(event.target).show();
 
-      this.rememberMe();
+      this.attributes.expandedViewChain = cantas.utils.rememberMe(
+        this, this.attributes.expandedViewChain);
     },
 
     showListSettingIcon: function (event) {
@@ -420,7 +410,6 @@ $(function ($, _, Backbone) {
         // list unarchived
         $('#board').append(this.render().el);
         this.$el.show();
-        this.$('.list-content').empty();
         this._fetchCards();
       }
 
@@ -435,7 +424,9 @@ $(function ($, _, Backbone) {
       this.editAreaContainer = $(event.target).parent();
       var placeholder = $(event.target).text();
       this.restoreHTML = this.editAreaContainer.html();
+      var cloneQuanlity = this.editAreaContainer.find('span.js-card-quantity').clone().hide();
       this.editAreaContainer.html($("#list-title-edit-placeholder").html());
+      this.editAreaContainer.find('div.edit-title').append(cloneQuanlity);
       this.editAreaContainer.find("#title-input")
         .on("keypress", this, this.titleInputKeypressed)
         .val(this.model.get("title"))
@@ -445,7 +436,8 @@ $(function ($, _, Backbone) {
       // FIXME: bind event in view's events attribute.
       this.editAreaContainer.find(".js-save-list-title").on("click", this, this.saveListTitle);
 
-      this.rememberMe();
+      this.attributes.expandedViewChain = cantas.utils.rememberMe(
+        this, this.attributes.expandedViewChain);
     },
 
     saveListTitle: function(event) {
@@ -483,14 +475,18 @@ $(function ($, _, Backbone) {
     collapse: function() {
       if (this.editAreaContainer) {
         this.editAreaContainer.find(".js-save-list-title").off("click", this, this.saveListTitle);
-        this.editAreaContainer.html(this.restoreHTML);
+        this.editAreaContainer.html(this.restoreHTML.replace(
+          /\d+<\/span>$/,this.editAreaContainer.find('span.js-card-quantity').text()));
         this.editAreaContainer.find(".js-list-title-text").text(this.model.get('title'));
       }
 
       if (this.listMenuView) {
         this.listMenuView.undelegateEvents();
       }
-      this.forgetMe();
+
+      //close other expanded view
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this, this.attributes.expandedViewChain);
     },
 
     /*

@@ -7,14 +7,14 @@ $(function ($, _, Backbone) {
     tagName: "div",
     id: "confirm-dialog",
     className: "alert-window clearfix",
-    template: _.template('<p class="js-confirmInfo"></p>' +
-        '<div class="div.alert-checkbox">' +
+    template: _.template('<h4>Delete Option</h4>' + '<p class="js-confirmInfo"></p>' +
+        '<div class="alert-checkbox">' +
         '<label class="checkbox inline" for="js-cb-noask">' +
         '<input type="checkbox" id="js-cb-noask" />' +
         'No more asking</label>' +
         '</div>' +
-        '<button class="btn btn-primary js-btn-yes">Yes</button>' +
-        '<button class="btn js-btn-no">No</button>'),
+        '<button class="btn btn-small btn-primary js-btn-yes">Yes</button>' +
+        '<button class="btn btn-small js-btn-no">No</button>'),
 
     initialize: function () {
       //when clicking outside area of the confirm dialog, it will disappear.

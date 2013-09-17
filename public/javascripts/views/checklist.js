@@ -35,20 +35,6 @@ $(function ($, _, Backbone) {
       var self = this;
       this.collection.fetch({
         data: {cardId: this.card.id},
-        success: function(checklists, response, options) {
-          checklists.forEach(function(checklist, index) {
-            var view = new cantas.views.ChecklistView({
-              parentView: self,
-              model: checklist,
-              card: self.card
-            });
-            self.addChecklistView(view);
-            view.renderAll();
-          });
-        },
-        error: function(checklists, responses, options) {
-          alert("Cannot display checklists.");
-        }
       });
     },
 
@@ -69,6 +55,7 @@ $(function ($, _, Backbone) {
         card: this.card
       });
       this.addChecklistView(view);
+      view.renderAll();
       var currentUser = cantas.utils.getCurrentUser();
       var isCurrentUserAdding = checklist.get("authorId") === currentUser.id;
       if (isCurrentUserAdding)
@@ -114,7 +101,7 @@ $(function ($, _, Backbone) {
       var subviews = this.itemViews;
       for (var name in subviews)
         subviews[name].close();
-      this.model = null;
+
       var parent = cantas.views.BaseView;
       parent.prototype.close.apply(this, arguments);
     },
@@ -142,18 +129,7 @@ $(function ($, _, Backbone) {
       var self = this;
       var collection = this.model.itemCollection;
       collection.fetch({
-        data: {checklistId: this.model.id},
-        success: function(checklistItems, response, options) {
-          if (checklistItems.length !== 0) {
-            self.$el.find('a.js-fold-items').show();
-          }
-          checklistItems.forEach(function(item, index) {
-            self.onChecklistItemAdded(item);
-          });
-        },
-        error: function(checklistItems, response, options) {
-          alert("Cannot get checklist items.");
-        }
+        data: {checklistId: this.model.id}
       });
     },
 
@@ -274,12 +250,17 @@ $(function ($, _, Backbone) {
      * Real function to show input area to allow user to add new checklist item.
      */
     _addNewItem: function() {
-      var inputView = new cantas.views.ChecklistItemInputView({
-        model: null,
-        parentView: this
-      });
-      this.$el.find("ul.js-item-entryview").append(inputView.render().el);
-      inputView.focus();
+      if(this.$('ul.js-item-entryview div.card-option-edit').length === 0) {
+        var inputView = new cantas.views.ChecklistItemInputView({
+          model: null,
+          parentView: this
+        });
+        this.$el.find("ul.js-item-entryview").append(inputView.render().el);
+        inputView.focus();
+      }
+      else {
+        this.$('ul.js-item-entryview div.card-option-edit textarea').focus();
+      }
     },
 
     updateChecklistProgress: function() {
@@ -412,11 +393,11 @@ $(function ($, _, Backbone) {
       this.options.parentView.updateChecklistProgress();
     },
 
-    close: function() {
-      this.model = null;
-      var parent = cantas.views.BaseView;
-      parent.prototype.close.apply(this, arguments);
-    }
+    // close: function() {
+    //   this.model = null;
+    //   var parent = cantas.views.BaseView;
+    //   parent.prototype.close.apply(this, arguments);
+    // }
   });
 
   cantas.views.ChecklistItemInputView = cantas.views.ChecklistItemView.extend({
@@ -512,7 +493,9 @@ $(function ($, _, Backbone) {
       }
       data.entryView.remove();
       data.parentView.remove();
-      data.checklistView.$el.find("li.js-add-item").show();
+      if(data.checklistView.$('ul.js-item-entryview div.card-option-edit').length === 0) {
+        data.checklistView.$el.find("li.js-add-item").show();
+      }
     },
 
     convertToCard: function() {

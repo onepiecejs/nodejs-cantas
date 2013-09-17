@@ -9,6 +9,7 @@
     , Board = require("../models/board")
     , BoardMembership = require("./boardMembership")
     , BoardMove = require("./boardMove")
+    , ImportTrello = require("./importTrello")
     , BoardMemberRelation = require("../models/boardMemberRelation")
     , SocketPatch = require("./patch_socket")
     , Room = require('./room');
@@ -45,8 +46,9 @@
           // FIXME: refactor the workflow of how to determine user's role of board
           userList.forEach(function (user) {
             if (socket.handshake.user._id.toString() === user._id.toString()) {
+              var eventRoomName = 'board:' + boardId;
               var eventName = 'user-login:board:' + boardId;
-              socket.room.emit(eventName, {ok: result.ok, visitor:user, boardId: boardId});
+              socket.broadcast.to(eventRoomName).emit(eventName, {ok: result.ok, visitor: user, boardId: boardId});
             }
           });
 
@@ -62,13 +64,20 @@
 
   var onUserLogout = function(data) {
     var socket = this;
-    var user = socket.handshake.user;
+    var currentUser = socket.handshake.user;
+    var user = data.user;
     var boardId = data.boardId;
     var eventName = 'user-logout:board:' + boardId;
     var eventRoomName = 'board:' + boardId;
+    var myClients = socket.room.myClients();
 
-    if (socket.handshake.user._id.toString() === user._id.toString()) {
-      socket.broadcast.to(eventRoomName).emit(eventName, {ok: 0, visitor:user});
+    //leave board room
+    socket.leave(eventRoomName);
+    socket.room.board = null;
+
+    if (myClients && myClients.length === 1 && currentUser._id.toString() === user.id.toString()) {
+      socket.room.leaveBoard(boardId);
+      socket.broadcast.to(eventRoomName).emit(eventName, {ok: 0, visitor: currentUser});
     }
   }
 
@@ -103,7 +112,12 @@
 
     //  "disconnect" is emitted when the socket disconnected
     socket.on('disconnect', function() {
-      socket.room.leaveAllRoom();
+      var myClients = socket.room.myClients();
+      if (myClients && myClients.length === 1) {
+        socket.room.leaveAllRoom();
+      } else {
+        socket.leave(socket.room.board);
+      }
 
       // Mark socket is no longer used.
       socket = null;
@@ -112,6 +126,7 @@
     // Initialization of backend services, which work upon socket.
     BoardMembership.init(socket);
     BoardMove.init(socket);
+    ImportTrello.init(socket);
   };
 
   exports.init = function (sio, sessionStore) {

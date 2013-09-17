@@ -1,6 +1,16 @@
 # Cantas
 
-![cantas prototype](public/images/cantas-help-card.gif)
+Cantas is a real-time collaborative web application.It uses
+HTML5/Nodejs/socket.io/backbone.js technology.
+
+## Update news
+
+REV: cantas 0.6 release
+core feature:
+1. support import trello export board json file.
+2. support card image cover
+2. support file upload to cantas
+
 
 ## Setup development environment
 
@@ -32,8 +42,8 @@
 - checkout source code and update node packages via npm
 
     ```bash
-    git clone https://github.com/xiaods/cantas.git
-    cd cantas
+    git clone git@github.com:xiaods/nodejs-cantas.git
+    cd nodejs-cantas
     npm install
     ```
 - start redis server and mongodb server
@@ -55,6 +65,7 @@
 - start the app
 
     ```bash
+    cp settings.json.example settgins.json
     NODE_ENV=development node app.js
     ```
 > ***Note:***
@@ -65,8 +76,8 @@ That's it.
 
 ## Resources
 
-- [Trello](https://trello.com/)
-- [the Trello tech talk](http://blog.fogcreek.com/the-trello-tech-stack/)
+- [trello](https://trello.com/)
+- [the trello tech talk](http://blog.fogcreek.com/the-trello-tech-stack/)
 - [HTML5 pushState](http://diveintohtml5.info/history.html)
 
 ## Integration && Test Environment

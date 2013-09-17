@@ -10,9 +10,9 @@
     content: {type: String, required: true},
     checked: {type: Boolean, default: false},
     order: {type: Number, default: 1},
-    checklistId: {type: ObjectId, required: true, ref: "Checklist"},
-    cardId: {type: ObjectId, required: true, ref: "Card"},
-    authorId: {type: ObjectId, required: true, ref: "User"},
+    checklistId: {type: ObjectId, required: true, ref: "Checklist", index: true},
+    cardId: {type: ObjectId, required: true, ref: "Card", index: true},
+    authorId: {type: ObjectId, required: true, ref: "User", index: true},
     createdOn: {type: Date, default: Date.now},
     updatedOn: {type: Date, default: Date.now}
   });

@@ -10,7 +10,7 @@
     title: { type: String, default: '' },
     order: { type: Number, required: true },
     color: { type: String, required: true },
-    boardId: { type: ObjectId, required: true, ref: 'Board' },
+    boardId: { type: ObjectId, required: true, ref: 'Board', index: true},
     createdOn: { type: Date, default: Date.now },
     updatedOn: { type: Date, default: Date.now }
   });
