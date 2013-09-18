@@ -1,12 +1,13 @@
 # Cantas
 
-Cantas is a real-time collaborative web application.It uses
-HTML5/Nodejs/socket.io/backbone.js technology.
+Cantas is a real-time collaborative web application.It used as internal 
+productivity tools in Red Hat. we believed this is best of code based for 
+learning HTML5/Nodejs/socket.io/backbone.js technology.
 
 ## Update news
 
-REV: cantas 0.6 release
-core feature:
+Current stable: v0.6
+new feature:
 1. support import trello export board json file.
 2. support card image cover
 2. support file upload to cantas
