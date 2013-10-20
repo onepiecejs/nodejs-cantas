@@ -1,13 +1,18 @@
 # Cantas
 
 Cantas is a real-time collaborative web application.It is used as internal 
-productivity tool in Red Hat. We believed this is the best code base for 
+productivity tool in [Red Hat](https://www.redhat.com/). We believed this is the best open source project for 
 learning HTML5/Nodejs/socket.io/backbone.js technology.
 
-## Update news
+Thanks for [all Contributors](AUTHORS.md)
 
-Current stable: v0.6
-new features:
+![project screenshot](./public/images/cantas-help-list.gif)
+
+## Update news  
+### Current stable: v0.6
+
+###new features:
+
 1. support importing trello's exported board json file.
 2. support adding card image cover
 2. support file upload to cantas
@@ -98,7 +103,6 @@ That's it.
 
 - [Jade](https://github.com/visionmedia/jade)
 
-## TODO
 
 ## About
 cantas is a real-time collaborative application.
