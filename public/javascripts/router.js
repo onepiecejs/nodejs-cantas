@@ -44,98 +44,81 @@ $(function ($, _, Backbone) {
       }
     },
 
-    browserVersionPrompt: function() {
-      var browserVersionInfo = cantas.utils.getBrowserVersionInfo();
-      var browserName = browserVersionInfo.name;
-      var version = browserVersionInfo.version;
-      var majorVersion = version.slice(0,version.indexOf('.'));
-      var isLow = false;
-      if(browserVersionInfo.chrome && majorVersion < 10) {
-        isLow = true;
-      }
-      else if(browserVersionInfo.firefox && majorVersion < 4) {
-        isLow = true;
-      }
-      else if(browserVersionInfo.safari && majorVersion < 6) {
-        isLow = true;
-      }
-      if(isLow) {
-        $('.force-alert').find('p')
-          .text('Your browser '+ browserName + ' ' + version + ' is too low to run Cantas stably. '
-            +'We recommend Chrome 10+, FireFox 4+, Safari 6+ etc.')
-          .end().find('a').text('Close').attr('onclick','').click(function(event) {
-            event.preventDefault();
-            $(this).parent().toggle(); 
-          })
-          .end().toggle();
-      }
-    },
-
     home: function(){
-      this.navigate("boards/mine", {trigger: true, replace: true});
-      this.browserVersionPrompt();
+      if(cantas.utils.isBrowserVersionLow()) {
+        cantas.utils.renderBrowserVesionPrompt();
+      }
+      else {
+        this.navigate("boards/mine", {trigger: true, replace: true});
+      }
     },
 
     listBoards: function(query) {
       var that = this;
-      $("body div.process-loading").show();
-      $.ajax({
-        url: '/api/' + query,
-        success: function(boards) {
-          $("body div.process-loading").hide();
-          var boardsView = new cantas.views.BoardsView();
-          that.switchView(boardsView, {"title": query, "boards": boards});
-          $(".board-option").find(".active").removeClass("active");
-          $(".js-boards-" + query).parent().addClass("active");
-        },
-        error: function() {
-          cantas.utils.renderTimeoutBox();
-          return false;
-        }
-      });
+      if(cantas.utils.isBrowserVersionLow()) {
+        cantas.utils.renderBrowserVesionPrompt();
+      }
+      else {
+        $("body div.process-loading").show();
+        $.ajax({
+          url: '/api/' + query,
+          success: function(boards) {
+            $("body div.process-loading").hide();
+            var boardsView = new cantas.views.BoardsView();
+            that.switchView(boardsView, {"title": query, "boards": boards});
+            $(".board-option").find(".active").removeClass("active");
+            $(".js-boards-" + query).parent().addClass("active");
+          },
+          error: function() {
+            cantas.utils.renderTimeoutBox();
+            return false;
+          }
+        });
+      }
     },
 
     joinBoard: function(boardId) {
       var sock = cantas.socket;
       var that = this;
-
-      sock.once('joined-board', function(result) {
-        if (result.ok === 1) {
-          if (result.message === 'closed') {
-            alert('This board is closed by board creator. Any further operation, please contact the creator.');
-            that.navigate("boards/mine",{
-              trigger: true, replace: true
-            });
+      if(cantas.utils.isBrowserVersionLow()) {
+        cantas.utils.renderBrowserVesionPrompt();
+      }
+      else {
+        sock.once('joined-board', function(result) {
+          if (result.ok === 1) {
+            if (result.message === 'closed') {
+              alert('This board is closed by board creator. Any further operation, please contact the creator.');
+              that.navigate("boards/mine",{
+                trigger: true, replace: true
+              });
+            } else if (result.message === 'nologin') {
+              that.navigate("boards/mine", {
+                trigger: true, replace: true
+              });
+              alert('You can\'t access a private Board! Please let Board admin invite you as an board member firstly!');
+            } else {
+              that.navigate("boards/mine",{
+                trigger: true, replace: true
+              });
+              cantas.utils.renderTimeoutBox();
+            }
+          } else if (result.ok === 0) {
+              isMember = (result.message === 'isMember') ? true : false;
+              //build visitor collection
+              var visitors = that.setupVisitorCollection(result.visitors);
+              that.renderBoard(boardId, visitors);
           } else {
             that.navigate("boards/mine",{
-              trigger: true, replace: true
-            });
-            cantas.utils.renderTimeoutBox();
+                trigger: true, replace: true
+              });
+            alert('You came across a unknown bug, please file a bug to cantas-dev-list@redhat.com and help cantas project, thanks a lot.');
           }
-        } else if (result.ok === 0) {
-          if (result.message === 'nologin') {
-            that.navigate("boards/mine", {
-              trigger: true, replace: true
-            });
-            alert('You can\'t access a private Board! Please let Board admin invite you as an board member firstly!');
-          } else {
-            isMember = (result.message === 'isMember') ? true : false;
-            //build visitor collection
-            var visitors = that.setupVisitorCollection(result.visitors);
-            that.renderBoard(boardId, visitors);
-          }
-        } else {
-          that.navigate("boards/mine",{
-              trigger: true, replace: true
-            });
-          alert('You came across a unknown bug, please file a bug to cantas-dev-list@redhat.com and help cantas project, thanks a lot.');
-        }
-      });
-      // sock.once('reconnect', function() {
-      //   sock.emit('join-board', boardId);
-      // });
-      sock.emit('join-board', boardId);
-      this.browserVersionPrompt();
+        });
+        // sock.once('reconnect', function() {
+        //   sock.emit('join-board', boardId);
+        // });
+        sock.emit('join-board', boardId);
+      }
     },
 
     setupVisitorCollection: function(visitors) {
@@ -187,8 +170,13 @@ $(function ($, _, Backbone) {
     },
 
     help: function() {
-      var helpView = new cantas.views.HelpView();
-      this.switchView(helpView, {title: "Help"});
+      if(cantas.utils.isBrowserVersionLow()) {
+        cantas.utils.renderBrowserVesionPrompt();
+      }
+      else {
+        var helpView = new cantas.views.HelpView();
+        this.switchView(helpView, {title: "Help"});
+      }
     },
 
     welcome: function() {

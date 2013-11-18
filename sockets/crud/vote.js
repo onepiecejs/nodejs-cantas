@@ -1,4 +1,4 @@
-(function(module){
+(function(module) {
 
   'use strict';
 
@@ -49,11 +49,10 @@
           self.isBoardMember(function(err, isMember) {
             if (err) {
               return callback(err, null);
-            } else {
-              if (isMember) {
-                canVote = true;
-                callback(null, canVote);
-              }
+            }
+            if (isMember) {
+              canVote = true;
+              callback(null, canVote);
             }
           });
         }
@@ -81,24 +80,26 @@
         // Check if the user already voted in the card.
         self.modelClass.find({cardId: voteNew.cardId, authorId: voteNew.authorId},
           function(err, vote) {
-          if (err) {
-            callback(err, null);
-          }
-          if (vote.length) {
-            callback(true, vote);
-          } else {
-            voteNew.save(function(err, savedVote) {
-              if (err) {
-                callback(err, voteNew);
-              } else {
-                self.emitMessage(name, savedVote);
+            if (err) {
+              callback(err, null);
+            }
+            if (vote.length) {
+              callback(true, vote);
+            } else {
+              voteNew.save(function(err, savedVote) {
+                if (err) {
+                  callback(err, voteNew);
+                } else {
+                  self.emitMessage(name, savedVote);
 
-                signals.post_create.send(savedVote,
-                  {instance: savedVote, socket: self.socket}, function(err, result) {});
-              }
-            });
-          }
-        });
+                  signals.post_create.send(savedVote, {
+                    instance: savedVote,
+                    socket: self.socket
+                  }, function(err, result) {});
+                }
+              });
+            }
+          });
       } else {
         callback('Can not vote', voteNew);
       }
@@ -109,7 +110,7 @@
     var self = this;
     var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data['_id'];
+    delete data._id;
 
     this._canVote(function(err, canVote) {
       if (err) {
@@ -124,7 +125,9 @@
             self.emitMessage(name, updatedVote);
 
             signals.post_patch.send(updatedVote, {
-              instance: updatedVote, socket: self.socket}, function(err, result){});
+              instance: updatedVote,
+              socket: self.socket
+            }, function(err, result) {});
           }
         });
       } else {
@@ -153,7 +156,9 @@
               self.emitMessage(name, removedVote);
 
               signals.post_delete.send(removedVote, {
-                instance: removedVote, socket: self.socket}, function(err, result) {});
+                instance: removedVote,
+                socket: self.socket
+              }, function(err, result) {});
             }
           });
         } else {
@@ -161,9 +166,9 @@
         }
       });
     }
-  }
+  };
 
   module.exports = VoteCRUD;
 
-})(module);
+}(module));
 

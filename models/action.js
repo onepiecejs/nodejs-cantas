@@ -32,11 +32,12 @@
   "use strict";
 
   var mongoose = require('mongoose');
+  var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
   var ActionSchema;
 
   ActionSchema = new Schema({
-    idMemberCreator: ObjectId ,
+    idMemberCreator: ObjectId,
     data: { type: {}, default: {} },
     type: { type: String },
     created: { type: Date, default: Date.now }

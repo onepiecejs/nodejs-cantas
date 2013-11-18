@@ -14,7 +14,7 @@
   var PermissionSchema;
 
   PermissionSchema = new Schema({
-    idMember: ObjectId ,
+    idMember: ObjectId,
     /**
      *  object logic view: such as: global,board,member,organization
      */
@@ -23,7 +23,8 @@
      *  permission only have some types: read,write,all
      *  Suppose Object(such as Board) trigger CloseBoard Action,
      *  the permission will assign to the actual user.
-     *  we need design *token* logic here,and design backend service to directly interact with mongo.
+     *  we need design *token* logic here,and design backend service
+     *  to directly interact with mongo.
      *  every Action will contains permission authorize and Optional data value.
      *  REF: https://trello.com/docs/api/board/index.html#put-1-boards-board-id-closed
      *

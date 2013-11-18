@@ -35,8 +35,12 @@
   });
 
   // Set strategies for authentication.
-  for (var key in strategies)
-    passport.use(strategies[key]);
+  var key;
+  for (key in strategies) {
+    if (strategies.hasOwnProperty(key)) {
+      passport.use(strategies[key]);
+    }
+  }
 
   module.exports = passport;
 

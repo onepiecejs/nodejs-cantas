@@ -34,21 +34,22 @@
           listId = data.changed_data.listId;
         }
         List.findOne({_id: listId}, 'title', function(err, list) {
-          if (err){
+          if (err) {
             return callback(err, null);
-          } else {
-            callback(null, list);
           }
+          callback(null, list);
         });
       },
       function(list, callback) {
         if (action === 'create') {
-          var createdObject = data['createdObject'];
-          var sourceObject = data['sourceObject'];
-          content = util.format('%s added %s "%s" in list "%s"', username, model, createdObject.title, list.title);
+          var createdObject = data.createdObject;
+          var sourceObject = data.sourceObject;
+          content = util.format('%s added %s "%s" in list "%s"', username, model,
+            createdObject.title, list.title);
           if (sourceObject) {
-            content = util.format('%s converted %s "%s" to %s "%s" in list "%s"', username, sourceObject.model,
-                      sourceObject.title, model, createdObject.title, list.title);
+            content = util.format('%s converted %s "%s" to %s "%s" in list "%s"',
+              username, sourceObject.model, sourceObject.title,
+              model, createdObject.title, list.title);
           }
           callback(null, content);
         }
@@ -74,11 +75,10 @@
             List.findOne({_id: data.origin_data[data.field]}, 'title', function(err, fromList) {
               if (err) {
                 return callback(err, null);
-              } else {
-                content = util.format('%s moved %s "%s" from list "%s" to list "%s"',
-                          username, model, data.changed_data.title, fromList.title, list.title);
-                callback(null, content);
               }
+              content = util.format('%s moved %s "%s" from list "%s" to list "%s"',
+                          username, model, data.changed_data.title, fromList.title, list.title);
+              callback(null, content);
             });
           }
         }
@@ -93,8 +93,8 @@
   };
 
   CardCRUD.prototype._read = function(data, callback) {
-    if (data){
-      if (data._id){
+    if (data) {
+      if (data._id) {
         this.modelClass.findOne(data).populate("assignees").exec(
           function (err, result) {
             callback(err, result);
@@ -105,29 +105,29 @@
           function (err, result) {
             async.map(
               result,
-              function(card, callback){
+              function(card, callback) {
                 var transformed = card.toJSON();
                 async.parallel([
-                  function(callback){
-                    card.getBadges(function(err, badges){             
+                  function(callback) {
+                    card.getBadges(function(err, badges) {
                       transformed.badges = badges;
                       callback(null, transformed.badges);
                     });
                   },
-                  function(callback){
-                    card.getCover(function(err, cover){
+                  function(callback) {
+                    card.getCover(function(err, cover) {
                       transformed.cover = cover;
                       callback(null, transformed.cover);
                     });
                   }
-                ],
-                function(err, results){
+                ], function(err, results) {
                   callback(null, transformed);
                 });
               },
-              function(err, result){
+              function(err, result) {
                 callback(err, result);
-            });
+              }
+            );
           }
         );
       }
@@ -141,47 +141,51 @@
     var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
     // _id is not modifiable 
-    delete data['_id']; 
-    var origin_data = data['original'];
+    delete data._id;
+    var origin_data = data.original;
     var change_fields = [];
-    for (var key in origin_data) {
-      change_fields.push(key);
+    var key;
+    for (key in origin_data) {
+      if (origin_data.hasOwnProperty(key)) {
+        change_fields.push(key);
+      }
     }
-    delete data['original'];
+    delete data.original;
 
     if (data.assignees) {
       async.waterfall([
-        function(callback){
+        function(callback) {
           // update card assignees
           self.modelClass.findById(_id, function (err, card) {
             if (err) {
               callback(err, card);
             } else {
               var newAssignees = [];
-              data.assignees.forEach(function(assignee){
-                if (card.assignees.indexOf(assignee) === -1){
+              data.assignees.forEach(function(assignee) {
+                if (card.assignees.indexOf(assignee) === -1) {
                   newAssignees.push(assignee);
                 }
               });
               card.assignees = data.assignees;
-              card.save(function(err, updatedCard){
-                if(err){
+              card.save(function(err, updatedCard) {
+                if (err) {
                   callback(err, updatedCard);
-                }else{
+                } else {
                   callback(null, updatedCard, newAssignees);
                 }
               });
             }
           });
         },
-        function(updatedCard, newAssignees, callback){
+        function(updatedCard, newAssignees, callback) {
           // send notification to new assignees
-          if (newAssignees.length){
+          if (newAssignees.length) {
             var assigner = self.socket.getCurrentUser();
-            User.find({_id: {$in: newAssignees}}, function(err, users){
-              users.forEach(function(assignee){
+            User.find({_id: {$in: newAssignees}}, function(err, users) {
+              users.forEach(function(assignee) {
                 var safeTitle = cantasUtils.safeMarkdownString(updatedCard.title);
-                var msg = util.format("%s assign card [%s](%s) to you.", assigner.username, safeTitle, updatedCard.url);
+                var msg = util.format("%s assign card [%s](%s) to you.",
+                  assigner.username, safeTitle, updatedCard.url);
                 notification.notify(self.socket, assignee, msg, notification.types.information, {
                   body: {
                     assigner: assigner.username,
@@ -196,14 +200,14 @@
           }
           callback(null, updatedCard);
         }
-      ], function(err, updatedCard){
-        if(err){
+      ], function(err, updatedCard) {
+        if (err) {
           callback(err, updatedCard);
-        }else{
-          updatedCard.populate("assignees", function(err, card){
-            if(err){
+        } else {
+          updatedCard.populate("assignees", function(err, card) {
+            if (err) {
               callback(err, card);
-            }else{
+            } else {
               self.emitMessage(name, card);
             }
           });
@@ -213,36 +217,41 @@
       this.modelClass.findByIdAndUpdate(_id,
                                         {$set : data},
                                         function (err, updatedData) {
-        if (err) {
-          callback(err, updatedData);
-        } else {
-          // create activity log
-          if (change_fields.length >= 1) {
-            for (var i = 0; i < change_fields.length; i++) {
-              var changeInfo = {
-                field: change_fields[i],
-                origin_data: origin_data,
-                changed_data: updatedData
-              };
-              self.generateActivityContent(self.key, 'update', changeInfo, function(err, content) {
+          if (err) {
+            callback(err, updatedData);
+          } else {
+            // create activity log
+            if (change_fields.length >= 1) {
+              async.map(change_fields, function(change_field, cb) {
+                var changeInfo = {
+                  field: change_field,
+                  origin_data: origin_data,
+                  changed_data: updatedData
+                };
+                self.generateActivityContent(self.key, 'update', changeInfo,
+                  function(err, content) {
+                    if (err) {
+                      cb(err, updatedData);
+                    } else {
+                      if (content) {
+                        self.logActivity(content);
+                      }
+                    }
+                  });
+              }, function(err, results) {
                 if (err) {
-                  console.log(err);
-                } else {
-                  if (content) {
-                    self.logActivity(content);
-                  }
+                  callback(err, updatedData);
                 }
               });
             }
+            updatedData.populate("assignees", function(err, updatedData) {
+              self.emitMessage(name, updatedData);
+            });
           }
-          updatedData.populate("assignees", function(err, updatedData){
-            self.emitMessage(name, updatedData);
-          });
-        }
-      });
+        });
     }
-  }
+  };
 
   module.exports = CardCRUD;
 
-})(module);
+}(module));

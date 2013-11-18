@@ -45,16 +45,17 @@
         function(board, asyncCallback) {
           var updateData = {$set: {voteStatus: configStatus.enabled}};
           Board.findByIdAndUpdate(board._id, updateData, function(err, updatedBoard) {
-            if (err)
+            if (err) {
               asyncCallback(err, null);
-            else
+            } else {
               asyncCallback(null, updatedBoard !== false);
-          })
+            }
+          });
         },
         function(err, results) {
-          if (err)
+          if (err) {
             callback(err, null);
-          else {
+          } else {
             var result = results.reduce(function(prevValue, curValue) {
               return prevValue && curValue;
             }, true);
@@ -75,10 +76,11 @@
   module.exports.migrate = function migrate(callback) {
     beforeMigration();
     _migrate(function(err, result) {
-      if (err)
+      if (err) {
         die(err);
-      else
+      } else {
         callback(result);
+      }
     });
   };
 

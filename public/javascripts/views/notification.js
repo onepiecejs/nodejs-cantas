@@ -1,5 +1,5 @@
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -15,11 +15,19 @@ $(function ($, _, Backbone) {
 
     initialize: function(options) {
       var that = this;
-      this.notificationCollection = new cantas.models.NotificationCollection;
+      this.notificationCollection = new cantas.models.NotificationCollection();
       this.notificationCollection.on('add', this.render, this);
-      this.notificationCollection.fetch({data: {isUnread: true, userId: cantas.user.id}, success: function(collection, response, options){
-        that.render();
-      }});
+      this.notificationCollection.fetch(
+        {
+          data: {
+            isUnread: true,
+            userId: cantas.user.id
+          },
+          success: function(collection, response, options) {
+            that.render();
+          }
+        }
+      );
     },
 
     render: function() {
@@ -30,9 +38,9 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    _renderItems: function(){
+    _renderItems: function() {
       var that = this;
-      that.notificationCollection.forEach(function(notify){
+      that.notificationCollection.forEach(function(notify) {
         var itemView = new cantas.views.NotificationItemView({model: notify});
         that.$el.append(itemView.render().el);
       });
@@ -40,20 +48,20 @@ $(function ($, _, Backbone) {
       return that;
     },
 
-    _updateReminder: function(){
+    _updateReminder: function() {
       var count = this.notificationCollection.where({isUnread: true}).length;
       var reminder = $(this.$el.parent()).find("a.reminder");
-      if (count === 0){
+      if (count === 0) {
         $(reminder).hide();
-      }else{
+      } else {
         $(reminder).show();
       }
       $(reminder).html(count);
     },
 
-    markAllAsRead: function(){
+    markAllAsRead: function() {
       var that = this;
-      that.notificationCollection.forEach(function(notify){
+      that.notificationCollection.forEach(function(notify) {
         notify.patch({isUnread: false});
       });
       that._updateReminder();
@@ -71,7 +79,7 @@ $(function ($, _, Backbone) {
     },
 
     render: function() {
-      if (this.model.get("isUnread")){
+      if (this.model.get("isUnread")) {
         this.$el.addClass("unread");
       }
       var notification = this.model.toJSON();

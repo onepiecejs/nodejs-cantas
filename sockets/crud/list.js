@@ -3,6 +3,7 @@
 
   "use strict";
 
+  var async = require("async");
   var util = require("util");
   var BaseCRUD = require("./base");
   var Card = require('../../models/card');
@@ -20,8 +21,8 @@
     var content = null;
     var username = this.handshake.user.username;
     if (action === 'create') {
-      var createdObject = data['createdObject'];
-      var sourceObject = data['sourceObject'];
+      var createdObject = data.createdObject;
+      var sourceObject = data.sourceObject;
       content = util.format('%s added %s "%s"', username, model, createdObject.title);
       if (sourceObject) {
         content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
@@ -45,17 +46,50 @@
     callback(null, content);
   };
 
-  ListCRUD.prototype._logActivityWhenArchiveCards = function(updatedData){
+  ListCRUD.prototype._logActivityWhenArchiveCards = function(updatedData) {
     var self = this;
     var username = self.handshake.user.username;
     this.modelClass.findOne({_id: updatedData.listId}, 'title', function(err, list) {
-      if (err) {
-        callback(err, null);
-      } else {
+      if (list) {
         var content = util.format('%s archived card "%s" from list "%s"',
                       username, updatedData.title, list.title);
         self.logActivity(content);
       }
+    });
+  };
+
+  ListCRUD.prototype._archiveAllCards = function(listId, callback) {
+    var self = this;
+    async.waterfall([
+      function(callback) {
+        Card.find({listId: listId, isArchived: false}, function(err, cards) {
+          if (err) {
+            callback(err, null);
+          } else {
+            callback(null, cards);
+          }
+        });
+      },
+      function(cards, callback) {
+        if (cards) {
+          async.map(cards, function(card, callback) {
+            card.isArchived = true;
+            card.save(function(err, updatedCard) {
+              if (err) {
+                callback(err, null);
+              } else {
+                //create activity log
+                self._logActivityWhenArchiveCards(updatedCard);
+                callback(null, updatedCard);
+              }
+            });
+          }, function(err, updatedCard) {
+            callback(err, updatedCard);
+          });
+        }
+      }
+    ], function(err, updatedCardList) {
+      callback(err, updatedCardList);
     });
   };
 
@@ -64,25 +98,20 @@
     var _id = data._id || data.id;
     var username = this.handshake.user.username;
 
-    if (data._archiveAllCards){
-      Card.find({listId: _id, isArchived: false}, function(err, cards){
-        cards.forEach(function(card){
-          card.isArchived = true;
-          card.save(function(err, updatedData){
-
-            //create activity log
-            self._logActivityWhenArchiveCards(updatedData);
-
-            var name = '/card/' + card._id + ':update';
-            self.emitMessage(name, updatedData);
-          });
-        });
+    if (data._archiveAllCards) {
+      self._archiveAllCards(_id, function(err, updatedCardList) {
+        var eventName = '/card:archiveAllCards';
+        var data = {
+          'listId': _id,
+          'archivedCards': updatedCardList
+        };
+        self.emitMessage(eventName, data);
       });
-    }else{
+    } else {
       this._patch(data, callback);
     }
-  }
+  };
 
   module.exports = ListCRUD;
 
-})(module);
+}(module));

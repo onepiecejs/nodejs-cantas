@@ -9,7 +9,7 @@
   var BaseCRUD = require("./base");
   var signals = require("../signals");
 
-  function AttachmentCRUD (options) {
+  function AttachmentCRUD(options) {
     BaseCRUD.call(this, options);
 
     this.deleteEnabled = true;
@@ -21,18 +21,18 @@
   util.inherits(AttachmentCRUD, BaseCRUD);
 
   AttachmentCRUD.prototype._create = function (data, callback) {
-    var att = new this.modelClass(data)
-      , name = '/' + this.key + ':create';
+    var att = new this.modelClass(data),
+      name = '/' + this.key + ':create';
     var self = this;
 
     att.save(function (err, saveObject) {
       saveObject.populate('uploaderId', function (err, attachment) {
-        if(!err){
+        if (!err) {
           self.emitMessage(name, attachment);
 
           signals.post_create.send(attachment,
                                    {instance: attachment, socket: self.socket},
-                                  function(err, result){});
+                                  function(err, result) {});
         }
       });
     });
@@ -71,7 +71,7 @@
           });
         },
         function (isMember, callback) {
-          if(isMember){
+          if (isMember) {
             self.modelClass.findByIdAndRemove(data._id, function(err, removedObject) {
               callback(err, removedObject);
             });
@@ -81,47 +81,42 @@
         },
         function (removedObject, callback) {
           fs.exists(removedObject.path, function (exists) {
-            if(exists) {
+            if (exists) {
               fs.unlink(removedObject.path, function (err) {
                 callback(err, removedObject);
               });
-            }
-            else {
+            } else {
               callback(null, removedObject);
             }
           });
         },
         function (removedObject, callback) {
-          if(removedObject.cardThumbPath){
+          if (removedObject.cardThumbPath) {
             fs.exists(removedObject.cardThumbPath, function (exists) {
-              if(exists) {
+              if (exists) {
                 fs.unlink(removedObject.cardThumbPath, function (err) {
                   callback(err, removedObject);
-                 });
-              }
-              else {
+                });
+              } else {
                 callback(null, removedObject);
               }
             });
-          }
-          else {
+          } else {
             callback(null, removedObject);
           }
         },
         function (removedObject, callback) {
-          if(removedObject.cardDetailThumbPath){
+          if (removedObject.cardDetailThumbPath) {
             fs.exists(removedObject.cardDetailThumbPath, function (exists) {
-              if(exists) {
+              if (exists) {
                 fs.unlink(removedObject.cardDetailThumbPath, function (err) {
                   callback(err, removedObject);
-                 });
-              }
-              else {
+                });
+              } else {
                 callback(null, removedObject);
               }
             });
-          }
-          else {
+          } else {
             callback(null, removedObject);
           }
         }
@@ -131,7 +126,7 @@
         } else {
           self.emitMessage(name, removedObject);
 
-          signals.post_delete.send(removedObject, 
+          signals.post_delete.send(removedObject,
                                    {instance: removedObject, socket: self.socket},
                                   function(err, result) {});
         }
@@ -146,49 +141,66 @@
     var name = '/' + this.key + '/' + _id + ':update';
 
     // _id is not modifiable
-    delete data['_id'];
-    delete data['cardId'];
+    delete data._id;
+    delete data.cardId;
 
     async.waterfall([
-      function(callback){
+      function(callback) {
         self.isBoardMember(function(err, isMember) {
           callback(err, isMember);
         });
       },
-      function(isMember, callback){
-        if(isMember){
-          self.modelClass.findOneAndUpdate({'cardId': _cardId, 'isCover': true}, {'isCover': false}, 
+      function(isMember, callback) {
+        if (isMember) {
+          self.modelClass.findOneAndUpdate({'cardId': _cardId, 'isCover': true},
+            {'isCover': false},
             function (err, updatedData) {
-              if(updatedData) {
-                self.emitMessage('/' + self.key + '/' + updatedData._id + ':update', updatedData);
+              if (updatedData) {
+                updatedData.populate('uploaderId', function (err, updatedData) {
+                  if (err) {
+                    callback(err, null);
+                  } else {
+                    self.emitMessage('/' + self.key + '/' +
+                      updatedData._id + ':update', updatedData);
+                  }
+                });
               }
               callback(err, true);
-          });
-        }else{
-          callback(err, false);
+            });
+        } else {
+          callback(true, null);
         }
       },
-      function(isUpdate, callback){
-        if(isUpdate){
+      function(isUpdate, callback) {
+        if (isUpdate) {
           data.updatedOn = Date.now();
           self.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
             callback(err, updatedData);
           });
-        }else{
+        } else {
           callback(true, null);
         }
+      },
+      function(updatedData, callback) {
+        updatedData.populate('uploaderId', function (err, updatedData) {
+          if (err) {
+            callback(err, null);
+          } else {
+            callback(null, updatedData);
+          }
+        });
       }
-    ], function(err, updatedData){
+    ], function(err, updatedData) {
       if (err) {
         callback(err, null);
       } else {
         self.emitMessage(name, updatedData);
 
-        signals.post_patch.send(updatedData, {
-          instance: updatedData, socket: self.socket}, function(err, result){});
+        signals.post_patch.send(updatedData, {instance: updatedData, socket: self.socket},
+          function(err, result) {});
       }
     });
   };
 
   module.exports = AttachmentCRUD;
-})(module);
+}(module));

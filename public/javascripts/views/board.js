@@ -1,6 +1,6 @@
 // Board View
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
   window.cantas.isBoardMember = false;
@@ -24,25 +24,23 @@ $(function ($, _, Backbone) {
       this.model.on("invalid", function(model, error) {
         alert(error);
       });
-      this.model.on("change:title", this.titleChangedFromOthers)
+      this.model.on("change:title", this.titleChangedFromOthers);
 
       //when clicking outside area of the board-menu, it will disappear.
-      $("body").on("click", function (event){
+      $("body").on("click", function (event) {
         var e = event || window.event;
-        var elem = e.srcElement||e.target;
-        while(elem && elem !== $("body")[0])
-        {
-            if(elem.className.indexOf("board-menu") > -1)
-            {
-              return;
-            }
-            elem = elem.parentNode;
+        var elem = e.srcElement || e.target;
+        while (elem && elem !== $("body")[0]) {
+          if (elem.className.indexOf("board-menu") > -1) {
+            return;
+          }
+          elem = elem.parentNode;
         }
         $(".board-menu").hide();
       });
     },
 
-    remove: function(){
+    remove: function() {
       this.undelegateEvents();
       this.stopListening();
       return this;
@@ -79,23 +77,25 @@ $(function ($, _, Backbone) {
         .select();
 
       this.attributes.expandedViewChain = cantas.utils.rememberMe(
-        this, this.attributes.expandedViewChain);
+        this,
+        this.attributes.expandedViewChain
+      );
     },
 
     saveTitle: function() {
       var title = this.getBoardTitle().trim();
-      if (title.length == 0) {
+      if (title.length === 0) {
         alert("Please enter a board title.");
-        return false;
       } else {
         var origin_title = this.model.get("title");
         var result = this.model.set({ "title": title },
                                     { validate: true });
-        if (result && this.model.hasChanged("title"))
+        if (result && this.model.hasChanged("title")) {
           this.model.patch({
             title: this.model.get("title"),
             original: {title: origin_title}
           });
+        }
       }
       return true;
     },
@@ -117,8 +117,9 @@ $(function ($, _, Backbone) {
        * When validation fails before saving board's title, stop canceling edit
        * operation.
        */
-      if (!this.saveTitle())
+      if (!this.saveTitle()) {
         event.stopPropagation();
+      }
     },
 
     /*
@@ -126,7 +127,7 @@ $(function ($, _, Backbone) {
      * and save it.
      */
     boardTitleInputKeypressed: function(event) {
-      if (event.which == 13) {
+      if (event.which === 13) {
         if (this.saveTitle()) {
           $("body").trigger("click");
         }
@@ -147,6 +148,129 @@ $(function ($, _, Backbone) {
 
     toggleBoardMenu: function(event) {
       $(".board-menu").css("left", $(event.target).position().left + 20).toggle();
+    }
+
+  });
+
+  var ArchivedItemView = Backbone.View.extend({
+    tagName: "li",
+    className: "",
+    template:  jade.compile($("#template-archived-items-view").text()),
+    section: "lists",
+
+    initialize: function(data) {
+      _.bindAll(this, "render");
+      this.section = data.section;
+    },
+
+    events: {
+      "click .js-reopen": "reopenArchivedList",
+      "click .js-cards-reopen": "reopenArchivedCard"
+    },
+
+    render: function() {
+      this.$el.html(this.template({item: this.model, section: this.section}));
+      return this;
+    },
+
+    reopenArchivedList: function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var listId = $(event.target).data("listid");
+      var thatList = new cantas.models.List({_id: listId});
+
+      var sortArray = cantas.utils.getCurrentBoardModel().listCollection.pluck('order');
+      sortArray.sort(function(a, b) {
+        return (a - b);
+      });
+      var lastListOrder = ('undefined' === typeof _.last(sortArray)) ? -1 : _.last(sortArray);
+      var newListOrder = lastListOrder + 65536;
+
+      thatList.fetch({
+        success: function(model, response, options) {
+          model.patch({
+            isArchived: false,
+            order: newListOrder,
+            original: {isArchived: true}
+          }, {silent: true});
+        }
+      });
+
+      this.remove();
+    },
+
+    reopenArchivedCard: function(event) {
+      var cardId = $(event.target).data("cardid");
+      var thatCard = new cantas.models.Card({_id: cardId});
+
+      thatCard.fetch({
+        success: function (model, response, options) {
+          //get that card's self listView
+          var currentBoardView = cantas.utils.getCurrentBoardView();
+          var viewIdArray = _.map(currentBoardView.listViewCollection, function(child) {
+            return child.model.id;
+          });
+          var inListViewIndex = _.indexOf(viewIdArray, model.get("listId"));
+          // the listView is not exist in this board
+          if (-1 === inListViewIndex) {
+            var queryCards = '/api/archived/getorders/' + model.get("listId");
+            $.ajax({
+              url: queryCards,
+              success: function(items) {
+                var sortArray = _.pluck(items, 'order');
+                sortArray.sort(function(a, b) {
+                  return (a - b);
+                });
+                var lastCardOrder = null;
+                if (typeof _.last(sortArray) === 'undefined') {
+                  lastCardOrder = -1;
+                } else {
+                  lastCardOrder = _.last(sortArray);
+                }
+                var newCardOrder = lastCardOrder + 65536;
+                model.patch({
+                  isArchived: false,
+                  'order': newCardOrder,
+                  original: {isArchived: true}
+                }, { silent: true });
+              },
+              error: function() {
+                cantas.utils.renderTimeoutBox();
+                return false;
+              }
+            });
+          } else {
+            // if the listView exist in this board
+            var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];
+            var sortArray = inListView.model.cardCollection.pluck('order');
+            sortArray.sort(function(a, b) {
+              return (a - b);
+            });
+            var lastCardOrder = null;
+            if (typeof _.last(sortArray) === 'undefined') {
+              lastCardOrder = -1;
+            } else {
+              lastCardOrder = _.last(sortArray);
+            }
+            var newCardOrder = lastCardOrder + 65536;
+            // update and pushlish card changed
+            model.patch({
+              isArchived: false,
+              order: newCardOrder,
+              original: {isArchived: true}
+            }, {silent: true});
+          }
+        }
+      });
+
+      //remove reOpenArchived link
+      this.remove();
+    },
+
+    remove: function() {
+      this.undelegateEvents();
+      this.stopListening();
+      this.$el.remove();
     }
 
   });
@@ -173,7 +297,7 @@ $(function ($, _, Backbone) {
       this.model.on("change:description", this.descriptionChangedFromOthers);
     },
 
-    remove: function(){
+    remove: function() {
       this.undelegateEvents();
       this.stopListening();
       return this;
@@ -189,7 +313,7 @@ $(function ($, _, Backbone) {
         $(".list-menu,.js-list-setting").hide();
         $(".card-menu,.card-setting").hide();
         view.showInfoEditionDialog();
-      }else {
+      } else {
         view.collapse();
       }
     },
@@ -199,7 +323,9 @@ $(function ($, _, Backbone) {
       $("#board-description-text")
         .val(this.model.get("description"));
       this.attributes.expandedViewChain = cantas.utils.rememberMe(
-        this, this.attributes.expandedViewChain);
+        this,
+        this.attributes.expandedViewChain
+      );
     },
 
     descriptionChangedFromOthers: function(model, description) {
@@ -211,8 +337,8 @@ $(function ($, _, Backbone) {
       var origin_description = this.model.get("description");
       var result = this.model.set({ "description": description },
                                   { validate: true });
-      if (result != false && this.model.hasChanged("description")) {
-        this.model.patch({ 
+      if (result !== false && this.model.hasChanged("description")) {
+        this.model.patch({
           description: this.model.get("description"),
           original: {description: origin_description}
         });
@@ -223,10 +349,13 @@ $(function ($, _, Backbone) {
     // Collpase the edit control area
     collapse: function() {
       $("div#board-description").addClass("hide");
-      if (this.model.hasChanged("description"))
+      if (this.model.hasChanged("description")) {
         $("textarea#board-description-text").val(this.model.get("description"));
+      }
       this.attributes.expandedViewChain = cantas.utils.forgetMe(
-        this, this.attributes.expandedViewChain);
+        this,
+        this.attributes.expandedViewChain
+      );
     }
   });
 
@@ -235,21 +364,21 @@ $(function ($, _, Backbone) {
 
     events: {
       "click .js-create-new-list": "saveNewList",
-      "keypress #list-title": "keyPressed",
+      "keypress #list-title": "keyPressed"
     },
 
-    initialize: function(options){
+    initialize: function(options) {
       this.title = "Untitled List";
     },
 
-    render: function(){
+    render: function() {
       $("div.board-menu").hide();
       this.$el.modal();
       this.$el.find("#list-title").val(this.title).select();
       return this;
     },
 
-    remove: function(){
+    remove: function() {
       this.undelegateEvents();
       this.stopListening();
       this.$el.hide();
@@ -273,8 +402,8 @@ $(function ($, _, Backbone) {
       }
     },
 
-    keyPressed: function(event){
-      if(event.which === 13){
+    keyPressed: function(event) {
+      if (event.which === 13) {
         this.saveNewList(event);
       }
     },
@@ -283,10 +412,10 @@ $(function ($, _, Backbone) {
       var listOrder = -1;
       var listCollection = this.model.listCollection;
       var listCount = listCollection.length;
-      if(listCount === 0) {
+      if (listCount === 0) {
         listOrder = listOrder + 65536;
       }
-      if(listCount > 0) {
+      if (listCount > 0) {
         var lastOrder = _.last(listCollection.pluck("order"));
         listOrder = lastOrder + 65536;
       }
@@ -295,42 +424,48 @@ $(function ($, _, Backbone) {
   });
 
   var ArchivedView = Backbone.View.extend({
-    el: "div.archived-window",
+    el: "div.window-overlay",
     template: jade.compile($("#template-archived-view").text()),
     archivedItemViews: [],
 
-    initialize: function(){
+    initialize: function() {
       _.bindAll(this, "render");
       this.section = "lists";
     },
 
     events: {
       "click .js-switch-section": "switchSections",
-      "hidden": "closeArchivedWindow"
+      "hidden.bs.modal": "closeArchivedWindow"
     },
 
-    render: function(){
+    render: function() {
       this.$el.html(this.template({section: this._toTitleCase(this.section)}));
-      this.$el.find("."+this.section+"-tab").addClass("active");
+      this.$el.find("." + this.section + "-tab").addClass("active");
       this.$el.modal();
 
       this._renderArchivedItems(this.el);
       return this;
     },
 
-    switchSections: function(){
-      "cards" === this.section ? (this.section = "lists") : (this.section = "cards");
+    switchSections: function() {
+      if (this.section === "cards") {
+        this.section = "lists";
+      } else {
+        this.section = "cards";
+      }
       return this.render();
     },
 
-    _toTitleCase: function(title){
+    _toTitleCase: function(title) {
       return title.charAt(0).toUpperCase() + title.substr(1).toLowerCase();
     },
 
     _renderArchivedItems: function(elArchive) {
       var that = this;
       var thatElem = $(elArchive).find("ul.js-archive-items");
-      var queryArchived = ("cards" === that.section) ? "/api/archived/cards/"+ cantas.utils.getCurrentBoardModel().id: "/api/archived/lists/"+ cantas.utils.getCurrentBoardModel().id;
+      var archiveCardApi = "/api/archived/cards/" + cantas.utils.getCurrentBoardModel().id;
+      var archiveListApi = "/api/archived/lists/" + cantas.utils.getCurrentBoardModel().id;
+      var queryArchived = ("cards" === that.section) ? archiveCardApi : archiveListApi;
       var archivedItemViews = this.archivedItemViews;
 
       $.ajax({
@@ -350,13 +485,13 @@ $(function ($, _, Backbone) {
       });
     },
 
-    closeArchivedWindow: function(){
+    closeArchivedWindow: function() {
       //clear child view event
       var archivedItemViews = this.archivedItemViews;
       //clear all archivedItemViews event listening
       _.each(archivedItemViews, function(view) {
-          view.remove();
-          archivedItemViews.pop(view);
+        view.remove();
+        archivedItemViews.pop(view);
       });
       // clear archived window event
       this.undelegateEvents();
@@ -366,112 +501,6 @@ $(function ($, _, Backbone) {
 
   });
 
-  var ArchivedItemView = Backbone.View.extend({
-    tagName: "li",
-    className: "",
-    template:  jade.compile($("#template-archived-items-view").text()),
-    section: "lists",
-
-    initialize: function(data){
-      _.bindAll(this, "render");
-      this.section = data.section;
-    },
-
-    events: {
-      "click .js-reopen": "reopenArchivedList",
-      "click .js-cards-reopen": "reopenArchivedCard"
-    },
-
-    render: function() {
-      this.$el.html(this.template({item: this.model, section: this.section}));
-      return this;
-    },
-
-    reopenArchivedList: function(event){
-      event.preventDefault();
-      event.stopPropagation();
-      var listId = $(event.target).data("listid");
-      var thatList = new cantas.models.List({_id: listId});
-
-      var sortArray = cantas.utils.getCurrentBoardModel().listCollection.pluck('order');
-      sortArray.sort(function(a,b){return a - b});
-      var lastListOrder = ('undefined' === typeof _.last(sortArray)) ? -1 : _.last(sortArray);
-      var newListOrder = lastListOrder + 65536;
-
-      thatList.fetch({
-        success: function (model, response, options){
-          model.patch({
-            isArchived: false,
-            order: newListOrder,
-            original: {isArchived: true}
-          }, {silent: true});
-        }
-      });
-
-      this.remove();
-    },
-
-    reopenArchivedCard: function(event){
-      var cardId = $(event.target).data("cardid");
-      var thatCard = new cantas.models.Card({_id: cardId});
-
-      thatCard.fetch({
-        success: function (model, response, options){
-          //get that card's self listView
-          var viewIdArray = _.map(cantas.utils.getCurrentBoardView().listViewCollection,function(child){ return child.model.id });
-          var inListViewIndex = _.indexOf(viewIdArray, model.get("listId"));
-          // the listView is not exist in this board
-          if (-1 === inListViewIndex) {
-            var queryCards = '/api/archived/getorders/'+ model.get("listId");
-            $.ajax({
-              url: queryCards,
-              success: function(items) {
-                var sortArray = _.pluck(items,'order');
-                sortArray.sort(function(a,b){return a - b});
-                var lastCardOrder = ('undefined' ===  typeof _.last(sortArray)) ? -1 : _.last(sortArray);
-                var newCardOrder = lastCardOrder + 65536;
-                model.patch({
-                  isArchived: false,
-                  'order': newCardOrder,
-                  original: {isArchived: true}
-                },
-                {
-                  silent: true
-                });
-              },
-              error: function() {
-                cantas.utils.renderTimeoutBox();
-                return false;
-              }
-            });
-          } else {
-            // if the listView exist in this board
-            var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];
-            var sortArray = inListView.model.cardCollection.pluck('order');
-            sortArray.sort(function(a,b){return a - b});
-            var lastCardOrder = ('undefined' ===  typeof _.last(sortArray)) ? -1 : _.last(sortArray);
-            var newCardOrder = lastCardOrder + 65536;
-            // update and pushlish card changed
-            model.patch({
-              isArchived: false,
-              order: newCardOrder,
-              original: {isArchived: true}
-            }, {silent: true});
-          }
-        }
-      });
-
-      //remove reOpenArchived link
-      this.remove();
-    },
-
-    remove: function() {
-      this.undelegateEvents();
-      this.stopListening();
-      this.$el.remove();
-    }
-
-  });
 
   var ImportTrelloDialogView = Backbone.View.extend({
     el: 'div#import-trello-dialog',
@@ -480,11 +509,11 @@ $(function ($, _, Backbone) {
       'click #import-trello-complete': 'reloadBoard'
     },
 
-    initialize: function(options){
+    initialize: function(options) {
 
     },
 
-    render: function(){
+    render: function() {
       this.$el.modal({
         'keyboard': false
       });
@@ -494,7 +523,7 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    remove: function(){
+    remove: function() {
       this.undelegateEvents();
       this.stopListening();
       this.$el.hide();
@@ -504,11 +533,10 @@ $(function ($, _, Backbone) {
     reloadBoard: function(event) {
       event.stopPropagation();
       var importTrelloMessage = this.$('#import-trello-message').text();
-      if(importTrelloMessage.indexOf('completed') > -1) {
+      if (importTrelloMessage.indexOf('completed') > -1) {
         window.location.reload();
-      }
-      else if(importTrelloMessage.indexOf('Error:') > -1) {
-        if(importTrelloMessage.indexOf('check file content') === -1) {
+      } else if (importTrelloMessage.indexOf('Error:') > -1) {
+        if (importTrelloMessage.indexOf('check file content') === -1) {
           window.location.reload();
         }
       }
@@ -527,6 +555,7 @@ $(function ($, _, Backbone) {
     events: {
       'updatesort': 'updateSort',
       "click .js-archived-items": "openArchivedItems",
+      'click .js-import-bugzilla': 'openImportBugzillaWindow',
       'click .js-import-trello': 'importTrelloJSON',
       "click .js-add-list": "addList",
       "dblclick .board-content": "addList",
@@ -540,14 +569,14 @@ $(function ($, _, Backbone) {
       'click .js-show-configuration': 'onShowConfigurationClick'
     },
 
-    initialize: function(data){
+    initialize: function(data) {
       window.cantas.isBoardMember = data.isMember;
       // cache list view instance.
       this.listViewCollection = [];
 
       this.visitors = data.visitors;
 
-      this.model.listCollection.fetch({data: {boardId: this.model.id}});
+      this.model.listCollection.fetch({data: {boardId: this.model.id}, reset: true});
 
       this.model.listCollection.on('add', this.addOne, this);
       // `reset` initialize and recursively load list inside board.
@@ -555,8 +584,8 @@ $(function ($, _, Backbone) {
       this.model.on('change:isPublic', this.resetVisibility, this);
       this.model.on("change:isClosed", this.onBoardClosed, this);
 
-      this.memberCollection = new cantas.models.BoardMemberCollection;
-      this.activityCollection = new cantas.models.ActivityCollection;
+      this.memberCollection = new cantas.models.BoardMemberCollection();
+      this.activityCollection = new cantas.models.ActivityCollection();
 
       // we won't render the whole board each time when it's changed.
       // render is only called when board is initiated.
@@ -601,6 +630,14 @@ $(function ($, _, Backbone) {
       archivedView.render();
     },
 
+    openImportBugzillaWindow: function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      $("div.board-menu").hide();
+      var importBugzillaView = new cantas.views.ImportBugzillaView({'model': this.model});
+      importBugzillaView.render();
+    },
+
     importTrelloJSON: function(event) {
       event.preventDefault();
       event.stopPropagation();
@@ -608,13 +645,13 @@ $(function ($, _, Backbone) {
       $("div.board-menu").hide();
     },
 
-    addList: function(event){
+    addList: function(event) {
       event.preventDefault();
       //event.stopPropagation();
       this.addListView.render();
     },
 
-    close: function(){
+    close: function() {
       this.addListView.remove();
       this.boardTitleView.remove();
       this.boardDescriptionView.remove();
@@ -624,7 +661,7 @@ $(function ($, _, Backbone) {
       this.boardActiveUserView.remove();
       this.activityView.collection.dispose();
       this.activityView.remove();
-      this.listViewCollection.forEach(function(view){
+      this.listViewCollection.forEach(function(view) {
         view.remove();
       });
       this.model.dispose();
@@ -645,7 +682,7 @@ $(function ($, _, Backbone) {
       }
 
       this.$el.html(this.template(this.model.toJSON()));
-      cantas.setTitle("Board|"+this.model.get("title"));
+      cantas.setTitle("Board|" + this.model.get("title"));
 
       var visibility = this.model.get("isPublic");
       if (!visibility) {
@@ -676,8 +713,8 @@ $(function ($, _, Backbone) {
         model: this.model,
         attributes: {
           expandedViewChain: this._expandedViewChain
-         }
-       });
+        }
+      });
 
       this.importTrelloDialogView = new ImportTrelloDialogView();
 
@@ -705,30 +742,29 @@ $(function ($, _, Backbone) {
         dataType: 'json'
       }).on('fileuploadprocessalways', function (e, data) {
         that.importTrelloDialogView.render();
-
-        var file = data.files[0];        
-        if(file.error) {
+        var file = data.files[0];
+        if (file.error) {
           importTrelloMessage.text('Hint: ' + file.error);
           importTrelloProcessing.hide();
-          importTrelloComplete.attr('disabled',false).text('Close');
+          importTrelloComplete.attr('disabled', false).text('Close');
         }
       }).on('fileuploaddone', function (e, data) {
-        if(data.result.user_error) {
+        if (data.result.user_error) {
           importTrelloMessage.text('Error: ' + data.result.user_error);
           importTrelloProcessing.hide();
-          importTrelloComplete.attr('disabled',false).text('Close');
+          importTrelloComplete.attr('disabled', false).text('Close');
           throw new Error(data.result.maintainer_error);
         } else {
           cantas.socket.emit('import-trello-complete', {'boardId': that.model.id});
           importTrelloMessage.text(data.result.success);
           importTrelloProcessing.hide();
-          importTrelloComplete.attr('disabled',false).text('Completed');
+          importTrelloComplete.attr('disabled', false).text('Completed');
         }
 
       }).on('fileuploadfail', function (e, data) {
         importTrelloMessage.text('Error: Importing the json file from Trello failed');
         importTrelloProcessing.hide();
-        importTrelloComplete.attr('disabled',false).text('Close');
+        importTrelloComplete.attr('disabled', false).text('Close');
       }).on('fileuploadsubmit', function (e, data) {
         if (data.files[0].size === 0) {
           importTrelloMessage.text('Hint: Importing the json file from Trello failed');
@@ -759,12 +795,12 @@ $(function ($, _, Backbone) {
 
       if (!window.cantas.isBoardMember) {
         this.disableEvents();
-      };
+      }
 
       var currentUserRole = this.getCurrentUserRole();
-      if (currentUserRole !== 'admin' ){
+      if (currentUserRole !== 'admin') {
         this.$el.find('.js-show-configuration').hide();
-      };
+      }
 
       return this;
     },
@@ -773,9 +809,9 @@ $(function ($, _, Backbone) {
       var currentUserRole = null;
       var currentUser = cantas.utils.getCurrentUser();
       this.visitors.each(function(visitor) {
-        if (visitor.attributes._id == currentUser.id) {
+        if (visitor.attributes._id === currentUser.id) {
           currentUserRole = visitor.attributes.role.name;
-        };
+        }
       });
       return currentUserRole;
     },
@@ -790,7 +826,7 @@ $(function ($, _, Backbone) {
       this.boardTitleView.undelegateEvents();
     },
 
-    addAll: function(){
+    addAll: function() {
       var that = this;
       this.model.listCollection.each(function (list) {
         that.addOne(list);
@@ -800,13 +836,12 @@ $(function ($, _, Backbone) {
       //disable sort function of lists if user is not board member.
       if (!window.cantas.isBoardMember) {
         $('.board').sortable('disable');
-      };
+      }
     },
 
-    addOne: function(list, context){
+    addOne: function(list, collection, options) {
       // `context` is null during initialization(reset),
       // while for manually added list, `context` would be an object.
-      context = (typeof context !== 'undefined') ? context : false;
       var thatListView = new cantas.views.ListView({
         model: list,
         attributes: {
@@ -818,14 +853,17 @@ $(function ($, _, Backbone) {
       this.listViewCollection.push(thatListView);
 
       // only render not archived lists
-      if (list.get("isArchived") === false){
+      if (list.get("isArchived") === false) {
         $('#board').append(thatListView.render().el);
       }
 
-      if (context) {
+      if (options && options.add === true) {
         $("#board").find(".list-panel:last").addClass("list-panel-highlight");
-        setTimeout(function(){
-          $("#board").find(".list-panel").filter(".list-panel-highlight").removeClass("list-panel-highlight");
+        setTimeout(function() {
+          $("#board")
+            .find(".list-panel")
+            .filter(".list-panel-highlight")
+            .removeClass("list-panel-highlight");
         }, 10);
 
         // board get scrolled for and only for the list creator.
@@ -835,11 +873,11 @@ $(function ($, _, Backbone) {
         // active connection would also get scrolled; feel free to refine code
         // below if anyone get better idea on distinguishing these clients.
         if (list.attributes.creatorId !== undefined &&
-            list.attributes.creatorId == cantas.user.id){
+            list.attributes.creatorId === cantas.user.id) {
           var that = this;
           $("#board").animate({
             scrollLeft: $("#board")[0].scrollWidth
-          }, 1000, function(){
+          }, 1000, function() {
             that.switchScrollButton();
           });
 
@@ -854,47 +892,49 @@ $(function ($, _, Backbone) {
     // Important: here i implement moving fast algorithm,
     // it let list colleciton don't need to update all list's index.
     // only the change list index will be update.(dxiao@redhat.com)
-    updateSort: function(event, model, position) {
+    updateSort: function(event, model, targetPosition, originalPosition) {
+      var position = Number(targetPosition);
+      var originPosition = Number(originalPosition);
       var thatModel = model; // this model this list Model
       var listCollection = this.model.listCollection; // this.model is board Model
       var listCount = listCollection.length;
       var listOrder = -1;
+      var beforeIndex = 0;
+      var afterIndex = 0;
 
       // list reorder rule apply
       //case 1:move to first position
       if (position === 0) {
         var firstIndex = listCollection.at(position).get('order');
-        listOrder = firstIndex / 2;
+        listOrder = (firstIndex - 1) / 2;
       }
 
       //case 2: moving to inPositions, from left to right
-      if (thatModel.get('order') < listCollection.at(position).get('order') &&
-        position > 0 && position < listCount - 1 ) {
-        var beforeIndex = listCollection.at(position).get('order');
-        var afterIndex = listCollection.at(position + 1).get('order');
+      if (originPosition < position && position > 0 && position < listCount - 1) {
+        beforeIndex = listCollection.at(position).get('order');
+        afterIndex = listCollection.at(position + 1).get('order');
         listOrder = (beforeIndex + afterIndex) / 2;
       }
 
       //case 2: moving to inPositions, from right to left
-      if (thatModel.get('order') > listCollection.at(position).get('order') &&
-        position > 0 && position < listCount - 1 ) {
-        var beforeIndex = listCollection.at(position - 1).get('order');
-        var afterIndex = listCollection.at(position).get('order');
+      if (originPosition > position && position > 0 && position < listCount - 1) {
+        beforeIndex = listCollection.at(position - 1).get('order');
+        afterIndex = listCollection.at(position).get('order');
         listOrder = (beforeIndex + afterIndex) / 2;
       }
 
       //case 3: move to last index of list array
-      if (position === listCount - 1 ) {
+      if (position === listCount - 1) {
         var lastIndex = listCollection.at(listCount - 1).get('order');
         listOrder = lastIndex + 65536;
       }
 
       // list model update
-      model.set({'order':listOrder}, {silent: true});
-      //trigger
-      model.patch({'order':listOrder},{validate: false});
+      model.set({'order': listOrder}, {silent: true});
+      // trigger
+      model.patch({'order': listOrder}, {validate: false});
       // update board model.listCollection, and trigger the model
-      listCollection.add(model, {merge: true,silent: true});
+      listCollection.add(model, {merge: true, silent: true});
       listCollection.sort({silent: true}); // update sort.
       this.model.listCollection = listCollection; // assign to origin listCollection
 
@@ -908,8 +948,8 @@ $(function ($, _, Backbone) {
      */
     collapsePreviousEdit: function() {
       var view = this._expandedViewChain.pop();
-      if (view != undefined) {
-          view.collapse();
+      if (view !== undefined) {
+        view.collapse();
       }
     },
 
@@ -922,10 +962,9 @@ $(function ($, _, Backbone) {
 
       event.preventDefault();
       event.stopPropagation();
-      if($(event.target).hasClass("active")){
+      if ($(event.target).hasClass("active")) {
         $(event.target).removeClass("active").attr("title", "Set to private");
-      }
-      else{
+      } else {
         $(event.target).addClass("active").attr("title", "Set to public");
       }
       var visibility = this.model.get("isPublic") === true ? false : true;
@@ -933,34 +972,32 @@ $(function ($, _, Backbone) {
       this.model.patch({
         "isPublic": visibility,
         original: {isPublic: origin_isPublic}
-      },  {silent: true, validate: true})
+      }, {silent: true, validate: true});
     },
 
     resetVisibility: function() {
       var visibility = this.model.get("isPublic");
       if (visibility) {
         this.$el.find("a.js-select-private").removeClass("active").attr("title", "Set to private");
-      }
-      else {
+      } else {
         this.$el.find("a.js-select-private").addClass("active").attr("title", "Set to public");
       }
     },
 
-    toggleInviteMember: function(event){
+    toggleInviteMember: function(event) {
 
-      if($(".activity:visible").length == 1){
+      if ($(".activity:visible").length === 1) {
         $(".activity").hide();
       }
-      if(this.$el.find(".invite:visible").length == 1) {
+      if (this.$el.find(".invite:visible").length === 1) {
         this.$el.find(".invite").hide("slide", { direction: "right" }, "fast");
-      }
-      else{
+      } else {
         this.$el.find(".invite").show("slide", { direction: "right" }, "fast");
         this.$el.find(".invite-new .input-member").focus();
       }
     },
 
-    scrollBoardContent: function(event){
+    scrollBoardContent: function(event) {
 
       this.flag_continueScrollBoard = false;
       clearInterval(this.timer_continueScrollBoard);
@@ -968,51 +1005,52 @@ $(function ($, _, Backbone) {
       var offset = ($(event.target).parent().is(".js-board-side-scroll-left")) ? -278 : 278;
       var that = this;
       $("#board").stop().animate({"scrollLeft": $("#board").scrollLeft() + offset}, 300,
-        function(){
+        function() {
           that.switchScrollButton();
         });
     },
 
-    switchScrollButton: function(){
-      if($("#board")[0].scrollWidth - $("#board").innerWidth() > 0) {
-        if($("#board").scrollLeft() === 0){
+    switchScrollButton: function() {
+      if ($("#board")[0].scrollWidth - $("#board").innerWidth() > 0) {
+        if ($("#board").scrollLeft() === 0) {
           this.$el.find(".js-board-side-scroll-left").hide();
-          if(this.$el.find(".js-board-side-scroll-right").is(":hidden"))
+          if (this.$el.find(".js-board-side-scroll-right").is(":hidden")) {
             this.$el.find(".js-board-side-scroll-right").show();
-        }
-        else if($("#board").scrollLeft() + $("#board").innerWidth() === $("#board")[0].scrollWidth) {
+          }
+        } else if (
+          $("#board").scrollLeft() + $("#board").innerWidth() === $("#board")[0].scrollWidth
+        ) {
           this.$el.find(".js-board-side-scroll-right").hide();
-          if(this.$el.find(".js-board-side-scroll-left").is(":hidden"))
+          if (this.$el.find(".js-board-side-scroll-left").is(":hidden")) {
             this.$el.find(".js-board-side-scroll-left").show();
-        }
-        else{
-          if(this.$el.find("div[class*='js-board-side-scroll']").is(":hidden"))
+          }
+        } else {
+          if (this.$el.find("div[class*='js-board-side-scroll']").is(":hidden")) {
             this.$el.find("div[class*='js-board-side-scroll']").show();
+          }
         }
-      }
-      else
-      {
+      } else {
         this.$el.find("div[class*='js-board-side-scroll']").hide();
       }
     },
 
-    startScrollBoardContent: function(event){
+    startScrollBoardContent: function(event) {
 
       var that = this;
-      this.timer_continueScrollBoard = setTimeout(function(){
-          that.flag_continueScrollBoard = true;
-      },200);
+      this.timer_continueScrollBoard = setTimeout(function() {
+        that.flag_continueScrollBoard = true;
+      }, 200);
 
       var offset = ($(event.target).parent().is(".js-board-side-scroll-left")) ? -50 : 50;
-      this.timer_scrollBoard = setInterval(function(){
-        if(that.flag_continueScrollBoard) {
+      this.timer_scrollBoard = setInterval(function() {
+        if (that.flag_continueScrollBoard) {
           $("#board").stop().animate({"scrollLeft": $("#board").scrollLeft() + offset},
             50);
         }
       }, 50);
     },
 
-    stopScrollBoardContent: function(event){
+    stopScrollBoardContent: function(event) {
 
       this.flag_continueScrollBoard = false;
       clearInterval(this.timer_continueScrollBoard);
@@ -1025,32 +1063,31 @@ $(function ($, _, Backbone) {
      * content. As a result, users can see the different fragments of the content in a small area 
      * by means of scrollbar.
      */
-    buildScrollbar: function (jScrollbar){
+    buildScrollbar: function (jScrollbar) {
       //build up the architecture of the scroll content
-      jScrollbar.css("overflow","hidden");
-      if (jScrollbar.find(".scroll-content").length == 0){
+      jScrollbar.css("overflow", "hidden");
+      if (jScrollbar.find(".scroll-content").length === 0) {
         jScrollbar.children().wrapAll('<div class="scroll-content"></div>');
       }
       //compute the difference between the height of the scroll content and that of the scroll pane
       //to decide if we need to display a vertical scrollbar now
-      var iDifference = jScrollbar.find(".scroll-content").height()-jScrollbar.height();
-      jScrollbar.data("difference",iDifference); 
+      var iDifference = jScrollbar.find(".scroll-content").height() - jScrollbar.height();
+      jScrollbar.data("difference", iDifference);
       //don't need a scrollbar
-      if(iDifference <= 0 && jScrollbar.find(".scroll-vbar-wrap").length > 0)
-      {
+      if (iDifference <= 0 && jScrollbar.find(".scroll-vbar-wrap").length > 0) {
         jScrollbar.find(".scroll-vbar-wrap").remove();
-        jScrollbar.find(".scroll-content").css({top:0});
+        jScrollbar.find(".scroll-content").css({top: 0});
       }
 
       //need a scrollbar
-      if(iDifference>0)
-      {
+      if (iDifference > 0) {
         //build up the architecture of the scroll bar
-        var iScrollbarInitVal = (1-Math.abs(jScrollbar.find(".scroll-content").position().top)/iDifference)*100;
-            if(jScrollbar.find(".scroll-vbar-wrap").length == 0)
-        {
+        var iScrollbarInitVal = (1 - Math.abs(
+          jScrollbar.find(".scroll-content").position().top
+        ) / iDifference) * 100;
+        if (jScrollbar.find(".scroll-vbar-wrap").length === 0) {
           jScrollbar.append('<div class="scroll-vbar-wrap"><div class="scroll-vbar"></div></div>');
-              iScrollbarInitVal = 100;
+          iScrollbarInitVal = 100;
         }
         jScrollbar.find(".scroll-vbar-wrap").height(jScrollbar.height());
 
@@ -1062,35 +1099,50 @@ $(function ($, _, Backbone) {
           value: iScrollbarInitVal,
           //triggered on user moves slider with mouse drag or mouse click
           slide: function(event, ui) {
-            jScrollbar.find(".scroll-content").css({top: -((100-ui.value)/100*iDifference)});
+            jScrollbar.find(".scroll-content").css({top: -((100 - ui.value) / 100 * iDifference)});
           },
           //triggered on user moves slider with mouse wheel or resizes the window
           //(whenever the value of the slider has changed)
           change: function(event, ui) {
-            jScrollbar.find(".scroll-content").css({top: -((100-ui.value)/100*(jScrollbar.find('.scroll-content').height()-jScrollbar.height()))});
-          }   
+            jScrollbar.find(".scroll-content")
+              .css({
+                top: -(
+                  (100 - ui.value) / 100 * (
+                    jScrollbar.find('.scroll-content').height() - jScrollbar.height()
+                  )
+                )
+              });
+          }
         });
         //correct the layout attributes of the scroollbar and its handle
-        var iHandleHeight = Math.round(jScrollbar.height()/jScrollbar.find(".scroll-content").height()*jScrollbar.height());
-        jScrollbar.find(".ui-slider-handle").css({"height": iHandleHeight,"margin-bottom":-0.5*iHandleHeight});
-        jScrollbar.find(".scroll-vbar").css({"height":jScrollbar.height()- iHandleHeight,"margin-top": iHandleHeight*0.5});
+        var iHandleHeight = Math.round(
+          jScrollbar.height() / jScrollbar.find(".scroll-content").height() * jScrollbar.height()
+        );
+        jScrollbar.find(".ui-slider-handle")
+          .css({"height": iHandleHeight, "margin-bottom": -0.5 * iHandleHeight});
+        jScrollbar.find(".scroll-vbar")
+          .css({"height": jScrollbar.height() - iHandleHeight, "margin-top": iHandleHeight * 0.5});
       }
 
       //event handler for clicks on the scrollbar outside the handle         
-      $(".scroll-vbar-wrap").click(function(event){
+      $(".scroll-vbar-wrap").click(function(event) {
         $(this).find(".scroll-vbar")
-          .slider("value", 100-(event.pageY-$(this).offset().top)/$(this).height()*100);
-      }); 
+          .slider("value", 100 - (event.pageY - $(this).offset().top) / $(this).height() * 100);
+      });
 
       //event handler for mousewheel
-      if($.fn.mousewheel){  
-        jScrollbar.on("mousewheel", function(event, delta){
+      if ($.fn.mousewheel) {
+        jScrollbar.on("mousewheel", function(event, delta) {
           //calculate the subtlety of the wheel scroll
-          var iSubtlety = Math.round(5000/jScrollbar.data("difference"));
-        if (iSubtlety <1) iSubtlety = 1;
-        if (iSubtlety >100) iSubtlety = 100;
+          var iSubtlety = Math.round(5000 / jScrollbar.data("difference"));
+          if (iSubtlety < 1) {
+            iSubtlety = 1;
+          }
+          if (iSubtlety > 100) {
+            iSubtlety = 100;
+          }
           var iScrollbarVal = $(this).find(".scroll-vbar").slider("value");
-          $(this).find(".scroll-vbar").slider("value", iScrollbarVal + delta*iSubtlety);
+          $(this).find(".scroll-vbar").slider("value", iScrollbarVal + delta * iSubtlety);
 
           event.preventDefault();
         });
@@ -1103,16 +1155,23 @@ $(function ($, _, Backbone) {
         this.model.off("change:isClosed");
         this.model.patch({isClosed: true});
         cantas.appRouter.navigate("boards/closed", {
-          trigger: true, replace: true});
+          trigger: true,
+          replace: true
+        });
       }
     },
 
     onBoardClosed: function() {
       var currentUser = cantas.utils.getCurrentUser();
       if (this.model.get("creatorId") !== currentUser.id && this.model.attributes.isClosed) {
-        alert('This board is closed by board creator. Any further operation, please contact the creator.');
-        cantas.appRouter.navigate("boards/mine", {
-          trigger: true, replace: true});
+        var dialog = $(".force-alert");
+        dialog.find("p")
+          .text("This board is closed by board creator." +
+                " Any further operation, please contact the creator.");
+        dialog.find("a")
+          .attr("href", "/boards/mine")
+          .text("Please go to home page!");
+        dialog.modal({backdrop: 'static'});
       }
     }
   });

@@ -1,4 +1,4 @@
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -6,7 +6,7 @@ $(function ($, _, Backbone) {
   var BaseCollection = cantas.models.BaseCollection;
 
   cantas.models.Label = BaseModel.extend({
-    urlRoot: 'label',
+    urlRoot: 'label'
   });
 
   cantas.models.LabelCollection = BaseCollection.extend({
@@ -15,8 +15,9 @@ $(function ($, _, Backbone) {
 
     initialize: function(models, options) {
       _.bindAll(this, "serverCreate");
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.ioBind("create", this.socket, this.serverCreate, this);
+      }
     }
   });
 
@@ -41,4 +42,4 @@ $(function ($, _, Backbone) {
     }
   });
 
-}(jQuery, _, Backbone))
+}(jQuery, _, Backbone));

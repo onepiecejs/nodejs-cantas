@@ -23,4 +23,4 @@
 
   module.exports = mongoose.model("ChecklistItem", ChecklistItemSchema);
 
-})(module);
+}(module));

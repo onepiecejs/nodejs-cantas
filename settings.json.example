@@ -56,5 +56,11 @@
             "stage": "",
             "test": ""
         }
+    },
+     "bugzilla": {
+        "url": "https://bugzilla.redhat.com/jsonrpc.cgi",
+        "username": "",
+        "password": "",
+        "bugBaseUrl": "https://bugzilla.redhat.com/show_bug.cgi?id="
     }
 }

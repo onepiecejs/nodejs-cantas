@@ -1,6 +1,6 @@
 // Board member Model
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -14,7 +14,7 @@ $(function ($, _, Backbone) {
    */
   cantas.models.BoardMemberCollection = cantas.models.BaseCollection.extend({
     url: "/boardmemberrelation",
-    model: cantas.models.BoardMember,
+    model: cantas.models.BoardMember
   });
 
 }(jQuery, _, Backbone));

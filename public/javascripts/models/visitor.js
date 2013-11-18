@@ -1,10 +1,10 @@
 // visitor model
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
   "use strict";
 
   cantas.models.BoardVisitor = cantas.models.BaseModel.extend({
-    urlRoot: "boardvisitor",
+    urlRoot: "boardvisitor"
   });
 
   cantas.models.BoardVisitorCollection = cantas.models.BaseCollection.extend({
@@ -13,9 +13,10 @@ $(function ($, _, Backbone) {
 
     initialize: function() {
 
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.ioBind("create", this.serverCreate, this);
-    },
+      }
+    }
 
   });
 

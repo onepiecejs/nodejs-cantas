@@ -1,7 +1,7 @@
 // Card Item View
 // --------------
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   cantas.views.EntryView = Backbone.View.extend({
     tagName: "div",
@@ -38,20 +38,24 @@ $(function ($, _, Backbone) {
 
       // A standalone function to handle these options is better. Let's do it asap.
       var placeholder = _options.placeholder;
-      if (placeholder !== undefined && typeof placeholder === "string")
+      if (placeholder !== undefined && typeof placeholder === "string") {
         this.defaults.placeholder = placeholder;
+      }
 
       var acceptEscKey = _options.acceptEscKey;
-      if (acceptEscKey !== undefined && typeof acceptEscKey === "boolean")
+      if (acceptEscKey !== undefined && typeof acceptEscKey === "boolean") {
         this.defautls.acceptEscKey = acceptEscKey;
+      }
 
       var acceptEnterKey = _options.acceptEnterKey;
-      if (acceptEnterKey !== undefined && typeof acceptEnterKey === "boolean")
+      if (acceptEnterKey !== undefined && typeof acceptEnterKey === "boolean") {
         this.defautls.acceptEnterKey = acceptEnterKey;
+      }
 
       var buttons = _options.buttons;
-      if (buttons !== undefined)
+      if (buttons !== undefined) {
         this._handleCustomButtons(buttons);
+      }
     },
 
     /*
@@ -96,13 +100,15 @@ $(function ($, _, Backbone) {
     },
 
     _handleCustomButtons: function(buttons) {
-      for (var i = buttons.length - 1; i >= 0; i--) {
+      var i = buttons.length - 1;
+      for (i; i >= 0; i--) {
         var button = buttons[i];
         if (button.eventHandler && typeof button.eventHandler === "function") {
           var data = button.data || {};
           data.entryView = this;
           this._eventHandlers[button.name] = {
-            "function": button.eventHandler, "data": data
+            "function": button.eventHandler,
+            "data": data
           };
         }
       }
@@ -150,9 +156,11 @@ $(function ($, _, Backbone) {
    **/
   window.cantas.MoveCardToView = Backbone.View.extend({
     el: 'div.window-overlay',
+
     template: jade.compile($('#template-move-list').text()),
-    initialize: function(data){
-      _.bindAll(this,'render');
+
+    initialize: function(data) {
+      _.bindAll(this, 'render');
 
       this.boardId = cantas.utils.getCurrentBoardId();
       this.listId = data.listId;
@@ -163,10 +171,10 @@ $(function ($, _, Backbone) {
       this.cardColleciton = new cantas.models.CardCollection();
       this.boardMemberCollection = new cantas.models.BoardMemberCollection();
     },
-    
+
     _childrenViews: [],
     events: {
-      "hidden": "closeWindowOverlay",
+      "hidden.bs.modal": "closeWindowOverlay",
       "keyup .js-move-search": "moveSearch",
       "click .js-set-position": "setPosition",
       "click .choose-position > ul:eq(0) .js-move-items li.checked": "updateCheckedList",
@@ -178,51 +186,60 @@ $(function ($, _, Backbone) {
       this.$el.html(this.template({data: {title: this.title}}));
       this.$el.modal();
 
-      var tabs = ['board','list'];
+      var tabs = ['board', 'list'];
       this.updateMoveList(tabs);
-      this.updateCardPosition(this.listId)
+      this.updateCardPosition(this.listId);
     },
 
-    setPosition: function(event){
+    setPosition: function(event) {
       var position = $(event.target).data("position");
       $(event.target).addClass('checked').siblings('a').removeClass('checked');
       this._movePositionShortcut(position);
     },
 
-    _movePositionShortcut: function(position){
-      if( position === 'top' ){
+    _movePositionShortcut: function(position) {
+      if (position === 'top') {
         this._moveTop();
-      } else if( position === 'middle' ){
+      } else if (position === 'middle') {
         this._moveMiddle();
-      } else if( position === 'bottom' ){
+      } else if (position === 'bottom') {
         this._moveBottom();
       }
     },
 
-    _moveTop: function(){
+    _moveTop: function() {
       var targetEl = this.$el.find('.choose-position .js-move-position li:first');
       this._highlightBox(targetEl);
+      this.$('.js-move-position').scrollTop(0);
     },
 
-    _moveMiddle: function(){
+    _moveMiddle: function() {
       var middle = Math.ceil($(".choose-position .js-move-position li").length / 2) - 1;
-      var targetEl = this.$el.find('.choose-position .js-move-position li:eq('+middle+')');
+      var targetEl = this.$el.find('.choose-position .js-move-position li:eq(' + middle + ')');
       this._highlightBox(targetEl);
     },
 
-    _moveBottom: function(){
+    _moveBottom: function() {
       var targetEl = this.$el.find('.choose-position .js-move-position li:last');
       this._highlightBox(targetEl);
+      var movePositionColumn = this.$('.js-move-position')[0];
+      $(movePositionColumn).scrollTop(movePositionColumn.scrollHeight);
     },
 
-    _highlightBox: function(targetEl){
+    _highlightBox: function(targetEl) {
       targetEl.addClass('checked').siblings('li').removeClass('checked');
     },
 
-    moveAction: function(event){
-      var boardId = this.$el.find('.choose-position > ul:eq(0) .js-move-items li.checked a').data("itemid");
-      var listId = this.$el.find('.choose-position > ul:eq(1) .js-move-items li.checked a').data("itemid");
-      var position = this.$el.find('.choose-position .js-move-position li.checked a').data('label');
+    moveAction: function(event) {
+      var boardId = this.$el
+        .find('.choose-position > ul:eq(0) .js-move-items li.checked a')
+        .data("itemid");
+      var listId = this.$el
+        .find('.choose-position > ul:eq(1) .js-move-items li.checked a')
+        .data("itemid");
+      var position = this.$el
+        .find('.choose-position .js-move-position li.checked a')
+        .data('label');
       var moveData = {
         "boardId": boardId,
         "listId": listId,
@@ -234,7 +251,7 @@ $(function ($, _, Backbone) {
       this.$el.modal('hide');
     },
 
-    moveSearch: function(event){
+    moveSearch: function(event) {
       cantas.utils.renderMoveSearch(event);
     },
 
@@ -244,16 +261,16 @@ $(function ($, _, Backbone) {
       cantas.utils.renderMoveList(this, baordId, this.listId, tabIndex);
     },
 
-    renderCardPosition: function(event){
+    renderCardPosition: function(event) {
       var itemId = $(event.target).data('itemid');
       this.updateCardPosition(itemId);
     },
 
-    updateCardPosition: function(listId){
+    updateCardPosition: function(listId) {
       var _this = this;
       var checkedItemPath = '.choose-position li.specific a';
       var positionItemsPath = '.choose-position .js-move-position';
-      var checkedPositionPath = 'a[data-itemid*="'+ this.cardId +'"]';
+      var checkedPositionPath = 'a[data-itemid*="' + this.cardId + '"]';
       this.$el.find(checkedItemPath).removeClass('checked');
       this.cardColleciton.fetch({
         data: {
@@ -262,14 +279,14 @@ $(function ($, _, Backbone) {
         },
         success: function(cards, response, options) {
           _this.$el.find(positionItemsPath).empty();
-          cards.each(function(card){
+          cards.each(function(card) {
             var itemView = new cantas.views.MoveItemView({
-               model: {
-                 "_id": card.id,
-                'title': cards.indexOf(card) + 1
-               }
+              model: {
+                "_id": card.id,
+                "title": cards.indexOf(card) + 1
+              }
             });
-            _this._childrenViews.push(itemView)
+            _this._childrenViews.push(itemView);
             _this.$el.find(positionItemsPath).append(itemView.render().el);
           });
 
@@ -278,23 +295,23 @@ $(function ($, _, Backbone) {
         }
       });
     },
-    
-    updateMoveList: function(tabs){
+
+    updateMoveList: function(tabs) {
       var _this = this;
-      tabs.forEach(function(tab){
+      tabs.forEach(function(tab) {
         var tabIndex = _.indexOf(tabs, tab);
         cantas.utils.renderMoveList(_this, _this.boardId, _this.listId, tabIndex);
       });
     },
 
-    remove: function(){
+    remove: function() {
       this.closeWindowOverlay();
       return this;
     },
 
-    closeWindowOverlay: function(){
+    closeWindowOverlay: function() {
       var childrenViews = this._childrenViews;
-      _.each(childrenViews, function(view){
+      _.each(childrenViews, function(view) {
         view.remove();
         childrenViews.pop(view);
       });
@@ -307,15 +324,16 @@ $(function ($, _, Backbone) {
   });
 
   cantas.views.CardView = Backbone.View.extend({
-    tagName:"div",
+    tagName: "div",
+
     className: "list-card ui-sortable js-list-card",
 
     // Cache the template function for a single item.
     template: jade.compile($("#template-card-view").text()),
 
     // The DOM events specific to an item.
-    events:{
-      "keypress .edit":"updateOnEnter",
+    events: {
+      "keypress .edit": "updateOnEnter",
       "click div.card-title": "showCardDetail",
       "click .card-setting": "showCardMenu",
       "mouseenter .card": "showCardSettingIcon",
@@ -324,15 +342,15 @@ $(function ($, _, Backbone) {
       'movein': "moveIn"
     },
 
-    initialize:function () {
+    initialize: function() {
       _.bindAll(this, "render");
       this.model.on('change', this.onModelChange, this);
       this.model.on('change:isArchived', this.isArchivedChanged, this);
       this.model.on('change:order change:listId', this.refreshCardOrder, this);
       this.model.on('remove', this.remove, this);
 
-      this.cardLabelCollection = new cantas.models.CardLabelRelationCollection;
-      this.voteCollection = new cantas.models.VoteCollection;
+      this.cardLabelCollection = new cantas.models.CardLabelRelationCollection();
+      this.voteCollection = new cantas.models.VoteCollection();
     },
 
     onModelChange: function() {
@@ -345,7 +363,9 @@ $(function ($, _, Backbone) {
       var monitorAttributes = ["listId", "order", "isArchived"];
       var hasChanged = monitorAttributes
         .map(function(item) { return card.hasChanged(item); })
-        .reduce(function(left, right) { return left && right });
+        .reduce(function(left, right) {
+          return (left && right);
+        });
       if (hasChanged) {
         var listId = card.get("listId");
         $("#" + listId).find(".order-number").each(function(index, elem) {
@@ -354,7 +374,7 @@ $(function ($, _, Backbone) {
       }
     },
 
-    render:function () {
+    render: function() {
       var data = this.model.toJSON();
       data.index = this.attributes.index;
 
@@ -366,7 +386,7 @@ $(function ($, _, Backbone) {
 
       this.cardNeonLightsView = new cantas.views.LabelNeonLightsView({
         el: this.$el.find('div.card-filter.clearfix'),
-        collection: this.cardLabelCollection,
+        collection: new cantas.models.CardLabelRelationCollection(),
         card: this.model
       });
 
@@ -375,7 +395,7 @@ $(function ($, _, Backbone) {
       // disable edit/add function when user is not board member
       if (!window.cantas.isBoardMember) {
         this.disableEvents();
-      };
+      }
 
       return this;
     },
@@ -386,7 +406,7 @@ $(function ($, _, Backbone) {
       this.$el.undelegate('.card', 'mouseleave');
     },
 
-    close: function(){
+    close: function() {
       if (this.cardMenuView) {
         this.cardMenuView.remove();
       }
@@ -406,16 +426,21 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    updateOnEnter:function (e) {
+    updateOnEnter: function(e) {
       if (e.keyCode === 13) {
         this.close();
       }
     },
 
-    isArchivedChanged: function (data){
+    isArchivedChanged: function(data) {
       var that = this;
       //get that card's self listView
-      var viewIdArray = _.map(cantas.utils.getCurrentBoardView().listViewCollection,function(child){ return child.model.id });
+      var viewIdArray = _.map(
+        cantas.utils.getCurrentBoardView().listViewCollection,
+        function(child) {
+          return child.model.id;
+        }
+      );
       var inListViewIndex = _.indexOf(viewIdArray, data.get("listId"));
       // if the listView exist in this board
       var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];
@@ -423,14 +448,14 @@ $(function ($, _, Backbone) {
 
       // card archived
       if (data.get('isArchived') === true) {
-        $(that.el).fadeOut('slow',function() {
+        $(that.el).fadeOut('slow', function() {
           that.$el.hide();
         });
 
       // card unarchived
       } else if (inListView.model.get("isArchived") === false) {
-          $(inListView.el).find(".list-content").append(this.render().el);
-          this.$el.show();
+        $(inListView.el).find(".list-content").append(this.render().el);
+        this.$el.show();
       }
 
       //refresh card positions
@@ -470,8 +495,9 @@ $(function ($, _, Backbone) {
       $(event.target).show();
 
       this.attributes.expandedViewChain = cantas.utils.rememberMe(
-        this, this.attributes.expandedViewChain);
-
+        this,
+        this.attributes.expandedViewChain
+      );
     },
 
     collapse: function() {
@@ -480,8 +506,9 @@ $(function ($, _, Backbone) {
       }
 
       this.attributes.expandedViewChain = cantas.utils.forgetMe(
-        this, this.attributes.expandedViewChain);
-
+        this,
+        this.attributes.expandedViewChain
+      );
     },
 
     showCardSettingIcon: function (event) {
@@ -490,8 +517,10 @@ $(function ($, _, Backbone) {
 
     hideCardSettingIcon: function (event) {
 
-      if($("#card-menu").is(":hidden") || this.el.id != $("#card-menu").attr("data-cardId"))
+      if ($("#card-menu").is(":hidden") ||
+          this.el.id !== $("#card-menu").attr("data-cardId")) {
         this.$el.find(".card-setting").hide();
+      }
     },
 
     //Card sortable function
@@ -514,14 +543,19 @@ $(function ($, _, Backbone) {
 
       var fromListViewId = thatModel.previousAttributes().listId;
       var inListViewId = thatModel.get('listId');
-      var viewIdArray = _.map(cantas.utils.getCurrentBoardView().listViewCollection,function(child){ return child.model.id });
-      var inListViewIndex = _.indexOf(viewIdArray,inListViewId);
+      var viewIdArray = _.map(
+        cantas.utils.getCurrentBoardView().listViewCollection,
+        function(child) {
+          return child.model.id;
+        }
+      );
+      var inListViewIndex = _.indexOf(viewIdArray, inListViewId);
       if (-1 === inListViewIndex) {
         console.log("[refreshCardOrder]the Card have not exist view in this Board");
         return false;
       }
       var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];
-      var fromListViewIndex = _.indexOf(viewIdArray,fromListViewId);
+      var fromListViewIndex = _.indexOf(viewIdArray, fromListViewId);
       var fromListView = cantas.utils.getCurrentBoardView().listViewCollection[fromListViewIndex];
 
       // update card quantity
@@ -541,148 +575,144 @@ $(function ($, _, Backbone) {
       var sortArray = _.map(activeCardArray, function(card) {
         return card.get('order');
       });
-      sortArray = sortArray.sort(function(a,b){return a - b });
-      var newPosition = _.indexOf(sortArray,thatModel.get('order'), isSorted = true);
+      sortArray = sortArray.sort(function(a, b) {
+        return a - b;
+      });
+
+      var newPosition = _.indexOf(sortArray, thatModel.get('order'), true);
 
       var cardViewCollection = $(inListView.el).find('section > div.list-card');
 
-      var actionName = undefined;
+      var actionName = null;
 
-      //moving cards to new list
-      //case 1:move to empty list
-      if (fromListView != inListView &&
-        cardViewCollection.index($(thatView.el)) === -1 &&
-        typeof cardViewCollection[newPosition -1] === 'undefined' &&
-        typeof cardViewCollection[newPosition] === 'undefined' &&
-        typeof cardViewCollection[newPosition + 1] === 'undefined') {
+      // moving cards to new list
+      // case 1:move to empty list
+      if (fromListView !== inListView &&
+          cardViewCollection.index($(thatView.el)) === -1 &&
+          typeof cardViewCollection[newPosition - 1] === 'undefined' &&
+          typeof cardViewCollection[newPosition] === 'undefined' &&
+          typeof cardViewCollection[newPosition + 1] === 'undefined') {
         actionName = "moveToEmptyList";
       }
 
-      //case2:move to frist index of card array
-      else if (fromListView != inListView &&
-        cardViewCollection.index($(thatView.el)) === -1 &&
-        typeof cardViewCollection[newPosition -1] === 'undefined' &&
-        typeof cardViewCollection[newPosition] != 'undefined'){
+      // case2:move to frist index of card array
+      if (fromListView !== inListView &&
+          cardViewCollection.index($(thatView.el)) === -1 &&
+          typeof cardViewCollection[newPosition - 1] === 'undefined' &&
+          typeof cardViewCollection[newPosition] !== 'undefined') {
         actionName = "moveToFirstInCardArray";
       }
 
-      //case3:move to inPosition of card array
-      else if (fromListView != inListView &&
-        cardViewCollection.index($(thatView.el)) === -1 &&
-        typeof cardViewCollection[newPosition -1] != 'undefined' &&
-        typeof cardViewCollection[newPosition] != 'undefined'){
+      // case3:move to inPosition of card array
+      if (fromListView !== inListView &&
+          cardViewCollection.index($(thatView.el)) === -1 &&
+          typeof cardViewCollection[newPosition - 1] !== 'undefined' &&
+          typeof cardViewCollection[newPosition] !== 'undefined') {
         actionName = "moveToInPositionInCardArray";
       }
 
-      //case4: move to last index of card array
-      else if (fromListView != inListView &&
-        cardViewCollection.index($(thatView.el)) === -1 &&
-        typeof cardViewCollection[newPosition -1] != 'undefined' &&
-        typeof cardViewCollection[newPosition] === 'undefined' &&
-        typeof cardViewCollection[newPosition + 1] === 'undefined') {
+      // case4: move to last index of card array
+      if (fromListView !== inListView &&
+          cardViewCollection.index($(thatView.el)) === -1 &&
+          typeof cardViewCollection[newPosition - 1] !== 'undefined' &&
+          typeof cardViewCollection[newPosition] === 'undefined' &&
+          typeof cardViewCollection[newPosition + 1] === 'undefined') {
         actionName = "moveToLastPositionInNewList";
       }
 
-      //moving cards in one listView
-      //case 1:move to first position
-      else if (fromListView === inListView &&
-        cardViewCollection.index($(thatView.el)) != newPosition &&
-        cardViewCollection[newPosition] != thatView &&
-        newPosition === 0) {
+      // moving cards in one listView
+      // case 1:move to first position
+      if (fromListView === inListView &&
+          cardViewCollection.index($(thatView.el)) !== newPosition &&
+          cardViewCollection[newPosition] !== thatView &&
+          newPosition === 0) {
         actionName = "moveToFirstPosition";
       }
 
-      //case 2: moving to inPositions, from top to bottom
-      else if (fromListView === inListView &&
-        cardViewCollection.index($(thatView.el)) != newPosition &&
-        cardViewCollection[newPosition] != thatView &&
-        newPosition > 0 &&
-        newPosition < sortArray.length &&
-        thatModel.get('order') < thatModel.previous('order')) {
+      // case 2: moving to inPositions, from top to bottom
+      if (fromListView === inListView &&
+          cardViewCollection.index($(thatView.el)) !== newPosition &&
+          cardViewCollection[newPosition] !== thatView &&
+          newPosition > 0 &&
+          newPosition < sortArray.length &&
+          thatModel.get('order') < thatModel.previous('order')) {
         actionName = "moveToInPositionFromTopToBottom";
       }
 
-      //from bottom to top
-      else if (fromListView === inListView &&
-        cardViewCollection.index($(thatView.el)) != newPosition &&
-        cardViewCollection[newPosition] != thatView &&
-        newPosition > 0 &&
-        newPosition < sortArray.length -1 &&
-        thatModel.get('order') > thatModel.previous('order') ) {
+      // from bottom to top
+      if (fromListView === inListView &&
+          cardViewCollection.index($(thatView.el)) !== newPosition &&
+          cardViewCollection[newPosition] !== thatView &&
+          newPosition > 0 &&
+          newPosition < sortArray.length - 1 &&
+          thatModel.get('order') > thatModel.previous('order')) {
         actionName = "moveFromBottomToTop";
       }
 
-      //case 3: move to last index of card array
-      else if (fromListView === inListView &&
-        cardViewCollection.index($(thatView.el)) != newPosition &&
-        cardViewCollection[newPosition] != thatView &&
-        newPosition === sortArray.length -1) {
+      // case 3: move to last index of card array
+      if (fromListView === inListView &&
+          cardViewCollection.index($(thatView.el)) !== newPosition &&
+          cardViewCollection[newPosition] !== thatView &&
+          newPosition === sortArray.length - 1) {
         actionName = "moveToLastInCardArray";
       }
 
       // move card from another Board
-      else if (typeof fromListView === 'undefined' &&
-               sortArray.length > 1 &&
-               newPosition === 0 ){
+      if (typeof fromListView === 'undefined' &&
+          sortArray.length > 1 &&
+          newPosition === 0) {
         actionName = "moveToFirstPosition";
       }
-      else if (typeof fromListView === 'undefined' &&
-               sortArray.length > 1 &&
-               newPosition > 0 &&
-                 newPosition < sortArray.length) {
-        actionName = "moveToInPositionFromTopToBottom";
-      } 
-      else if (
-        typeof fromListView === 'undefined' &&
+
+      if (typeof fromListView === 'undefined' &&
           sortArray.length > 1 &&
-          newPosition === sortArray.length -1) {
+          newPosition > 0 &&
+          newPosition < sortArray.length) {
+        actionName = "moveToInPositionFromTopToBottom";
+      }
+
+      if (typeof fromListView === 'undefined' &&
+          sortArray.length > 1 &&
+          newPosition === sortArray.length - 1) {
         actionName = "moveToLastInCardArray";
       }
-      else {
-        // FIXME: when card moving trigger two event(order, listId),
-        // the last event should be ignore it, it don't need trigger
-        // this error log.
-        // console.log(
-        //   "Cantas:Error:do not know how to move card " + thatModel.id);
+
+      if (actionName) {
+        var actions = {
+          moveToEmptyList: function() {
+            $(inListView.el).find('section').append($(thatView.el));
+          },
+          moveToFirstInCardArray: function() {
+            cardViewCollection.eq(newPosition).before($(thatView.el));
+          },
+          moveToInPositionInCardArray: function() {
+            cardViewCollection.eq(newPosition).before($(thatView.el));
+          },
+          moveToLastPositionInNewList: function() {
+            cardViewCollection.eq(newPosition - 1).after($(thatView.el));
+          },
+          moveToFirstPosition: function() {
+            cardViewCollection.eq(newPosition).before($(thatView.el));
+          },
+          moveToInPositionFromTopToBottom: function() {
+            cardViewCollection.eq(newPosition).before($(thatView.el));
+          },
+          moveFromBottomToTop: function() {
+            cardViewCollection.eq(newPosition).after($(thatView.el));
+          },
+          moveToLastInCardArray: function() {
+            cardViewCollection.eq(newPosition).after($(thatView.el));
+          }
+        };
+
+        actions[actionName]();
+
+        //refresh card order number
+        this.refreshCardOrderNumber();
+        //refresh card positions
+        SORTABLE.refreshCardSortable();
       }
 
-      // Exit if I do know how to move this card.
-      if (actionName === undefined)
-        return;
-
-      var actions = {
-        moveToEmptyList: function() {
-          $(inListView.el).find('section').append($(thatView.el));
-        },
-        moveToFirstInCardArray: function() {
-          cardViewCollection.eq(newPosition).before($(thatView.el));
-        },
-        moveToInPositionInCardArray: function() {
-          cardViewCollection.eq(newPosition).before($(thatView.el));
-        },
-        moveToLastPositionInNewList: function() {
-          cardViewCollection.eq(newPosition - 1).after($(thatView.el));
-        },
-        moveToFirstPosition: function() {
-          cardViewCollection.eq(newPosition).before($(thatView.el));
-        },
-        moveToInPositionFromTopToBottom: function() {
-          cardViewCollection.eq(newPosition).before($(thatView.el));
-        },
-        moveFromBottomToTop: function() {
-          cardViewCollection.eq(newPosition).after($(thatView.el));
-        },
-        moveToLastInCardArray: function() {
-          cardViewCollection.eq(newPosition).after($(thatView.el));
-        }
-      };
-
-      actions[actionName]();
-
-      //refresh card order number
-      this.refreshCardOrderNumber();
-      //refresh card positions
-      SORTABLE.refreshCardSortable();
     }
 
   });
@@ -690,13 +720,13 @@ $(function ($, _, Backbone) {
   // extend `CardDetailsView` from `cantas.views.CardView`.
   cantas.views.CardDetailsView = cantas.views.CardView.extend({
 
-    tagName:"div",
+    tagName: "div",
 
     el: $("#card-detail"),
 
     template: jade.compile($("#template-card-detail-view").text()),
 
-    events:{
+    events: {
       "click .js-edit-title": "openEditTitleDialog",
       "click .js-edit-desc": "openEditDescDialog",
       "click .js-edit-desc a": "openNewTab",
@@ -711,7 +741,7 @@ $(function ($, _, Backbone) {
       "click .js-edit-vote": "toggleVoteWindow",
       "click .js-add-comment": "addComment",
       "click .js-add-attachment": "addAttachment",
-      "hidden": "closeCardDetail",
+      "hidden.bs.modal": "closeCardDetail",
       "click .js-add-checklist": "onChecklistClick"
     },
 
@@ -727,14 +757,14 @@ $(function ($, _, Backbone) {
       this._expandedViewChain = [];
     },
 
-    render:function () {
+    render: function () {
       var card = this.model.toJSON();
       card.assignees = this._concatAssignees();
       card.description = markdown.toHTML(card.description);
 
       this.$el.html(this.template({card: card}));
       this.$el.modal();
-      cantas.setTitle("Card|"+this.model.get("title"));
+      cantas.setTitle("Card|" + this.model.get("title"));
 
       this.renderAssignView();
       this.renderLabelView();
@@ -765,11 +795,11 @@ $(function ($, _, Backbone) {
       //disable add/update function when user is not board member.
       if (!window.cantas.isBoardMember) {
         this.disableEvents();
-      };
+      }
 
       this.detailsNeonLightsView = new cantas.views.LabelNeonLightsView({
         el: this.$el.find('div.card-filter.clearfix'),
-        collection: this.cardLabelCollection,
+        collection: new cantas.models.CardLabelRelationCollection(),
         card: this.model
       });
 
@@ -790,23 +820,25 @@ $(function ($, _, Backbone) {
         }
       }).on('fileuploadadd', function (e, data) {
         var newAttachmentUploadItemView = new cantas.views.AttachmentUploadItemView({
-          'model': data.files[0],
+          'model': new cantas.models.Attachment(data.files[0]),
           'data': data,
           'parentView': _this
         });
         data.context = newAttachmentUploadItemView.render().$el;
         var uploadTableEl = _this.$('.js-attachment-upload-table');
-        if(uploadTableEl.find('tbody tr').length == 0) {
-          uploadTableEl.prepend('<thead><tr><th>Preview</th><th>File Name</th><th>Size</th></tr></thead>');
+        if (uploadTableEl.find('tbody tr').length === 0) {
+          uploadTableEl.prepend(
+            '<thead><tr><th>Preview</th><th>File Name</th><th>Size</th></tr></thead>'
+          );
         }
         _this.$('.js-attachment-upload-table tbody').append(data.context);
       }).on('fileuploadprocessalways', function (e, data) {
         var file = data.files[0];
-        if(file.preview) {
+        if (file.preview) {
           data.context.find('.upload-preview').append(file.preview);
         }
-        if(file.error) {
-          data.context.find('.upload-control').append($('<p>',{
+        if (file.error) {
+          data.context.find('.upload-control').append($('<p>', {
             'class': 'upload-errormessage',
             'text': file.error
           })).find('.upload-errormessage').prepend($('<span>', {
@@ -814,7 +846,7 @@ $(function ($, _, Backbone) {
             'text': 'Error'
           }));
         }
-        data.context.find('.js-upload-start').text('Start').prop('disabled', !!file.error);
+        data.context.find('.js-upload-start').text('Attach').prop('disabled', !!file.error);
       }).on('fileuploadprogress', function (e, data) {
         var progress = Math.floor(data.loaded / data.total * 100);
         data.context.find('.js-upload-progress').prop('aria-valuenow', progress)
@@ -823,7 +855,7 @@ $(function ($, _, Backbone) {
       }).on('fileuploaddone', function (e, data) {
         data.context.find('.upload-errormessage').remove();
 
-        if(data.result.user_error) {
+        if (data.result.user_error) {
           _this.reportUploadError(data.context, data.result.user_error);
           throw new Error(data.result.maintainer_error);
         } else {
@@ -857,10 +889,10 @@ $(function ($, _, Backbone) {
 
     reportUploadError: function(context, errorMessage) {
       context.find('.js-abort').removeClass('js-abort').addClass('js-start')
-        .text('Start').prop('disabled', false);
-      context.find('.upload-control').append($('<p>',{
+        .text('Attach').prop('disabled', false);
+      context.find('.upload-control').append($('<p>', {
         'class': 'upload-errormessage',
-        'text': errorMessage,
+        'text': errorMessage
       })).find('.upload-errormessage').prepend($('<span>', {
         'class': 'label label-important',
         'text': 'Error'
@@ -877,12 +909,12 @@ $(function ($, _, Backbone) {
       this.$el.find('a .js-edit-desc').hide();
     },
 
-    renderCommentView: function(){
+    renderCommentView: function() {
       this.commentView = new cantas.views.CommentView({model: this.model});
       this.commentView.render();
     },
 
-    renderAttachmentView: function(){
+    renderAttachmentView: function() {
       this.attachmentView = new cantas.views.AttachmentView({model: this.model});
       this.attachmentView.render();
     },
@@ -909,7 +941,7 @@ $(function ($, _, Backbone) {
       this.$el.find(".js-edit-title-area").hide();
     },
 
-    titleChanged: function(data){
+    titleChanged: function(data) {
       this.$el.find(".js-title").html(this.model.get("title"));
     },
 
@@ -919,13 +951,13 @@ $(function ($, _, Backbone) {
       return false;
     },
 
-    openEditDescDialog: function(event){
+    openEditDescDialog: function(event) {
       this.$el.find(".js-edit-desc").hide();
       this.$el.find(".js-edit-desc-area").show();
       this.$el.find(".js-desc-input").val(this.model.get("description")).select();
     },
 
-    openNewTab: function(event){
+    openNewTab: function(event) {
       event.stopPropagation();
       event.preventDefault();
       window.open($(event.target).attr('href'));
@@ -944,7 +976,7 @@ $(function ($, _, Backbone) {
       this.$el.find(".js-desc-input").val("");
     },
 
-    descriptionChanged: function(data){
+    descriptionChanged: function(data) {
       var desc = markdown.toHTML(this.model.get("description"));
       this.$el.find(".js-desc").html(desc);
     },
@@ -966,7 +998,7 @@ $(function ($, _, Backbone) {
       this.cardAssignView.render();
     },
 
-    toggleAssignWindow: function(event){
+    toggleAssignWindow: function(event) {
       event.stopPropagation();
       if (this.cardAssignView.isExpanded === false) {
         this.cardAssignView.render();
@@ -975,7 +1007,9 @@ $(function ($, _, Backbone) {
         // FIXME: scroll to cardAssignView
         $('.modal-scrollable').scrollTop(0);
         this.cardAssignView.attributes.expandedViewChain = cantas.utils.rememberMe(
-          this.cardAssignView, this.cardAssignView.attributes.expandedViewChain);
+          this.cardAssignView,
+          this.cardAssignView.attributes.expandedViewChain
+        );
       } else {
         this.cardAssignView.collapse();
       }
@@ -983,7 +1017,7 @@ $(function ($, _, Backbone) {
 
     renderLabelView: function() {
       this.labelAssignView = new cantas.views.LabelAssignView({
-        collection: new cantas.models.CardLabelRelationCollection,
+        collection: new cantas.models.CardLabelRelationCollection(),
         card: this.model,
         parentView: this,
         attributes: {
@@ -993,14 +1027,17 @@ $(function ($, _, Backbone) {
       this.labelAssignView.render();
     },
 
-    toggleLabelWindow: function(event){
+    toggleLabelWindow: function(event) {
       event.stopPropagation();
       if (this.labelAssignView.isExpanded === false) {
+        this.labelAssignView.render();
         this.labelAssignView.$el.show();
         this.labelAssignView.isExpanded = true;
         $('.modal-scrollable').scrollTop(0);
         this.labelAssignView.attributes.expandedViewChain = cantas.utils.rememberMe(
-          this.labelAssignView, this.labelAssignView.attributes.expandedViewChain);
+          this.labelAssignView,
+          this.labelAssignView.attributes.expandedViewChain
+        );
       } else {
         this.labelAssignView.collapse();
       }
@@ -1008,10 +1045,11 @@ $(function ($, _, Backbone) {
 
     toggleLabelCaption: function(labelCaptionDisplay) {
       var labelCaption = this.$('.js-edit-label span').eq(0);
-      if(labelCaptionDisplay === true)
+      if (labelCaptionDisplay === true) {
         labelCaption.show();
-      else
+      } else {
         labelCaption.hide();
+      }
     },
 
     renderVoteView: function() {
@@ -1025,53 +1063,54 @@ $(function ($, _, Backbone) {
       this.cardVoteView.render();
     },
 
-    toggleVoteWindow: function(event){
+    toggleVoteWindow: function(event) {
       event.stopPropagation();
       if (this.cardVoteView.isExpanded === false) {
         this.cardVoteView.$el.show();
         this.cardVoteView.isExpanded = true;
         $('.modal-scrollable').scrollTop(0);
         this.cardVoteView.attributes.expandedViewChain = cantas.utils.rememberMe(
-          this.cardVoteView, this.cardVoteView.attributes.expandedViewChain);
+          this.cardVoteView,
+          this.cardVoteView.attributes.expandedViewChain
+        );
       } else {
         this.cardVoteView.collapse();
       }
     },
 
-    assigneesChanged: function(data){
+    assigneesChanged: function(data) {
       var assignees = this._concatAssignees();
       this.$el.find(".js-assignees").html(assignees);
     },
 
     canComment: function() {
       var commentStatus = cantas.utils.getCurrentCommentStatus();
-      if (commentStatus == 'disabled') {
-        return false;
-      } else {
-        if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
-          return false;
-        }
+      var canComment = true;
+      if (commentStatus === 'disabled') {
+        canComment = false;
+      } else if (commentStatus === 'enabled' && !window.cantas.isBoardMember) {
+        canComment = false;
       }
-      return true;
+      return canComment;
     },
 
-    addComment: function(event){
+    addComment: function(event) {
       if (this.canComment()) {
         event.stopPropagation();
         this.$el.find('.js-add-comment-input').focus();
       }
     },
 
-    addAttachment: function(event){
+    addAttachment: function(event) {
       event.stopPropagation();
       this.$('input[type="file"]').click();
     },
 
-    closeCardDetail: function () {
+    closeCardDetail: function() {
       this.close();
     },
 
-    close: function(){
+    close: function() {
       if (this.detailsNeonLightsView) {
         //shared cardLabelCollection with CardView.
         //So here we only need remove LightsView
@@ -1094,15 +1133,32 @@ $(function ($, _, Backbone) {
         this.labelAssignView.remove();
       }
 
-      this.remove();
+      if (this.cardVotesTotalView) {
+        this.cardVotesTotalView.remove();
+      }
+
+      if (this.cardVoteView) {
+        this.cardVoteView.remove();
+      }
+
+      this.cardLabelCollection.dispose();
+      this.voteCollection.dispose();
+
+      //clear card details window
+      this.$el.empty();
+      this.stopListening();
+      this.undelegateEvents();
+
       var boardId = cantas.utils.getCurrentBoardModel().id;
       var boardTitle = cantas.utils.getCurrentBoardModel().get("title");
       var slug = $.slug(boardTitle);
       cantas.appRouter.navigate("board/" + boardId + "/" + slug);
-      cantas.setTitle("Board|"+boardTitle);
+      cantas.setTitle("Board|" + boardTitle);
+
+      return this;
     },
 
-    archiveCard: function(event){
+    archiveCard: function(event) {
       event.stopPropagation();
       this.model.patch({isArchived: true});
       this.$el.find(".js-close-card-detail").trigger("click");
@@ -1117,10 +1173,12 @@ $(function ($, _, Backbone) {
           name: "confirm",
           eventHandler: function(event, data) {
             var title = data.entryView.getText();
-            if (title.length === 0)
+            if (title.length === 0) {
               return;
+            }
             var checklist = new cantas.models.Checklist({
-              title: title, cardId: data.card.id,
+              title: title,
+              cardId: data.card.id,
               authorId: cantas.utils.getCurrentUser().id
             });
             checklist.save();
@@ -1138,7 +1196,7 @@ $(function ($, _, Backbone) {
       view.focus();
     },
 
-    _concatAssignees: function(){
+    _concatAssignees: function() {
       var assignees = this.model.get("assignees");
       return assignees.length ? _.pluck(assignees, "username").join(", ") : "Assign...";
     }
@@ -1157,21 +1215,22 @@ $(function ($, _, Backbone) {
       "click .js-cancel-assign-window": "onAssignCancelClick"
     },
 
-    initialize: function(){
+    initialize: function() {
       this.isExpanded = false;
     },
 
-    render: function(){
+    render: function() {
       var members = this._getMembersToAssign();
       this.$el.html(this.template({members: members}));
     },
 
-    _getMembersToAssign: function(){
+    _getMembersToAssign: function() {
       var assignees = _.pluck(this.model.get("assignees"), "_id");
-      var members = cantas.utils.getCurrentBoardView().memberCollection.toJSON().map(function(member){
-        if (assignees.indexOf(member.userId._id) === -1){
+      var memberCollection = cantas.utils.getCurrentBoardView().memberCollection;
+      var members = memberCollection.toJSON().map(function(member) {
+        if (assignees.indexOf(member.userId._id) === -1) {
           member.checked = false;
-        }else{
+        } else {
           member.checked = true;
         }
         return member;
@@ -1179,25 +1238,25 @@ $(function ($, _, Backbone) {
       return members;
     },
 
-    selectAssignee: function(event){
+    selectAssignee: function(event) {
       event.stopPropagation();
       var element = $(event.target);
       var uid = element.data('uid');
-      if (!uid){
+      if (!uid) {
         element = element.parent();
       }
       element.toggleClass("checked");
     },
 
-    saveAssignee: function(event){
+    saveAssignee: function(event) {
       event.stopPropagation();
       var newAssignees = [];
-      $("ul.assignee li.checked").each(function(index, element){
+      $("ul.assignee li.checked").each(function(index, element) {
         var uid = $(element).data('uid');
         newAssignees.push(uid);
       });
       var oldAssignees = _.pluck(this.model.get("assignees"), "_id");
-      if (!_.isEqual(newAssignees.sort(), oldAssignees.sort())){
+      if (!_.isEqual(newAssignees.sort(), oldAssignees.sort())) {
         // update if assignees changed
         this.model.patch({assignees: newAssignees});
       }
@@ -1214,7 +1273,9 @@ $(function ($, _, Backbone) {
       this.$el.hide();
       this.isExpanded = false;
       this.attributes.expandedViewChain = cantas.utils.forgetMe(
-        this, this.attributes.expandedViewChain);
+        this,
+        this.attributes.expandedViewChain
+      );
     }
 
   });
@@ -1232,7 +1293,7 @@ $(function ($, _, Backbone) {
       "click .label-items li": "toggleSelectStatus"
     },
 
-    initialize: function(){
+    initialize: function() {
       this.isExpanded = false;
       this.collection.on("change:selected", this.selectedChanged, this);
 
@@ -1245,10 +1306,11 @@ $(function ($, _, Backbone) {
         var template_data = {relations: relations};
         self.$el.html(self.template(template_data));
       });
+
       return this;
     },
 
-    toggleSelectStatus: function(event){
+    toggleSelectStatus: function(event) {
       event.stopPropagation();
 
       var relation = this.collection.get($(event.target).closest("li").attr("id"));
@@ -1260,30 +1322,35 @@ $(function ($, _, Backbone) {
 
     selectedChanged: function(model) {
       this.$("#" + model.id).toggleClass("checked");
-      if(this.$('ul.label-items li.checked').length > 0)
+      if (this.$('ul.label-items li.checked').length > 0) {
         this.toggleLabelCaption(false);
-      else
+      } else {
         this.toggleLabelCaption(true);
+      }
     },
 
     collapse: function() {
       this.$el.hide();
       this.isExpanded = false;
       this.attributes.expandedViewChain = cantas.utils.forgetMe(
-        this, this.attributes.expandedViewChain);
+        this,
+        this.attributes.expandedViewChain
+      );
     },
 
     toggleLabelCaption: function(labelCaptionDisplay) {
       var labelCaption = this.options.parentView.$('.js-edit-label span').eq(0);
-      if(labelCaptionDisplay === true)
+      if (labelCaptionDisplay === true) {
         labelCaption.show();
-      else
+      } else {
         labelCaption.hide();
+      }
     },
 
     loadLabelsOnlyOnce: function(callback) {
-      if (this.lablesLoaded)
+      if (this.lablesLoaded) {
         return;
+      }
 
       this.collection.fetch({
         data: {
@@ -1311,12 +1378,12 @@ $(function ($, _, Backbone) {
       _.bindAll(this, "render");
 
       //when clicking outside area of the list-menu, it will disappear.
-      $("body").on("click", function (event){
+      $("body").on("click", function (event) {
         $(".card-menu,.card-setting").hide();
       });
     },
 
-    _getCardModel: function(){
+    _getCardModel: function() {
       return cantas.utils.getCardModelById(this.cardId);
     },
 
@@ -1332,7 +1399,7 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    archiveCard: function(event){
+    archiveCard: function(event) {
       this.hideCardMenu(event);
       var card = this._getCardModel();
       card.patch({
@@ -1352,14 +1419,14 @@ $(function ($, _, Backbone) {
       this.moveCardToView.render();
     },
 
-    hideCardMenu: function(event){
+    hideCardMenu: function(event) {
       event.stopPropagation();
       this.undelegateEvents();
       this.$el.hide();
     },
 
-    remove: function(){
-      if (this.moveCardToView){
+    remove: function() {
+      if (this.moveCardToView) {
         this.moveCardToView.remove();
       }
       this.undelegateEvents();
@@ -1403,8 +1470,9 @@ $(function ($, _, Backbone) {
           var labelCaptionDisplay = true;
           collection.forEach(function(relation) {
             relation.on('update:selected', self.render, self);
-            if(relation.toJSON().selected === true)
+            if (relation.toJSON().selected === true) {
               labelCaptionDisplay = false;
+            }
           });
           self.trigger('setLabelCpation', labelCaptionDisplay);
           self.collectionFetched = true;
@@ -1465,7 +1533,7 @@ $(function ($, _, Backbone) {
       "click .js-vote-disagree": "voteNo"
     },
 
-    initialize: function(){
+    initialize: function() {
       this.isExpanded = false;
       this.voteFlag = '';
     },
@@ -1476,19 +1544,19 @@ $(function ($, _, Backbone) {
 
       if (voteControl === 'opened') {
         this.collection.fetch({
-        data: {
-          cardId: this.options.card.id,
-          authorId: cantas.utils.getCurrentUser().id
-        },
-        success: function(collection, response, options) {
-          var myVote = collection.findWhere({
+          data: {
+            cardId: this.options.card.id,
             authorId: cantas.utils.getCurrentUser().id
-          });
-          if(myVote !== undefined) {
-            var yesOrNo = myVote.attributes.yesOrNo;
-            self.renderMyVote(yesOrNo);
+          },
+          success: function(collection, response, options) {
+            var myVote = collection.findWhere({
+              authorId: cantas.utils.getCurrentUser().id
+            });
+            if (myVote !== undefined) {
+              var yesOrNo = myVote.attributes.yesOrNo;
+              self.renderMyVote(yesOrNo);
+            }
           }
-        }
         });
       }
       this.$el.html(this.template({voteControl: voteControl}));
@@ -1502,7 +1570,7 @@ $(function ($, _, Backbone) {
         result = 'opened';
       } else if (curBoard.attributes.voteStatus === 'disabled') {
         result = 'closed';
-      } else if(curBoard.attributes.voteStatus === 'enabled' && window.cantas.isBoardMember) {
+      } else if (curBoard.attributes.voteStatus === 'enabled' && window.cantas.isBoardMember) {
         result = 'opened';
       } else {
         result = 'disabled';
@@ -1512,14 +1580,14 @@ $(function ($, _, Backbone) {
 
     renderMyVote: function(yesOrNo) {
       switch (yesOrNo) {
-        case true:
-          $('#card-agree, span.agree').addClass('checked');
-          this.voteFlag = 'agree';
-          break;
-        case false:
-          $('#card-disagree, span.dis').addClass('checked');
-          this.voteFlag = 'disagree';
-          break;
+      case true:
+        $('#card-agree, span.agree').addClass('checked');
+        this.voteFlag = 'agree';
+        break;
+      case false:
+        $('#card-disagree, span.dis').addClass('checked');
+        this.voteFlag = 'disagree';
+        break;
       }
     },
 
@@ -1527,27 +1595,27 @@ $(function ($, _, Backbone) {
       var myVote = this.collection.findWhere({
         authorId: cantas.utils.getCurrentUser().id
       });
-      switch(this.voteFlag) {
-        case 'agree':
-          $('#card-agree, span.agree').removeClass('checked');
-          this.voteFlag = '';
-          myVote.destroy();
-          break;
-        case 'disagree':
-          $('#card-disagree, span.disagree').removeClass('checked');
-          $('#card-agree, span.agree').addClass('checked');
-          this.voteFlag = 'agree';
-          myVote.patch({yesOrNo: true});
-          break;
-        default:
-          $('#card-agree, span.agree').addClass('checked');
-          this.voteFlag = 'agree';
-          var newVote = new cantas.models.Vote({
-            cardId: this.options.card.id,
-            authorId: cantas.utils.getCurrentUser().id
-          });
-          newVote.save();
-          this.collection.add(newVote);
+      switch (this.voteFlag) {
+      case 'agree':
+        $('#card-agree, span.agree').removeClass('checked');
+        this.voteFlag = '';
+        myVote.destroy();
+        break;
+      case 'disagree':
+        $('#card-disagree, span.disagree').removeClass('checked');
+        $('#card-agree, span.agree').addClass('checked');
+        this.voteFlag = 'agree';
+        myVote.patch({yesOrNo: true});
+        break;
+      default:
+        $('#card-agree, span.agree').addClass('checked');
+        this.voteFlag = 'agree';
+        var newVote = new cantas.models.Vote({
+          cardId: this.options.card.id,
+          authorId: cantas.utils.getCurrentUser().id
+        });
+        newVote.save();
+        this.collection.add(newVote);
       }
     },
 
@@ -1555,28 +1623,28 @@ $(function ($, _, Backbone) {
       var myVote = this.collection.findWhere({
         authorId: cantas.utils.getCurrentUser().id
       });
-      switch(this.voteFlag) {
-        case 'agree':
-          $('#card-agree, span.agree').removeClass('checked');
-          $('#card-disagree, span.disagree').addClass('checked');
-          this.voteFlag = 'disagree';
-          myVote.patch({yesOrNo: false});
-          break;
-        case 'disagree':
-          $('#card-disagree, span.disagree').removeClass('checked');
-          this.voteFlag = '';
-          myVote.destroy();
-          break;
-        default:
-          $('#card-disagree, span.disagree').addClass('checked');
-          this.voteFlag = 'disagree';
-          var newVote = new cantas.models.Vote({
-            yesOrNo: false,
-            cardId: this.options.card.id,
-            authorId: cantas.utils.getCurrentUser().id
-          });
-          newVote.save();
-          this.collection.add(newVote);
+      switch (this.voteFlag) {
+      case 'agree':
+        $('#card-agree, span.agree').removeClass('checked');
+        $('#card-disagree, span.disagree').addClass('checked');
+        this.voteFlag = 'disagree';
+        myVote.patch({yesOrNo: false});
+        break;
+      case 'disagree':
+        $('#card-disagree, span.disagree').removeClass('checked');
+        this.voteFlag = '';
+        myVote.destroy();
+        break;
+      default:
+        $('#card-disagree, span.disagree').addClass('checked');
+        this.voteFlag = 'disagree';
+        var newVote = new cantas.models.Vote({
+          yesOrNo: false,
+          cardId: this.options.card.id,
+          authorId: cantas.utils.getCurrentUser().id
+        });
+        newVote.save();
+        this.collection.add(newVote);
       }
     },
 
@@ -1584,7 +1652,9 @@ $(function ($, _, Backbone) {
       this.$el.hide();
       this.isExpanded = false;
       this.attributes.expandedViewChain = cantas.utils.forgetMe(
-        this, this.attributes.expandedViewChain);
+        this,
+        this.attributes.expandedViewChain
+      );
     }
 
   });

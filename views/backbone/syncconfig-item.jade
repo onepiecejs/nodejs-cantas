@@ -1,0 +1,36 @@
+script#template-syncconfig-item-view(type="text/template").
+  a.delete.mapping-delete.js-syncconfig-delete
+  div.row-fluid
+    div.span1
+      if isActive
+        span.enabled.js-is-active(title="Click to disable this mapping")
+      else
+        span.disabled.js-is-active(title="Click to enable this mapping")
+    div.span5
+      label Input bugzilla link
+      div.js-queryurl-wrapper(title="Click to Eidt Query URL")
+        span.glyphicon.glyphicon-link
+        p= queryUrl
+    div.span5
+      label Put bugs in List
+      div.js-listname-wrapper(title="Click to Change List")
+        span.glyphicon.glyphicon-list-alt
+        p= listName
+    div.mapping-loading.js-sync-status
+      div.process-loading
+        div.loader
+          div.top
+            div.bar
+            div.bar
+            div.bar
+            div.bar
+            div.bar
+          div.bottom
+            div.bar
+            div.bar
+            div.bar
+            div.bar
+            div.bar
+    div.span1
+      if isBoardMember && isActive
+        button.btn.btn-primary.js-mapping-sync Sync

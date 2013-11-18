@@ -27,7 +27,7 @@
   UserSchema.statics.exists = function(identity, callback) {
     var conditions = { $or: [{ username: identity }, { email: identity }] };
     this.findOne(conditions, "username", function(err, user) {
-      callback(user != undefined && user != null);
+      callback(user !== undefined && user !== null);
     });
   };
 

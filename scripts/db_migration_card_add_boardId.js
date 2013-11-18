@@ -17,18 +17,18 @@ mongoose.connect(
   }
 );
 
-Card.find().populate('listId').exec(function(err, cards){
+Card.find().populate('listId').exec(function(err, cards) {
   var processed = 0;
   var updated = 0;
-  cards.forEach(function(card){
-    if (card.boardId && card.boardId.toString() === card.listId.boardId.toString()){
+  cards.forEach(function(card) {
+    if (card.boardId && card.boardId.toString() === card.listId.boardId.toString()) {
       processed++;
-    }else{
+    } else {
       var boardId = card.listId.boardId;
-      card.update({$set: {boardId: boardId}}, function(err){
-        if(err){
+      card.update({$set: {boardId: boardId}}, function(err) {
+        if (err) {
           console.log("Error: card %s : %s", card.id, err);
-        }else{
+        } else {
           updated++;
         }
         processed++;
@@ -37,9 +37,13 @@ Card.find().populate('listId').exec(function(err, cards){
   });
 
   async.until(
-    function(){return cards.length === processed},
-    function(callback){setTimeout(callback, 1000);},
-    function(err){
+    function() {
+      return cards.length === processed;
+    },
+    function(callback) {
+      setTimeout(callback, 1000);
+    },
+    function(err) {
       console.log(util.format("%d of %d cards proceessed.", processed, cards.length));
       console.log(util.format("%d of %d cards updated.", updated, cards.length));
       console.log("finished.");

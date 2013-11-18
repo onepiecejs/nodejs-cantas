@@ -21,7 +21,7 @@ function Room (socket) {
 
 Room.prototype.emit = function (eventName, eventData, options) {
   this.socket.emit(eventName, eventData);
-}
+};
 
 // creates a socket.io client for the given server
 function client(srv, nsp, opts){
@@ -75,7 +75,7 @@ describe('Test cardMove', function(){
 
         boardOne.save(function(err) {
           callback(err, boardOne);
-        })
+        });
       },
       function(callback) {
         listOne = new List({
@@ -86,7 +86,7 @@ describe('Test cardMove', function(){
         });
         listOne.save(function(err) {
           callback(err, listOne);
-        })
+        });
       },
       function(callback) {
         listTwo = new List({
@@ -96,8 +96,8 @@ describe('Test cardMove', function(){
           order: 131071
         });
         listTwo.save(function(err) {
-          callback(err, listOne);
-        })
+          callback(err, listTwo);
+        });
       },
       function(callback) {
         cardOne = new Card({
@@ -110,7 +110,7 @@ describe('Test cardMove', function(){
 
         cardOne.save(function(err) {
           callback(err, cardOne);
-        })
+        });
       }
     ],
       function(err, results) {
@@ -134,7 +134,7 @@ describe('Test cardMove', function(){
            sio.on('connection', function(s){
              s.room = new Room(s);
              //mock a username,board, and patch a getCurrentUser
-             s.handshake['user'] = {username: 'test'};
+             s.handshake.user = {username: 'test'};
              s.room.board = 'board:' + boardOne.id;
              SocketPatch.patch(s);
 
@@ -145,7 +145,7 @@ describe('Test cardMove', function(){
                  Card.findById(cardOne.id, function(err, card) {
                    expect(card.listId.toString()).to.be(listTwo.id);
                    done();
-                 })
+                 });
                },100);
              });
 

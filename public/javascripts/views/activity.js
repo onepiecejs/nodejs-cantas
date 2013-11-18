@@ -3,7 +3,7 @@
  * in the current opening board.
  */
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -25,7 +25,7 @@ $(function ($, _, Backbone) {
 
     getTemplate: function() {
       return $("#activity-item-template").html();
-    },
+    }
   });
 
   /*
@@ -64,15 +64,16 @@ $(function ($, _, Backbone) {
      * Load current board's activities only once.
      */
     showActivitiesOnlyOnce: function() {
-      if (this.activitiesLoaded)
+      if (this.activitiesLoaded) {
         return;
+      }
       this.activitiesLoaded = true;
       this.collection.fetch({
-        data: { boardId: this.getCurrentBoardId() },
+        data: {boardId: this.getCurrentBoardId()}
       });
     },
 
-    remove: function(){
+    remove: function() {
       this.collection.dispose();
       this.undelegateEvents();
       this.stopListening();

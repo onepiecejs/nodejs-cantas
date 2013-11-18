@@ -25,10 +25,11 @@
             labelId: label._id
           });
           relation.save(function(err, savedObject) {
-            if (err)
+            if (err) {
               callback(err, false);
-            else
+            } else {
               callback(null, true);
+            }
           });
         },
         function(err, results) {
@@ -39,13 +40,14 @@
             var isAllDone = results.reduce(function(prevValue, curValue) {
               return prevValue && curValue;
             }, true);
-            if (!isAllDone)
+            if (!isAllDone) {
               console.error('Not all labels are attached to card.');
+            }
             done(null, true);
           }
 
         });
-      });
+    });
   };
 
   /*
@@ -68,10 +70,11 @@
             boardId: board._id
           });
           label.save(function(err, savedObject) {
-            if (err)
+            if (err) {
               callback(err, false);
-            else
+            } else {
               callback(null, true);
+            }
           });
         },
         function(err, results) {
@@ -82,8 +85,9 @@
             var isAllDone = results.reduce(function(prevValue, curValue) {
               return prevValue && curValue;
             }, true);
-            if (isAllDone)
+            if (isAllDone) {
               console.error('Not all labels are attached to board.');
+            }
             done(null, true);
           }
         });

@@ -11,6 +11,6 @@
     subscription: "subscription",
     mentioned: "mentioned",
     information: "information"
-  }
+  };
 
 }(module));

@@ -1,6 +1,6 @@
 //model vote
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
   "use strict";
   var BaseModel = cantas.models.BaseModel;
   var BaseCollection = cantas.models.BaseCollection;
@@ -42,8 +42,9 @@ $(function ($, _, Backbone) {
     initialize: function(models, options) {
       _.bindAll(this, "serverCreate");
       this.socket.removeAllListeners("/vote:create");
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.socket.on('/vote:create', this.serverCreate, this);
+      }
     }
 
   });

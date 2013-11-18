@@ -29,7 +29,8 @@
     this.board = roomName;
     var members = this.io.sockets.clients(roomName);
     var userList = [];
-    for (var index in members) {
+    var index;
+    for (index = 0; index < members.length; index++) {
       var member = members[index];
       userList.push(member.handshake.user.toJSON());
     }
@@ -40,7 +41,7 @@
     var roomName = this.boardIdToRoomName(boardId);
     this.socket.leave(roomName);
     this.board = null;
-  }
+  };
 
   Room.prototype.myRooms = function () {
     return this.io.sockets.manager.roomClients[this.socket.id];
@@ -70,9 +71,11 @@
   Room.prototype.leaveAllRoom = function () {
     this.socket.room.emit('user-leave-all-room', {ok: 0, visitor: this.socket.handshake.user});
     var rooms = this.myRooms();
-
-    for (var index in rooms) {
-      this.socket.leave(rooms[index]);
+    var index;
+    for (index in rooms) {
+      if (rooms.hasOwnProperty(index)) {
+        this.socket.leave(rooms[index]);
+      }
     }
   };
 
@@ -88,10 +91,11 @@
     /**
      * Call .emit for its socket.
      */
-    if (options !== undefined && options.exceptMe)
+    if (options !== undefined && options.exceptMe) {
       this.socket.broadcast.to(this.board).emit(eventName, eventData);
-    else
+    } else {
       this.io.sockets.in(this.board).emit(eventName, eventData);
+    }
   };
 
   module.exports = Room;

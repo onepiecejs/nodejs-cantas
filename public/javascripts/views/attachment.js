@@ -1,5 +1,5 @@
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -28,9 +28,9 @@ $(function ($, _, Backbone) {
       return this;
     },
 
-    renderAllAttachmentDownloadItems: function(){
+    renderAllAttachmentDownloadItems: function() {
       var _this = this;
-      this.model.attachmentCollection.each(function(attachment){
+      this.model.attachmentCollection.each(function(attachment) {
         _this.renderAttachmentDownloadItem(attachment);
       });
     },
@@ -41,9 +41,12 @@ $(function ($, _, Backbone) {
         'parentView': this
       });
       var downloadTable = this.$('.js-attachment-download-table');
-      if(downloadTable.find('tbody tr').length == 0) {
-        downloadTable.prepend('<thead><tr><th>Cover</th><th>Thumbnail</th><th>File Name</th><th>Size</th>'
-          +'<th>Uploader Name</th><th>Upload Time</th><th></th></tr></thead>');
+      if (downloadTable.find('tbody tr').length === 0) {
+        var styleCode = '<thead>' + '<tr>' + '<th>Cover</th>' +
+          '<th>Thumbnail</th>' + '<th>File Name</th>' +
+          '<th>Size</th>' + '<th>Uploader Name</th>' +
+          '<th>Upload Time</th>' + '<th></th>' + '</tr>' + '</thead>';
+        downloadTable.prepend(styleCode);
       }
       this.$('.js-attachment-download-table tbody').prepend(downloadItemView.render().el);
     }
@@ -58,14 +61,14 @@ $(function ($, _, Backbone) {
 
     template: jade.compile($('#template-attachment-upload-view').text()),
 
-    events:{
+    events: {
       'click .js-upload-start': 'startUpload',
       'click .js-upload-abort': 'abortUpload',
       'click .js-upload-delete': 'deleteUpload'
     },
 
     render: function() {
-      var attachment = this.model;
+      var attachment = this.model.toJSON();
       attachment.fileSize = cantas.utils.formatFileSize(attachment.size);
       this.$el.html(this.template(attachment));
 
@@ -83,10 +86,10 @@ $(function ($, _, Backbone) {
       event.stopPropagation();
 
       this.options.data.abort();
-      $(event.target).removeClass('js-upload-abort').addClass('js-upload-start').text('Start');
+      $(event.target).removeClass('js-upload-abort').addClass('js-upload-start').text('Attach');
       $(event.target).closest('tr.js-template-upload').children('td.upload-size')
         .find('.js-upload-progress').prop('aria-valuenow', 0)
-      .find('.bar').css('width', 0 + '%');
+        .find('.bar').css('width', '0' + '%');
     },
 
     deleteUpload: function(event) {
@@ -124,30 +127,36 @@ $(function ($, _, Backbone) {
     render: function() {
       var attachment = this.model.toJSON();
       attachment.fileName = attachment.name.slice(attachment.name.indexOf('-') + 1);
-      attachment.url= '/attachments/' + attachment.cardId + '/' + attachment.name;
-      if(attachment.cardDetailThumbPath) {
-        attachment.thumbnail= window.location.protocol + '//' + window.location.host
-          + attachment.cardDetailThumbPath.slice(attachment.cardDetailThumbPath.indexOf('/attachments'));
-      }
-      else {
+      attachment.url = '/attachments/' + attachment.cardId + '/' + attachment.name;
+      if (attachment.cardDetailThumbPath) {
+        attachment.thumbnail = window.location.protocol +
+          '//' + window.location.host +
+          attachment.cardDetailThumbPath.slice(
+            attachment.cardDetailThumbPath.indexOf('/attachments')
+          );
+      } else {
         attachment.thumbnail = '';
       }
       attachment.size = cantas.utils.formatFileSize(attachment.size);
       attachment.createdOn = cantas.utils.formatDate(attachment.createdOn);
       attachment.isBoardMember = window.cantas.isBoardMember;
-      attachment.isUploader = (attachment.uploaderId._id.toString() === cantas.utils.getCurrentUser().id.toString()) ? true : false;
+      if (attachment.uploaderId._id.toString() === cantas.utils.getCurrentUser().id.toString()) {
+        attachment.isUploader = true;
+      } else {
+        attachment.isUploader = false;
+      }
       var creator = cantas.utils.getCurrentBoardView().model.attributes.creatorId;
-      var boardCreatorId = (typeof creator === "object") ? creator._id: creator;
+      var boardCreatorId = (typeof creator === "object") ? creator._id : creator;
       attachment.isBoardAdmin = (cantas.user.id === boardCreatorId) ? true : false;
       this.$el.html(this.template(attachment));
 
-      if(this.model.get("isCover")){
+      if (this.model.get("isCover")) {
         this.$el.addClass("checked");
       }
 
       if (!window.cantas.isBoardMember) {
         this.undelegateEvents();
-      };
+      }
 
       return this;
     },
@@ -161,7 +170,7 @@ $(function ($, _, Backbone) {
       }
     },
 
-    onDeleteClick: function(event){
+    onDeleteClick: function(event) {
       event.stopPropagation();
 
       if (!cantas.utils.getCurrentBoardView().confirmDialogView) {
@@ -172,7 +181,10 @@ $(function ($, _, Backbone) {
       if (attachmentView.isConfirmDeleteAttatchment) {
         // $(event.target.parentNode).focus();
         this.confirmDeleteAttachment(event);
-        $(".modal-scrollable").on("scroll", function(){ $("body").click(); });
+        $(".modal-scrollable").on("scroll",
+          function() {
+            $("body").click();
+          });
       } else {
         this.$el.fadeOut().remove();
         this.model.destroy();
@@ -208,7 +220,7 @@ $(function ($, _, Backbone) {
       });
     },
 
-    isCoverChanged: function(data){
+    isCoverChanged: function(data) {
       this.$el.toggleClass("checked");
     },
 

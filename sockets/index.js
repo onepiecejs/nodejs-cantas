@@ -2,17 +2,18 @@
 
   "use strict";
 
-  var connect = require('express/node_modules/connect')
-    , parseCookie = connect.utils.parseCookie
-    , passport = require('passport')
-    , crud = require('./crud')
-    , Board = require("../models/board")
-    , BoardMembership = require("./boardMembership")
-    , BoardMove = require("./boardMove")
-    , ImportTrello = require("./importTrello")
-    , BoardMemberRelation = require("../models/boardMemberRelation")
-    , SocketPatch = require("./patch_socket")
-    , Room = require('./room');
+  var connect = require('express/node_modules/connect'),
+    parseCookie = connect.utils.parseCookie,
+    passport = require('passport'),
+    crud = require('./crud'),
+    Board = require("../models/board"),
+    BoardMembership = require("./boardMembership"),
+    BoardMove = require("./boardMove"),
+    ImportTrello = require("./importTrello"),
+    BoardMemberRelation = require("../models/boardMemberRelation"),
+    SocketPatch = require("./patch_socket"),
+    Room = require('./room'),
+    SyncBugzilla = require("./syncBugzilla");
 
   exports.Room = Room;
 
@@ -32,7 +33,7 @@
             if (user._id.toString() === result.board.creatorId.toString()) {
               user.role.name = 'admin';
               user.role.desc = 'Admin - full control';
-            } else if (members.indexOf(user._id.toString()) != -1) {
+            } else if (members.indexOf(user._id.toString()) !== -1) {
               user.role.name = 'member';
               user.role.desc = 'Member - full control';
             } else {
@@ -48,12 +49,15 @@
             if (socket.handshake.user._id.toString() === user._id.toString()) {
               var eventRoomName = 'board:' + boardId;
               var eventName = 'user-login:board:' + boardId;
-              socket.broadcast.to(eventRoomName).emit(eventName, {ok: result.ok, visitor: user, boardId: boardId});
+              socket.broadcast.to(eventRoomName).emit(eventName,
+                {ok: result.ok, visitor: user, boardId: boardId});
             }
           });
 
           socket.emit('joined-board', {
-            ok: result.ok, visitors: userList, message: result.message
+            ok: result.ok,
+            visitors: userList,
+            message: result.message
           });
         });
       } else if (result.ok === 1) {
@@ -79,15 +83,14 @@
       socket.room.leaveBoard(boardId);
       socket.broadcast.to(eventRoomName).emit(eventName, {ok: 0, visitor: currentUser});
     }
-  }
+  };
 
   var onConnection = function (socket) {
     // Let us patch socket first to add our custom and useful behaviors,
     // which will be used in the whole life of Cantas.
     SocketPatch.patch(socket);
 
-    var hs = socket.handshake
-      , sessionID = hs.sessionID;
+    var hs = socket.handshake, sessionID = hs.sessionID;
 
     // Set up CRUD method for each model
     crud.setUp(socket, hs);
@@ -127,6 +130,7 @@
     BoardMembership.init(socket);
     BoardMove.init(socket);
     ImportTrello.init(socket);
+    SyncBugzilla.init(socket);
   };
 
   exports.init = function (sio, sessionStore) {
@@ -150,17 +154,16 @@
       sessionStore.load(data.sessionID, function (err, session) {
         if (err || !session) {
           return callback('Error', false);
-        } else {
-          /**
-           * Deserialize a user instance from passport session
-           * and set it onto handshake for later re-use.
-           */
-          var userKey = session.passport.user;
-          passport.deserializeUser(userKey, function (err, user) {
-            data['user'] = user;
-            callback(null, true);
-          });
         }
+        /**
+         * Deserialize a user instance from passport session
+         * and set it onto handshake for later re-use.
+         */
+        var userKey = session.passport.user;
+        passport.deserializeUser(userKey, function (err, user) {
+          data.user = user;
+          callback(null, true);
+        });
       });
     });
 

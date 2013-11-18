@@ -25,10 +25,6 @@
   var User = require('../../models/user');
   var utils = require('../utils');
 
-  if (process.env.NODE_ENV === 'development') {
-    var DummyStrategy = require('passport-dummy').Strategy;
-  }
-
   var CantasKerberosStrategy = new LocalStrategy(function(username, password, done) {
     // asynchronous verification, for performance concern.
     process.nextTick(function() {
@@ -36,7 +32,7 @@
       var principal = utils.build_krb5_user_principal(username, settings.realm);
       krb5.authenticate(principal, password, function (err) {
         if (err) {
-          return done(null, false, {message: 'Kerberos auth failed: ' + username});
+          done(null, false, {message: 'Kerberos auth failed: ' + username});
         } else {
           User.findOne({username: username}, function (err, user) {
             if (user === null) {
@@ -46,10 +42,10 @@
                 email: username + '@' + settings.realm.toLowerCase()
               });
               newUser.save(function(err, userSaved) {
-                return done(null,newUser);
+                done(null, newUser);
               });
             } else {
-              return done(null, user);
+              done(null, user);
             }
           });
         }
@@ -68,14 +64,14 @@
         fn(new Error('User ' + token + ' does not exist'));
       }
 
-      if (user == null) {
+      if (user === null) {
         // A new user
         var newUser = new User({
           username: username,
-            email: username + '@' + settings.realm.toLowerCase()
+          email: username + '@' + settings.realm.toLowerCase()
         });
         newUser.save(function (err) {
-          fn(null,newUser);
+          fn(null, newUser);
         });
       } else {
         fn(null, user);
@@ -92,40 +88,42 @@
       findByToken(token, function(err, user) {
         if (err) { return done(err); }
         if (user) {
-          return done(null, user);
+          done(null, user);
         } else {
-          return done(null, false);
+          done(null, false);
         }
       });
     });
   });
 
   if (process.env.NODE_ENV === 'development') {
-  /*
-   * Dummy strategy for development only.
-   *
-   * This strategy would create a dummy user account in database. And this
-   * account should be appear in production database.
-   */
-  var CantasDummyStrategy = new DummyStrategy(function(done) {
-    User.findOne({username: 'dummy'}, function(err, user) {
-      if (err) {
-        done(err);
-        return;
-      }
-      if (user === null) {
-        var dummyUser = new User({username: 'dummy', email: 'dummy@example.com'});
-        dummyUser.save(function(err, user) {
-          if (err)
-            done(err)
-          else
-            done(null, user);
-        });
-      } else {
-        done(null, user);
-      }
+    /*
+     * Dummy strategy for development only.
+     *
+     * This strategy would create a dummy user account in database. And this
+     * account should be appear in production database.
+     */
+    var DummyStrategy = require('passport-dummy').Strategy;
+    var CantasDummyStrategy = new DummyStrategy(function(done) {
+      User.findOne({username: 'dummy'}, function(err, user) {
+        if (err) {
+          done(err);
+          return;
+        }
+        if (user === null) {
+          var dummyUser = new User({username: 'dummy', email: 'dummy@example.com'});
+          dummyUser.save(function(err, user) {
+            if (err) {
+              done(err);
+            } else {
+              done(null, user);
+            }
+          });
+        } else {
+          done(null, user);
+        }
+      });
     });
-  });
 
   }
 

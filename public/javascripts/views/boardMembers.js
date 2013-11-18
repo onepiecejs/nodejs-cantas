@@ -2,7 +2,7 @@
  * Views to provide ability to display and manage a board members.
  */
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -80,24 +80,23 @@ $(function ($, _, Backbone) {
     initialize: function(options) {
       // Internal use
       this.cache = {};
-      this.memberViews = new Array();
+
+      this.memberViews = [];
 
       this.collection.on("add", this.showBoardMember, this);
 
       //when clicking outside area of the div.tip, it will disappear.
       $(".invite").on("click", function (event) {
-          var e = event || window.event;
-          var elem = e.srcElement || e.target;
-          while(elem && elem !== $(".invite")[0])
-          {
-            if(elem.className.indexOf("invite-tip") > -1)
-            {
-              return;
-            }
-            elem = elem.parentNode;
+        var e = event || window.event;
+        var elem = e.srcElement || e.target;
+        while (elem && elem !== $(".invite")[0]) {
+          if (elem.className.indexOf("invite-tip") > -1) {
+            return;
           }
-          $(".invite-tip").hide();
-        });
+          elem = elem.parentNode;
+        }
+        $(".invite-tip").hide();
+      });
 
       var iCursorPosition = 0;
       this.bConfirmDeleteMember = true;
@@ -113,15 +112,13 @@ $(function ($, _, Backbone) {
       sock.removeAllListeners("user-exists-resp");
       sock.on("user-exists-resp", function(data) {
         var resp = data.data;
-        if (!resp.exists){
-          if (resp.isEmailAddr){
-            that.showValidationMessage(resp.username+" is not Cantas user, invite to Cantas?");
-          }else{
-            if(resp.username.indexOf('@') != -1){
-              that.showValidationMessage(resp.username+" is not a REDHAT account.");
-            }
-            that.markMemberCandidateError(resp.username);
+        if (!resp.exists) {
+          if (resp.isEmailAddr) {
+            that.showValidationMessage(resp.username + " is not Cantas user, invite to Cantas?");
+          } else if (resp.username.indexOf('@') !== -1) {
+            that.showValidationMessage(resp.username + " is not a REDHAT account.");
           }
+          that.markMemberCandidateError(resp.username);
         }
         that.toggleInviteButton();
       });
@@ -138,10 +135,11 @@ $(function ($, _, Backbone) {
      */
     toggleInviteButton: function() {
       var toEnable = this.getCandidateMembers().length > 0;
-      if (toEnable)
+      if (toEnable) {
         $("#btn-invite").removeAttr("disabled");
-      else
+      } else {
         $("#btn-invite").attr("disabled", "disabled");
+      }
     },
 
     focusOnMemberInput: function() {
@@ -152,7 +150,7 @@ $(function ($, _, Backbone) {
     showBoardMember: function(memberRelation) {
       var container = this.getMembersDisplayContainer();
       var view = new cantas.views.MemberView({
-        model: memberRelation,
+        model: memberRelation
       });
       container.append(view.render().el);
       // Remember this view. You can add any possible operations on these
@@ -162,24 +160,25 @@ $(function ($, _, Backbone) {
 
     makeNewMemberBeCandidate: function(event, memberInput) {
       var trimName = $.trim(memberInput.val());
-      trimName = trimName.indexOf(",") > -1 ? trimName.slice(0,trimName.indexOf(",")) : trimName;
+      trimName = trimName.indexOf(",") > -1 ? trimName.slice(0, trimName.indexOf(",")) : trimName;
 
       if (trimName.length > 0) {
-        if(this.$el.find(".invite-new .tip:visible").length > 0) {
+        if (this.$el.find(".invite-new .tip:visible").length > 0) {
           this.$el.find(".invite-new .tip").hide();
         }
 
         memberInput.val("").attr("size", 2);
         this.$('div.responseData ul').hide();
 
-        if(cantas.utils.checkEmail(trimName)) {
+        var isValidEmailAddr = null;
+        if (cantas.utils.checkEmail(trimName)) {
           $(event.target.parentNode).before('<li tabindex="-1">' + trimName + '<a>×</a></li>');
-          return true;
-        }
-        else {
+          isValidEmailAddr = true;
+        } else {
           this.showValidationMessage(trimName + ' is not a valid email address.');
-          return false;
+          isValidEmailAddr = false;
         }
+        return isValidEmailAddr;
       }
     },
 
@@ -193,10 +192,13 @@ $(function ($, _, Backbone) {
      */
     getCandidateMembers: function(options) {
       var opts = options || { effective: true };
-      if (opts.effective)
-        return this.$el.find("ul.toBeInvitedUsers li:not(.warning)").not(":has(input)");
-      else
-        return this.$el.find("ul.toBeInvitedUsers li").not(":has(input)");
+      var selectedMembers = null;
+      if (opts.effective) {
+        selectedMembers = this.$el.find("ul.toBeInvitedUsers li:not(.warning)").not(":has(input)");
+      } else {
+        selectedMembers = this.$el.find("ul.toBeInvitedUsers li").not(":has(input)");
+      }
+      return selectedMembers;
     },
 
     getMemberCandidateName: function(elem) {
@@ -215,7 +217,7 @@ $(function ($, _, Backbone) {
           .find(".invite-new .invite-display")
           .after('<div class="tip invite-tip">' + message + '</div>')
           .next()
-          .css("display","block");
+          .css("display", "block");
       }
     },
 
@@ -279,7 +281,7 @@ $(function ($, _, Backbone) {
       var that = this;
       var memberCandidates = this.getCandidateMembers();
       memberCandidates.each(function(index, li) {
-        var thatsit = that.getMemberCandidateName(li) == username;
+        var thatsit = that.getMemberCandidateName(li) === username;
         if (thatsit) {
           $(li).addClass("warning");
           return;
@@ -293,16 +295,6 @@ $(function ($, _, Backbone) {
       memberCandidates.last().remove();
     },
 
-    sortMembers: function(memberA, memberB) {
-      var keyword = $('input.input-member').val();
-      if(memberA.label.indexOf(keyword) === 0 || memberB.label.indexOf(keyword) === 0) {
-        return memberA.label.indexOf(keyword) - memberB.label.indexOf(keyword);
-      }
-      else {
-        return memberA.label - memberB.label;
-      }
-    },
-
     onMemberInputKeyup: function(event) {
       var txt_inputMember = this.$el.find(".input-member");
       var _this = this;
@@ -313,10 +305,31 @@ $(function ($, _, Backbone) {
             type: "GET",
             data: req,
             success: function (data) {
-              res($.map(data, function (el) {
+              var re = $.ui.autocomplete.escapeRegex(req.term);
+              var matcher = new RegExp("^" + re, "i");
+              var beginningMatchedData = $.grep(data, function(element) {
+                return matcher.test(element.email);
+              });
+              var middleMatchedData = $.grep(data, function(element) {
+                return !matcher.test(element.email);
+              });
+              var targetMatchedData = [];
+              var count = 0;
+              var i = 0;
+              for (i; i < 20; i++) {
+                if (beginningMatchedData[i]) {
+                  targetMatchedData.push(beginningMatchedData[i].email);
+                } else if (middleMatchedData[count] && count < 20) {
+                  targetMatchedData.push(middleMatchedData[count].email);
+                  count++;
+                } else {
+                  break;
+                }
+              }
+              res($.map(targetMatchedData, function(el) {
                 return {
-                  label: el.email,
-                  value: el.email,
+                  label: el,
+                  value: el
                 };
               }));
             }
@@ -329,45 +342,48 @@ $(function ($, _, Backbone) {
         },
         select: function(event, ui) {
           txt_inputMember.val(ui.item.value);
-          if(_this.makeNewMemberBeCandidate(event, txt_inputMember))
+          if (_this.makeNewMemberBeCandidate(event, txt_inputMember)) {
             _this.validateRecentCandidate();
-
+          }
           return false;
         },
-        response: function( event, ui ) {
-          ui.content.sort(_this.sortMembers);
+        response: function(event, ui) {
           var inviteDisplay = _this.$('div.invite-new div.invite-display');
           var userList = inviteDisplay.find('div.responseData');
-          if(userList.length === 0) {
+          if (userList.length === 0) {
             $('ul.ui-autocomplete').css({
-              'position':'absolute',
+              'position': 'absolute',
               'top': inviteDisplay.height(),
-              'left': 0})
-            .wrap('<div class="responseData"></div>')
-            .parent()
-            .appendTo(inviteDisplay);
-          }
-          else {
+              'left': 0
+            })
+              .wrap('<div class="responseData"></div>')
+              .parent()
+              .appendTo(inviteDisplay);
+          } else {
             $('ul.ui-autocomplete').appendTo(userList);
           }
         }
       });
 
-      if(txt_inputMember.val().length > 1){
+      if (txt_inputMember.val().length > 1) {
         var iInputOuterWidth = $(event.target).outerWidth(true);
         var iUlWidth = $(event.target).closest("ul").width();
-        if( iInputOuterWidth < iUlWidth)
+        if (iInputOuterWidth < iUlWidth) {
           txt_inputMember.attr("size", txt_inputMember.val().length);
+        }
       }
       var keycodes = cantas.KEY_CODES;
-      if(event.which == keycodes.COMMA || event.which == keycodes.SPACE || event.which == keycodes.ENTER) {
+      if (event.which === keycodes.COMMA ||
+          event.which === keycodes.SPACE ||
+          event.which === keycodes.ENTER) {
         var trimName = $.trim(txt_inputMember.val());
-        if (trimName.length == 0 || trimName.replace(/,/g, " ").trim().length == 0) {
+        if (trimName.length === 0 || trimName.replace(/,/g, " ").trim().length === 0) {
           txt_inputMember.val("").attr("size", 2);
           return;
         }
-        if(this.makeNewMemberBeCandidate(event, txt_inputMember))
+        if (this.makeNewMemberBeCandidate(event, txt_inputMember)) {
           this.validateRecentCandidate();
+        }
       }
     },
 
@@ -379,51 +395,54 @@ $(function ($, _, Backbone) {
 
     deleteMemberTag: function(event) {
       var keycodes = cantas.KEY_CODES;
-      if(event.which == keycodes.BACKSPACE){
+      if (event.which === keycodes.BACKSPACE) {
         var temp = {};
-        if($(document.activeElement).is("li")) {
-          if($(document.activeElement).next()[0]===this.$el.find(".input-member").parent()[0]){
+        if ($(document.activeElement).is("li")) {
+          if ($(document.activeElement).next()[0] === this.$el.find(".input-member").parent()[0]) {
             $(document.activeElement).remove();
             temp = this.$el.find(".input-member").val();
             this.$el.find(".input-member").val("").focus().val(temp);
-          }
-          else{
+          } else {
             temp = $(document.activeElement);
             $(document.activeElement).prev().focus();
-            if(temp.prev().length==0)
+            if (temp.prev().length === 0) {
               this.$el.find(".input-member").focus();
+            }
             temp.remove();
           }
-        }
-        else if(this.$el.find("li input:focus").length > 0 && this.iCursorPosition == 0 &&
-          this.iCursorPosition == this.$el.find(".input-member")[0].selectionStart) {
-            this.$el.find(".input-member").parent().prev().focus();
+        } else if (this.$el.find("li input:focus").length > 0 &&
+            this.iCursorPosition === 0 &&
+            this.iCursorPosition === this.$el.find(".input-member")[0].selectionStart) {
+          this.$el.find(".input-member").parent().prev().focus();
         }
       }
     },
 
     focusMemberTag: function(event) {
       var keycodes = cantas.KEY_CODES;
-      if(event.which == keycodes.BACKSPACE) {
-        if($(document.activeElement).is("li")) 
+      if (event.which === keycodes.BACKSPACE) {
+        if ($(document.activeElement).is("li")) {
           event.preventDefault();
-        if($(document.activeElement).is("input")) 
-          this.iCursorPosition = this.$el.find(".input-member")[0].selectionStart;        
-      }
-      if(event.which == keycodes.LEFT_ARROW) {
-        if($(document.activeElement).is("li")) {
-          $(document.activeElement).prev().focus();
         }
-        else if(this.$el.find("li input:focus").length > 0 && this.$el.find(".input-member").val() == "") {
+        if ($(document.activeElement).is("input")) {
+          this.iCursorPosition = this.$el.find(".input-member")[0].selectionStart;
+        }
+      }
+      if (event.which === keycodes.LEFT_ARROW) {
+        if ($(document.activeElement).is("li")) {
+          $(document.activeElement).prev().focus();
+        } else if (this.$el.find("li input:focus").length > 0 &&
+            this.$el.find(".input-member").val() === "") {
           this.$el.find(".input-member").prev().focus();
         }
       }
-      if(event.which == keycodes.RIGHT_ARROW) {
-        if($(document.activeElement).is("li")) {
-          if($(document.activeElement).next().is("li:has(input)"))
+      if (event.which === keycodes.RIGHT_ARROW) {
+        if ($(document.activeElement).is("li")) {
+          if ($(document.activeElement).next().is("li:has(input)")) {
             this.$el.find(".input-member").focus();
-          else
+          } else {
             $(document.activeElement).next().focus();
+          }
         }
       }
     },
@@ -444,19 +463,21 @@ $(function ($, _, Backbone) {
     onInviteClick: function(event) {
       var that = this;
       var elems = this.getCandidateMembers();
-      if (elems.length == 0)
+      if (elems.length === 0) {
         return;
+      }
 
       // If the user is not board admin, he can not revoke a member, hide the ×.
       var creator = this.getCurrentBoard().attributes.creatorId;
-      var boardCreatorId = (typeof creator === "object") ? creator._id: creator;
-      if (boardCreatorId !== this.getCurrentUser().id)
+      var boardCreatorId = (typeof creator === "object") ? creator._id : creator;
+      if (boardCreatorId !== this.getCurrentUser().id) {
         elems.find("a").remove();
+      }
 
       // Move invitees from input area to member list in the bottom of manage area.
       this.getMembersDisplayContainer().append(elems);
 
-      var invitees = new Array();
+      var invitees = [];
       elems.each(function(index, li) {
         invitees.push(that.getMemberCandidateName(li));
       });
@@ -483,13 +504,13 @@ $(function ($, _, Backbone) {
     },
 
     toggleInviteMember: function(event) {
-      if($(".activity:visible").length == 1){
+      if ($(".activity:visible").length === 1) {
         $(".activity").hide();
       }
-      this.$el.toggle("slide", { direction: "right" }, "fast");
+      this.$el.toggle("slide", {direction: "right"}, "fast");
     },
 
-    remove: function(){
+    remove: function() {
       _.forEach(this.memberViews, function(thatView) {
         thatView.close();
       });
@@ -507,8 +528,9 @@ $(function ($, _, Backbone) {
      * After show members, all views of them are remember in current View.
      */
     showMembersOnlyOnce: function() {
-      if (this.membersLoadedAndShown !== undefined)
+      if (this.membersLoadedAndShown !== undefined) {
         return;
+      }
 
       this.collection.fetch({
         data: {
@@ -543,7 +565,7 @@ $(function ($, _, Backbone) {
         yesCallback: function() {
           that.emitMembership({"deleteObj": event.target.parentNode});
 
-          if($("#js-cb-noask:checked").length > 0) {
+          if ($("#js-cb-noask:checked").length > 0) {
             that.bConfirmDeleteMember = false;
           }
 
@@ -562,22 +584,22 @@ $(function ($, _, Backbone) {
      * pop up dialog to confirm deleting the member or not
      */
     revokeMembership: function(event) {
-      if(!cantas.appRouter.currentView.confirmDialogView){
+      if (!cantas.appRouter.currentView.confirmDialogView) {
         cantas.appRouter.currentView.confirmDialogView = new cantas.views.ConfirmDialogView();
       }
-      if(this.bConfirmDeleteMember) {
+      if (this.bConfirmDeleteMember) {
         $(event.target.parentNode).focus();
         this.confirmDeleteMember(event);
-      }
-      else
+      } else {
         this.emitMembership({"deleteObj": event.target.parentNode});
+      }
     },
 
     /*
      * Get the name of user and tell all users who are in current board whose
      * membership is revoked.
      */
-    emitMembership:function(data) {
+    emitMembership: function(data) {
       var socket = cantas.socket;
       var username = this.getMemberCandidateName(data.deleteObj);
       socket.emit("revoke-membership", {
@@ -618,14 +640,15 @@ $(function ($, _, Backbone) {
             dialog.find("a")
               .attr("href", window.location)
               .text("Please reload this board!");
-            dialog.toggle();
+            dialog.modal({backdrop: 'static'});
 
-            cantas.navigateTo("board/" + data.data.updated.boardId);
           } else {
-            var boardTitle = cantas.utils.getCurrentBoardModel().get('title');
-            boardTitle = cantas.utils.safeString(boardTitle);
-            alert("Your membership is revoked from a private Board:"+ boardTitle);
-            cantas.navigateTo("/");
+            dialog.find("p")
+              .text("Your membership is revoked from this private board.");
+            dialog.find("a")
+              .attr("href", "/boards/mine")
+              .text("Please go to home page!");
+            dialog.modal({backdrop: 'static'});
           }
         }
       } else {

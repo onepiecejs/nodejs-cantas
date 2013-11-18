@@ -1,6 +1,6 @@
 // Board Model
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -15,7 +15,8 @@ $(function ($, _, Backbone) {
     initialize: function () {
       // nested collections inside `Board`.
       // ref: http://backbonejs.org/#FAQ-nested
-      this.listCollection = new cantas.models.ListCollection;
+      this.listCollection = new cantas.models.ListCollection();
+      this.syncConfigCollection = new cantas.models.SyncConfigCollection();
 
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
@@ -26,30 +27,36 @@ $(function ($, _, Backbone) {
     dispose: function() {
       this.off();
       this.listCollection.off();
+      this.syncConfigCollection.off();
       if (!this.noIoBind) {
         this.ioUnbindAll();
         this.listCollection.dispose();
+        this.syncConfigCollection.dispose();
       }
 
       return this;
     },
 
     validate: function(attrs, options) {
-      var title = attrs["title"];
-      if (title == undefined)
+      var title = attrs.title;
+      if (title === undefined) {
         return "Board does not contain a title.";
-      if (/^\s+$/.test(title))
+      }
+      if (/^\s+$/.test(title)) {
         return "It's recommended that you enter a significant board's title.";
+      }
 
-      var desc = attrs["description"];
-      if (desc == undefined)
+      var desc = attrs.description;
+      if (desc === undefined) {
         return "Board does not contain a description.";
-      if (/^\s+$/.test(desc))
+      }
+      if (/^\s+$/.test(desc)) {
         return "It's recommended that you enter a significant board's description.";
+      }
     },
 
     serverChange: function (data) {
-        this.set(data);
+      this.set(data);
     },
 
     serverDelete: function (data) {

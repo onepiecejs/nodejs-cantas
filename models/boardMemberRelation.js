@@ -48,13 +48,14 @@
   // boardId
   // @return true mean valid member
 
-  BoardMemberRelationSchema.statics.isBoardMember = function(userId, boardId,callback) {
+  BoardMemberRelationSchema.statics.isBoardMember = function(userId, boardId, callback) {
     var conditions = {
-      userId: userId, boardId: boardId,
+      userId: userId,
+      boardId: boardId,
       $or: [{status: memberStatus.available}, {status: memberStatus.inviting}]
     };
 
-    this.find(conditions, function(err, relations){
+    this.find(conditions, function(err, relations) {
       if (err) {
         callback(err, null);
         return;
@@ -64,9 +65,9 @@
         // To see whether user is the creator of that board.
         conditions = {_id: boardId, creatorId: userId};
         mongoose.model('Board').find(conditions, "_id", function(err, boards) {
-          if (err)
+          if (err) {
             callback(err, null);
-          else {
+          } else {
             callback(null, boards.length > 0);
           }
         });
@@ -91,9 +92,9 @@
     var condition = { userId: userId, boardId: boardId };
     var update = { $set: { quitOn: Date.now(), status: memberStatus.kickedOff } };
     this.findOneAndUpdate(condition, update).populate('userId').exec(function(err, relation) {
-      if (err)
+      if (err) {
         callback(err, null);
-      else {
+      } else {
         // In case of user might not in the board, just ignore and this should
         // not cause error.
         callback(null, relation);
@@ -116,8 +117,8 @@
     };
     this.find(conditions).populate("boardId userId").exec(function(err, boardRelation) {
       if (!boardRelation) {
-        var err = util.format('error: no invitedBoards');
-        return callback(err, null);
+        var error = util.format('error: no invitedBoards');
+        return callback(error, null);
       }
       var invitedBoardIds = [];
       boardRelation.forEach(function(relation) {

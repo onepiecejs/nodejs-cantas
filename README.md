@@ -1,7 +1,8 @@
 # Cantas
 
-Cantas is a real-time collaborative web application.It is used as internal 
-productivity tool in [Red Hat](https://www.redhat.com/). We believed this is the best open source project for 
+Cantas is a real-time collaborative web application.This is a side project,
+used as internal productivity tool in [Red Hat](https://www.redhat.com/). 
+We believed this is the best open source project for
 learning HTML5/Nodejs/socket.io/backbone.js technology.
 
 Thanks for [all Contributors](AUTHORS.md)
@@ -9,13 +10,12 @@ Thanks for [all Contributors](AUTHORS.md)
 ![project screenshot](./public/images/cantas-help-list.gif)
 
 ## Update news  
-### Current stable: v0.6
+### Current stable: v0.7
 
 ###new features:
 
-1. support importing trello's exported board json file.
-2. support adding card image cover
-2. support file upload to cantas
+1. we can importing bugzilla bugs as a card to one board.
+2. now support nodejs 0.10.x runtime
 
 
 ## Setup development environment
@@ -26,14 +26,14 @@ Thanks for [all Contributors](AUTHORS.md)
     sudo yum install -y krb5-devel krb5-libs krb5-workstation
     ```
 
-- install [Nodejs][nodejs] (v0.8.15 preferred), [npm][npm],
+- install [Nodejs][nodejs], [npm][npm],
   [MongoDB][MongoDB], [Redis][Redis].
 
     ```bash
     # nodejs & npm
-    wget http://nodejs.org/dist/v0.8.15/node-v0.8.15.tar.gz
-    tar -xvf node-v0.8.15.tar.gz
-    cd node-v0.8.15
+    wget http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz
+    tar -xvf node-v0.10.22.tar.gz
+    cd node-v0.10.22
     ./configure && make
     sudo make install
     # mongo
@@ -71,6 +71,7 @@ Thanks for [all Contributors](AUTHORS.md)
 - start the app
 
     ```bash
+    # update settings values
     cp settings.json.example settgins.json
     NODE_ENV=development node app.js
     ```

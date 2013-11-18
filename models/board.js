@@ -25,7 +25,7 @@
       groupId: { type: ObjectId, index: true },
       isPublic: {type: Boolean, default: true},
       voteStatus: {type: String, default: 'enabled'},
-      commentStatus: {type:String, default: 'enabled'},
+      commentStatus: {type: String, default: 'enabled'},
       perms: {
         delete: {
           users: [ ObjectId ],
@@ -66,15 +66,14 @@
     async.waterfall([
       function (callback) {
         that.findById(boardId,
-                      "_id isPublic creatorId isClosed",
-                      function (err, board) {
-          if (err || board === null) {
-            result = {ok: 1, message: 'no valid board'};
-            return callback(result, null);
-          };
-
-          callback(null, board);
-        });
+          "_id isPublic creatorId isClosed",
+          function (err, board) {
+            if (err || board === null) {
+              result = {ok: 1, message: 'no valid board'};
+              return callback(result, null);
+            }
+            callback(null, board);
+          });
       },
       function (board, callback) {
         if (user === null) {
@@ -89,16 +88,16 @@
           if (err) {
             result = {ok: 1, message: 'getMemberStatus failed'};
             return callback(result, null);
-          };
+          }
 
-          if (status == BoardMemberStatus.inviting) {
+          if (status === BoardMemberStatus.inviting) {
             //update user status
             board.confirmInvitation(user._id, function (err, obj) {
               if (err) {
                 result = {ok: 1, message: 'confirmInvitation failed'};
                 return callback(result, null);
-              };
-              var content = user.username + ' has accepted invitation and joined the board.'
+              }
+              var content = user.username + ' has accepted invitation and joined the board.';
               var activity = new LogActivity({socket: socket, exceptMe: false});
               activity.log({
                 content: content,
@@ -119,7 +118,7 @@
           if (err) {
             result = {ok: 1, message: 'isBoardMember failed'};
             return callback(result, null);
-          };
+          }
           callback(null, board, memberStatus);
         });
       },
@@ -128,21 +127,22 @@
             memberStatus === true) {
           result = {ok: 0, message: 'isMember', board: board};
           callback(null, result);
-        } else if (board.isPublic === true &&
-            memberStatus === false) {
-              result = {ok: 0, message: 'normal', board: board};
-              callback(null,result);
-            } else {
-              //private board without member relation, you can't login
-              result = {ok: 0, message: 'nologin', board: board};
-              callback(null, result);
-            }
+        } else if (board.isPublic === true && memberStatus === false) {
+          result = {ok: 0, message: 'normal', board: board};
+          callback(null, result);
+        } else {
+          //private board without member relation, you can't login
+          result = {ok: 1, message: 'nologin', board: board};
+          return callback(result, null);
+        }
       }
     ], function (err, result) {
-      if (err) { result = err };
+      if (err) {
+        result = err;
+      }
       callback(null, result);
     });
-  }
+  };
 
   // Schema methods
 
@@ -183,7 +183,8 @@
       { $set: { "members.$.quitOn": Date.now() } },
       function (err, numberAffected, raw) {
         callback(err, numberAffected, raw);
-      });
+      }
+    );
   };
 
   // Instance methods
@@ -212,10 +213,10 @@
   BoardSchema.methods.getMemberStatus = function (userId, callback) {
     var conditions = { boardId: this._id, userId: userId };
     BoardMemberRelation.findOne(conditions, function (err, relation) {
-      if (err)
+      if (err) {
         callback(err, null);
-      else {
-        var status = relation == null ? null : relation.status;
+      } else {
+        var status = relation === null ? null : relation.status;
         callback(err, status);
       }
     });

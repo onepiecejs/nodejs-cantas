@@ -1,8 +1,8 @@
 /**
  *  * Module dependencies.
  *   */
-var passport = require('passport')
-  , util = require('util');
+var passport = require('passport');
+var util = require('util');
 
 /**
  * Strategy` constructor.
@@ -26,21 +26,23 @@ var passport = require('passport')
  *  @api public
  */
 
-  function Strategy(options, verify) {
-    if (typeof options == 'function') {
-        verify = options;
-        options = {};
-      }
-    if (!verify) throw new Error('HTTP REMOTE_USER authentication strategy requires a verify function');
-    passport.Strategy.call(this);
-    this.name = 'remote_user';
-    this._verify = verify;
-    this._realm = options.realm || 'Users';
-    if (options.scope) {
-      this._scope = (Array.isArray(options.scope)) ? options.scope : [ options.scope ];
-    }
-    this._passReqToCallback = options.passReqToCallback;
+function Strategy(options, verify) {
+  if (typeof options === 'function') {
+    verify = options;
+    options = {};
   }
+  if (!verify) {
+    throw new Error('HTTP REMOTE_USER authentication strategy requires a verify function');
+  }
+  passport.Strategy.call(this);
+  this.name = 'remote_user';
+  this._verify = verify;
+  this._realm = options.realm || 'Users';
+  if (options.scope) {
+    this._scope = (Array.isArray(options.scope)) ? options.scope : [ options.scope ];
+  }
+  this._passReqToCallback = options.passReqToCallback;
+}
 
 /**
  *   Inherit from `passport.Strategy`.
@@ -55,11 +57,12 @@ util.inherits(Strategy, passport.Strategy);
  * @api protected
  */
 Strategy.prototype.authenticate = function(req) {
-  var token = undefined;
 
-  if (req.headers && req.headers['remote_user']) {
-    var remote_user = req.headers['remote_user'];
-    if(remote_user) {
+  var token = null;
+
+  if (req.headers && req.headers.remote_user) {
+    var remote_user = req.headers.remote_user;
+    if (remote_user) {
       token = remote_user;
     } else {
       return this.fail(400);
@@ -68,7 +71,9 @@ Strategy.prototype.authenticate = function(req) {
     token = req.user.username;
   }
 
-  if (!token) { return this.fail(this._challenge()); }
+  if (!token) {
+    return this.fail(this._challenge());
+  }
 
   var self = this;
 
@@ -83,7 +88,7 @@ Strategy.prototype.authenticate = function(req) {
   } else {
     this._verify(token, verified);
   }
-}
+};
 
 
 /**
@@ -92,7 +97,7 @@ Strategy.prototype.authenticate = function(req) {
  * @api private
  */
 
-Strategy.prototype._challenge = function(code, desc, uri) {
+Strategy.prototype._challenge = function (code, desc, uri) {
   var challenge = 'REMOTE_USER realm="' + this._realm + '"';
   if (this._scope) {
     challenge += ', scope="' + this._scope.join(' ') + '"';
@@ -108,10 +113,11 @@ Strategy.prototype._challenge = function(code, desc, uri) {
   }
 
   return challenge;
-}
+};
 
 /**
  * Expose `Strategy`.
  */
 
 module.exports = Strategy;
+

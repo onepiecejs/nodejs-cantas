@@ -1,4 +1,5 @@
 (function(module) {
+
   'use strict';
 
   var async = require('async');
@@ -44,10 +45,11 @@
         function(metadata, callback) {
           var lm = new LabelMetadata(metadata);
           lm.save(function(err, savedObject) {
-            if (err)
+            if (err) {
               callback(err, null);
-            else
+            } else {
               callback(null, true);
+            }
           });
         },
         function(err, results) {

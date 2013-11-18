@@ -27,8 +27,8 @@
     var content = null;
     var username = this.handshake.user.username;
     if (action === 'create') {
-      var createdObject = data['createdObject'];
-      var sourceObject = data['sourceObject'];
+      var createdObject = data.createdObject;
+      var sourceObject = data.sourceObject;
       content = util.format('%s added %s "%s"', username, model, createdObject.title);
       if (sourceObject) {
         content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
@@ -47,15 +47,16 @@
         }
 
       }
-      if (data.field === 'voteStatus'){
-        var origin_config = data.origin_data[data.field];
-        var changed_config = data.changed_data[data.field]
+      var origin_config, changed_config;
+      if (data.field === 'voteStatus') {
+        origin_config = data.origin_data[data.field];
+        changed_config = data.changed_data[data.field];
         content = util.format('%s changed vote permission from "%s" to "%s"',
                   username, configDescription[origin_config], configDescription[changed_config]);
       }
-      if (data.field === 'commentStatus'){
-        var origin_config = data.origin_data[data.field];
-        var changed_config = data.changed_data[data.field]
+      if (data.field === 'commentStatus') {
+        origin_config = data.origin_data[data.field];
+        changed_config = data.changed_data[data.field];
         content = util.format('%s changed comment permission from "%s" to "%s"',
                   username, configDescription[origin_config], configDescription[changed_config]);
       }
@@ -65,7 +66,7 @@
 
   BoardCRUD.prototype._read = function(data, callback) {
     if (data) {
-      if (data._id && typeof(data._id) === 'string') {
+      if (data._id && typeof (data._id) === 'string') {
         this.modelClass
           .findOne(data)
           .populate("creatorId")
@@ -81,7 +82,7 @@
           });
       }
     } else {
-      this.modelClass.find({}, callback );
+      this.modelClass.find({}, callback);
     }
   };
 
@@ -89,42 +90,50 @@
     var self = this;
     var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data['_id']; // _id is not modifiable
-    var origin_data = data['original'];
+    delete data._id; // _id is not modifiable
+    var origin_data = data.original;
     var change_fields = [];
-    for (var key in origin_data) {
-      change_fields.push(key);
+    var key;
+    for (key in origin_data) {
+      if (origin_data.hasOwnProperty(key)) {
+        change_fields.push(key);
+      }
     }
-    delete data['original'];
+    delete data.original;
 
     this.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
       if (err) {
         callback(err, updatedData);
       } else {
         // create activity log
-        if (change_fields.length >= 1 ) {
-          for (var i = 0; i < change_fields.length; i++) {
+        if (change_fields.length >= 1) {
+          async.map(change_fields, function(change_field, cb) {
             var changeInfo = {
-              field: change_fields[i],
+              field: change_field,
               origin_data: origin_data,
               changed_data: updatedData
             };
-            self.generateActivityContent(self.key, 'update', changeInfo, function(err, content){
-              if (err) {
-                console.log(err);
-              } else {
-                if (content) {
-                  self.logActivity(content);
+            self.generateActivityContent(self.key, 'update', changeInfo,
+              function(err, content) {
+                if (err) {
+                  cb(err, updatedData);
+                } else {
+                  if (content) {
+                    self.logActivity(content);
+                  }
                 }
-              }
-            });
-          }
+              });
+          }, function(err, results) {
+            if (err) {
+              callback(err, updatedData);
+            }
+          });
         }
 
         // All custom actions are written here.
         // It's a bad way. Signal might be better.
 
-        if ("isClosed" in data) {
+        if (data.hasOwnProperty("isClosed")) {
           if (updatedData.isClosed) {
             self.emitMessage(name, updatedData);
           }
@@ -141,46 +150,48 @@
       async.waterfall([
         function(callback) {
           BoardMemberRelation.getBoardMembers(boardId, function(err, memberRelations) {
-            if (err)
+            if (err) {
               callback(err, null);
-            else
+            } else {
               callback(null, memberRelations);
+            }
           });
         }
       ], function(err, memberRelations) {
-        if (err)
+        if (err) {
           console.log(err);
-        else {
+        } else {
           var type = "information";
           var user = self.socket.handshake.user;
+          var message = '', email_message = '';
           if (board.isClosed === true) {
-            var message = util.format('Board [%s](%s) is closed by %s',
+            message = util.format('Board [%s](%s) is closed by %s',
                           board.title, board.url, user.username);
-            var email_message = util.format('Board %s(%s) is closed by %s',
+            email_message = util.format('Board %s(%s) is closed by %s',
                           board.title, Sites.currentSite() + board.url, user.username);
-          };
+          }
           if (board.isClosed === false) {
-            var message = util.format('Board [%s](%s) is opened by %s',
+            message = util.format('Board [%s](%s) is opened by %s',
                           board.title, board.url, user.username);
-            var email_message = util.format('Board %s(%s) is opened by %s',
+            email_message = util.format('Board %s(%s) is opened by %s',
                           board.title, Sites.currentSite() + board.url, user.username);
           }
           var numberOfRelations = memberRelations.length;
-          for (var i = 0; i < numberOfRelations; i++) {
+          var i;
+          for (i = 0; i < numberOfRelations; i++) {
             var memberRelation = memberRelations[i];
             // Do not send notification to the one who are closing the board.
-            var isWhoClosing = utils.idEquivalent(
-              memberRelation.userId._id, user._id);
-            if (isWhoClosing)
-              continue;
-            var emailContext = {
-              body: {
-                username: memberRelation.userId.username,
-                message: email_message
-              },
-              template: "notification.jade"
-            };
-            Notification.notify(self.socket, memberRelation.userId, message, type, emailContext);
+            var isWhoClosing = utils.idEquivalent(memberRelation.userId._id, user._id);
+            if (!isWhoClosing) {
+              var emailContext = {
+                body: {
+                  username: memberRelation.userId.username,
+                  message: email_message
+                },
+                template: "notification.jade"
+              };
+              Notification.notify(self.socket, memberRelation.userId, message, type, emailContext);
+            }
           }
         }
       });
@@ -189,21 +200,22 @@
     BoardCRUD.prototype._logActivityWhenCloseOpen = function(board) {
       var self = this;
       var username = this.handshake.user.username;
+      var content = '';
       if (board.isClosed) {
-        var content = util.format('Board "%s" is closed by %s', board.title, username);
+        content = util.format('Board "%s" is closed by %s', board.title, username);
       }
-      if (board.isClosed === false){
-        var content = util.format('Board "%s" is opened by %s', board.title, username);
+      if (board.isClosed === false) {
+        content = util.format('Board "%s" is opened by %s', board.title, username);
       }
       var activity = new LogActivity({
         socket: self.socket,
         exceptMe: self.exceptMe
       });
-      activity.log({content: content, boardId: board._id});
+      activity.log({'content': content, 'boardId': board._id});
     };
 
   };
 
   module.exports = BoardCRUD;
 
-})(module);
+}(module));

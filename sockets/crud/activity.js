@@ -20,4 +20,4 @@
 
   module.exports = ActivityCRUD;
 
-})(module);
+}(module));

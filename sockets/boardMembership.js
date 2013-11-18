@@ -17,7 +17,7 @@
   var isEmailAddr = function(username) {
     //var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     // FIXME: only accept email of redhat.com
-    var re = /^\w+([\.-]?\w+)*@redhat.com$/;
+    var re = new RegExp('^\\w+([\\.-]?\\w+)*@redhat.com$');
     return re.test(username);
   };
 
@@ -224,7 +224,7 @@
             .select("creatorId")
             .populate("creatorId")
             .exec(function(err, board) {
-              var creatorId = board.creatorId._id.toString()
+              var creatorId = board.creatorId._id.toString();
               var currentUserId = that.handshake.user._id.toString();
               var isCreatorRevoking = creatorId === currentUserId;
               if (isCreatorRevoking) {
@@ -275,7 +275,8 @@
 
           //create activity log
           var creator = socket.handshake.user;
-          var content = util.format("%s removed %s from this board", creator.username, data.username);
+          var content = util.format("%s removed %s from this board",
+            creator.username, data.username);
           var activity = new LogActivity({socket: socket, exceptMe: false});
           activity.log({content: content});
 

@@ -1,0 +1,18 @@
+script#template-syncconfig-item-input-view(type="text/template").
+  div.row-fluid
+    div.span1
+    div.span6
+      label Input bugzilla link
+      input(placeholder="Input a Bugzilla link").js-query-url
+      div.js-alert.alert.hide  Loading...
+    div.span5
+      label Put bugs in List
+      a.js-specify-list New List
+      select.js-list-name
+        option(value="") ----
+        each list, i in lists
+          option(value=list.id)= list.name
+      input(placeholder="Input New List Name").hide.js-list-name
+    div.mapping-submit
+      button.btn.btn-primary.js-syncconfig-add Save
+      button.btn.js-syncconfig-cancel Cancel

@@ -1,5 +1,5 @@
 script#template-card-detail-view(type="text/template")
-  |div(id= card._id)
+  |div(id= card._id, class="modal card-detail")
   |  div.modal-header
   |    button.close(data-dismiss="modal")×
   |    h3.card-detail-title.card-title.js-edit-title.js-title(title="Click to edit...")= card.title
@@ -37,6 +37,7 @@ script#template-card-detail-view(type="text/template")
   |          span Comment
   |    section.card-option.card-description
   |      h4.desc.card-detail-desc.js-edit-desc.js-desc(title="Click to edit...")!= card.description
+  |        a.new-item(href="http://daringfireball.net/projects/markdown/syntax") Markdown Syntax
   |      a: span.new-item.js-edit-desc Edit Card Description
   |      div.card-option-edit.js-edit-desc-area
   |        textarea.js-desc-input(placeholder="Add description")
@@ -45,5 +46,5 @@ script#template-card-detail-view(type="text/template")
   |    section.card-option.js-checklist-section
   |    section.card-option.attachment
   |    section.card-option.comment
-  |div.modal-footer
-  |   a.btn.js-close-card-detail(data-dismiss="modal", href="javascript: void(0)") Close
+  |  div.modal-footer
+  |    a.btn.js-close-card-detail(data-dismiss="modal", href="javascript: void(0)") Close

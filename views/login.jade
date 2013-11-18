@@ -24,7 +24,11 @@ html
         p= message
     div#browser-version-alert.force-alert.hide.fade
       div.alert-content
-        p Your browser <span id='currentVersion'></span> is too low to run Cantas stably. We recommend Chrome 10+, FireFox 4+, Safari 6+ etc.
+        p
+          | Your browser 
+          span#currentVersion
+          |  is too low to run Cantas stably. We recommend Chrome 10+, FireFox 10+, Safari 6+ etc.
+        a(href="/standalonehelp#browserSupportMatrix") Browser Support Matrix
     script(type="text/javascript").
       function init(){
         var browserVersionInfo = {
@@ -40,7 +44,7 @@ html
         else if(/version\D+(\d[\d.]*).*safari/.test(userAgent)) {
           browserVersionInfo.safari = true;
           browserVersionInfo.name = 'safari';
-          browserVersionInfo.version = RegExp.$2;
+          browserVersionInfo.version = RegExp.$1;
         }
 
         var browserName = browserVersionInfo.name;
@@ -50,7 +54,7 @@ html
         if(browserVersionInfo.chrome && majorVersion < 10) {
           isLow = true;
         }
-        else if(browserVersionInfo.firefox && majorVersion < 4) {
+        else if(browserVersionInfo.firefox && majorVersion < 10) {
           isLow = true;
         }
         else if(browserVersionInfo.safari && majorVersion < 6) {

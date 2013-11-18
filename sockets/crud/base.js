@@ -45,7 +45,7 @@
      */
     // The user's session id is found in the handshake
     this.sessionID = this.handshake.sessionID;
-  };
+  }
 
   BaseCRUD.prototype.isBoardMember = function(callback) {
 
@@ -67,9 +67,10 @@
   BaseCRUD.prototype.generateActivityContent = function(model, action, data, callback) {
     var content = null;
     var username = this.handshake.user.username;
+    var self = this;
     if (action === 'create') {
-      var createdObject = data['createdObject'];
-      var sourceObject = data['sourceObject'];
+      var createdObject = data.createdObject;
+      var sourceObject = data.sourceObject;
       content = util.format('%s added %s "%s"', username, model, createdObject.title);
       if (sourceObject) {
         content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
@@ -78,15 +79,15 @@
     }
     if (action === 'update') {
       content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
-                field, data.origin_data[data.field], data.changed_data[data.field]);
+                data.field, data.origin_data[data.field], data.changed_data[data.field]);
     }
     callback(null, content);
   };
 
   BaseCRUD.prototype.logActivity = function(content) {
     var self = this;
-    var username = this.handshake.user.username;
-    var boardId = this.socket.room.board.split(':')[1];
+    var username = self.handshake.user.username;
+    var boardId = self.socket.getCurrentBoardId();
     var creatorId = this.socket.handshake.user._id;
     var data = {
       content: content,
@@ -111,10 +112,10 @@
    */
   BaseCRUD.prototype.disabled = function() {
     // No point in continuing without the required references
-    if (!this.modelClass || !this.key || !this.socket || !this.handshake)
+    if (!this.modelClass || !this.key || !this.socket || !this.handshake) {
       return true;
-    else
-      return false;
+    }
+    return false;
   };
 
   /*
@@ -124,13 +125,13 @@
    * operations after subclass-specific things done.
    */
   BaseCRUD.prototype._create = function(data, callback) {
-    var sourceObject = data['sourceObject'];
+    var sourceObject = data.sourceObject;
     if (sourceObject) {
-      delete data['sourceObject'];
+      delete data.sourceObject;
     }
 
-    var t = new this.modelClass(data)
-      , name = '/' + this.key + ':create';
+    var t = new this.modelClass(data),
+      name = '/' + this.key + ':create';
     var self = this;
 
     t.save(function (err, createdObject) {
@@ -140,8 +141,8 @@
         var data = {
           createdObject: createdObject,
           sourceObject: sourceObject
-        }
-        self.generateActivityContent(self.key, 'create', data, function(err, content){
+        };
+        self.generateActivityContent(self.key, 'create', data, function(err, content) {
           if (err) {
             console.log(err);
           } else {
@@ -153,13 +154,15 @@
         self.emitMessage(name, t);
 
         signals.post_create.send(createdObject, {
-          instance: createdObject, socket: self.socket}, function(err, result){});
+          instance: createdObject,
+          socket: self.socket
+        }, function(err, result) {});
       }
     });
   };
 
   BaseCRUD.prototype._read = function(data, callback) {
-    if (data){
+    if (data) {
       // FIXME: it is not necessary to identify whether _id exists.
       //        Merge these condition branch into one by calling
       //        ModelClass.find to return a uniform value in an array.
@@ -167,7 +170,7 @@
       //        For example, if there is an _id in data, the returned array
       //        will contain one related object only. Otherwise, all quried
       //        objects appear in array.
-      if (data._id){
+      if (data._id) {
         this.modelClass.findOne(
           data,
           function (err, result) {
@@ -183,7 +186,7 @@
         );
       }
     } else {
-      this.modelClass.find({}, callback );
+      this.modelClass.find({}, callback);
     }
   };
 
@@ -191,48 +194,58 @@
     var self = this;
     var _id = data._id || data.id;
     var eventKey = '/' + this.key + '/' + _id + ':update';
-    delete data['_id']; // _id is not modifiable
-    var origin_data = data['original'];
+    delete data._id; // _id is not modifiable
+    var origin_data = data.original;
     var change_fields = [];
-    for (var key in origin_data) {
-      change_fields.push(key);
+    var key;
+    for (key in origin_data) {
+      if (origin_data.hasOwnProperty(key)) {
+        change_fields.push(key);
+      }
     }
-    delete data['original'];
+    delete data.original;
 
     this.modelClass.findByIdAndUpdate(_id,
                                       {$set : data},
                                       function (err, updatedData) {
-      if (err) {
-        callback(err, updatedData);
-      } else {
-
-        // create activity log
-        if (change_fields.length >= 1) {
-          for (var i = 0; i < change_fields.length; i++) {
-            var changeInfo = {
-              field: change_fields[i],
-              origin_data: origin_data,
-              changed_data: updatedData
-            };
-            self.generateActivityContent(self.key, 'update', changeInfo, function(err, content){
+        if (err) {
+          callback(err, updatedData);
+        } else {
+          // create activity log
+          if (change_fields.length >= 1) {
+            async.map(change_fields, function(change_field, cb) {
+              var changeInfo = {
+                field: change_field,
+                origin_data: origin_data,
+                changed_data: updatedData
+              };
+              self.generateActivityContent(self.key, 'update', changeInfo,
+                function(err, content) {
+                  if (err) {
+                    cb(err, updatedData);
+                  } else {
+                    if (content) {
+                      self.logActivity(content);
+                    }
+                  }
+                });
+            }, function(err, results) {
               if (err) {
-                console.log(err);
-              } else {
-                if (content) {
-                  self.logActivity(content);
-                }
+                callback(err, updatedData);
               }
             });
+
           }
+
+          self.emitMessage(eventKey, updatedData);
+
+          signals.post_patch.send(updatedData, {
+            instance: updatedData,
+            socket: self.socket
+          }, function(err, result) {});
         }
 
-        self.emitMessage(eventKey, updatedData);
-
-        signals.post_patch.send(updatedData, {
-          instance: updatedData, socket: self.socket}, function(err, result) {});
-      }
-
-    });
+      });
   };
 
   BaseCRUD.prototype._update = function(data, callback) {
@@ -248,16 +261,19 @@
         } else {
           // iterate all keys and give assignments.
           // ensure `result` isn't null.
-          if(result){
-            for (var attr in data) {
-              result[attr] = data[attr];
+          if (result) {
+            var attr;
+            for (attr in data) {
+              if (data.hasOwnProperty(attr)) {
+                result[attr] = data[attr];
+              }
             }
             result.save(function (err) {
               // Note that `silence` here controls whether to publish event.
               // we don't want those *related* object's update triggers an event.
               // note the difference between `silence` and the backbone
               // builtin `silent`: http://backbonejs.org/#Model-set
-              if(!data.silence){
+              if (!data.silence) {
                 self.emitMessage(name, result);
               }
             });
@@ -281,7 +297,8 @@
           self.emitMessage(name, removedObject);
 
           signals.post_delete.send(removedObject, {
-            instance: removedObject, socket: self.socket
+            instance: removedObject,
+            socket: self.socket
           }, function(err, result) { });
         }
       });
@@ -296,27 +313,29 @@
    */
   BaseCRUD.prototype.patch = function(data, callback) {
     this._patch(data, callback);
-  }
+  };
 
   BaseCRUD.prototype.update = function(data, callback) {
     this._update(data, callback);
-  }
+  };
 
   BaseCRUD.prototype.read = function(data, callback) {
     this._read(data, callback);
-  }
+  };
 
+  /*jslint es5: true */
   BaseCRUD.prototype.delete = function(data, callback) {
     this._delete(data, callback);
-  }
+  };
 
   BaseCRUD.prototype.create = function(data, callback) {
     this._create(data, callback);
-  }
+  };
 
   BaseCRUD.prototype.listen = function() {
-    if (this.disabled())
+    if (this.disabled()) {
       return;
+    }
 
     var self = this;
 
@@ -334,24 +353,25 @@
 
     if (this.updateEnabled) {
       this.socket.on(this.key + ':update', function (data, callback) {
-          self.update(data, callback);
+        self.update(data, callback);
       });
     }
 
     if (this.patchEnabled) {
       this.socket.on(this.key + ':patch', function (data, callback) {
-          self.patch(data, callback);
+        self.patch(data, callback);
       });
     }
 
     if (this.deleteEnabled) {
       this.socket.on(this.key + ':delete', function (data, callback) {
+        /*jslint es5: true */
         self.delete(data, callback);
       });
     }
 
-  }
+  };
 
   module.exports = BaseCRUD;
 
-})(module);
+}(module));

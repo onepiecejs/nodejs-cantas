@@ -18,25 +18,26 @@
   util.inherits(CommentCRUD, BaseCRUD);
 
   CommentCRUD.prototype._create = function(data, callback) {
-    var t = new this.modelClass(data)
-      , name = '/' + this.key + ':create';
+    var t = new this.modelClass(data), name = '/' + this.key + ':create';
     var self = this;
 
     t.save(function (err, savedObject) {
-      savedObject.populate('authorId', function(err, comment){
-        if(!err){
+      savedObject.populate('authorId', function(err, comment) {
+        if (!err) {
           self.emitMessage(name, comment);
 
           signals.post_create.send(comment, {
-            instance: comment, socket: self.socket}, function(err, result){});
+            instance: comment,
+            socket: self.socket
+          }, function(err, result) {});
         }
       });
     });
   };
 
   CommentCRUD.prototype._read = function(data, callback) {
-    if (data){
-      if (data._id){
+    if (data) {
+      if (data._id) {
         this.modelClass.findOne(data).populate("authorId").exec(
           function (err, result) {
             callback(err, result);
@@ -58,37 +59,37 @@
     var self = this;
     var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data['_id']; // _id is not modifiable
+    delete data._id; // _id is not modifiable
 
     async.waterfall([
-      function(callback){
+      function(callback) {
         // check permission
-        self.modelClass.findById(_id, function(err, comment){
-          if(err){
+        self.modelClass.findById(_id, function(err, comment) {
+          if (err) {
             callback(err, null);
-          }else{
+          } else {
             var userId = self.socket.handshake.user._id;
             var authorId = comment.authorId;
-            if(authorId.toString() !== userId.toString()){
+            if (authorId.toString() !== userId.toString()) {
               callback("Error: you do not have permission to edit this comment.", null);
-            }else{
+            } else {
               callback(null);
             }
           }
         });
       },
-      function(callback){
+      function(callback) {
         // update comment content
         data.updatedOn = Date.now();
         self.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
           callback(err, updatedData);
         });
       }
-    ], function(err, updatedData){
+    ], function(err, updatedData) {
       if (err) {
         callback(err, null);
       } else {
-        updatedData.populate("authorId", function(err, updatedData){
+        updatedData.populate("authorId", function(err, updatedData) {
           self.emitMessage(name, updatedData);
         });
       }
@@ -97,4 +98,4 @@
 
   module.exports = CommentCRUD;
 
-})(module);
+}(module));

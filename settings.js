@@ -13,4 +13,4 @@
 
   module.exports = require("./settings.json");
 
-}(module))
+}(module));

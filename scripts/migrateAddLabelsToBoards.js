@@ -40,33 +40,13 @@
   };
 
   /*
-   * Prepare the relation data between card and labels.
-   *
-   * @param callback: a function when data is ready or some error occurs. It
-   * follows the argument convention used in Node. Prepared data is passed to
-   * second argument.
-   *
-   * Data format: [
-   *  [{labelId: '', cardId: '', boardId: ''}, ...],
-   *  ...
-   * ]
-   */
-  var prepareData = function prepareData(callback) {
-    async.waterfall([
-      taskGetBoardsHasNoLabels,
-      taskGetLabelMetadata,
-      taskPrepareData
-    ], callback);
-  };
-
-  /*
    * Get boards that has no label.
    */
   var taskGetBoardsHasNoLabels = function getBoards(asyncCallback) {
     Label.find({}).select('boardId').distinct('boardId', function(err, labels) {
-      if (err)
+      if (err) {
         asyncCallback(err, null);
-      else {
+      } else {
         var boardIds = [];
         labels.forEach(function(label) {
           boardIds.push(label);
@@ -83,9 +63,9 @@
    */
   var taskGetLabelMetadata = function getLabelMetadata(boards, asyncCallback) {
     LabelMetadata.find(function(err, labelsMetadata) {
-      if (err)
+      if (err) {
         asyncCallback(err, null);
-      else {
+      } else {
         asyncCallback(null, boards, labelsMetadata);
       }
     });
@@ -107,6 +87,27 @@
   };
 
   /*
+   * Prepare the relation data between card and labels.
+   *
+   * @param callback: a function when data is ready or some error occurs. It
+   * follows the argument convention used in Node. Prepared data is passed to
+   * second argument.
+   *
+   * Data format: [
+   *  [{labelId: '', cardId: '', boardId: ''}, ...],
+   *  ...
+   * ]
+   */
+  var prepareData = function prepareData(callback) {
+    async.waterfall([
+      taskGetBoardsHasNoLabels,
+      taskGetLabelMetadata,
+      taskPrepareData
+    ], callback);
+  };
+
+
+  /*
    * TODO: support rollback when error occurs.
    *
    * Build relation between card and labels.
@@ -120,18 +121,19 @@
   var migration = function migration(migrateData, callback) {
     async.map(migrateData,
       function(data, asyncCallback) {
-        var label = Label(data);
+        var label = new Label(data);
         label.save(function(err, savedObject) {
-          if (err)
+          if (err) {
             asyncCallback(err, null);
-          else
+          } else {
             asyncCallback(null, true);
+          }
         });
       },
       function(err, results) {
-        if (err)
+        if (err) {
           callback(err, null);
-        else {
+        } else {
           var result = results.reduce(function(prevValue, curValue) {
             return prevValue && curValue;
           }, true);
@@ -155,10 +157,11 @@
       prepareData,
       migration
     ], function(err, result) {
-      if (err)
+      if (err) {
         die(err);
-      else
+      } else {
         callback(result);
+      }
     });
   };
 

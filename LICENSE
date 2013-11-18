@@ -30,7 +30,5 @@ underscore.js http://underscorejs.org/
 backbone.iobind.js https://github.com/logicalparadox/backbone.iobind
 moment.js     http://momentjs.com/
 markdown.js   https://github.com/evilstreak/markdown-js
-bootstrap-modal.js  https://github.com/jschr/bootstrap-modal
-bootstrap-tab.js  http://twitter.github.com/bootstrap/javascript.html#tabs
-bootstrap-dropdown.js  http://twitter.github.com/bootstrap/javascript.html#dropdowns
+bootstrap-min.js  http://getbootstrap.com/javascript/
 async.js  https://github.com/caolan/async

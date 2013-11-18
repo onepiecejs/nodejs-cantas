@@ -11,6 +11,6 @@
     available: "available",
     inviting: "inviting",
     kickedOff: "kickedOff"
-  }
+  };
 
 }(module));

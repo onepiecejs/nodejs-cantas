@@ -5,7 +5,7 @@
  * All Cantas' models should inherit from BaseModel rather than Backbone.Model. 
  */
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -35,8 +35,9 @@ $(function ($, _, Backbone) {
     noIoBind: false,
 
     url: function() {
-      if (this.urlRoot === undefined || typeof this.urlRoot !== "string")
+      if (this.urlRoot === undefined || typeof this.urlRoot !== "string") {
         throw new TypeError("urlRoot is not well-defined.");
+      }
 
       return "/" + this.urlRoot + "/" + this.id;
     },
@@ -98,8 +99,9 @@ $(function ($, _, Backbone) {
      */
     dispose: function() {
       this.off();
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.ioUnbindAll();
+      }
       return this;
     }
 
@@ -158,4 +160,4 @@ $(function ($, _, Backbone) {
 
   });
 
-}(jQuery, _, Backbone))
+}(jQuery, _, Backbone));

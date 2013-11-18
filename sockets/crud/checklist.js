@@ -20,8 +20,7 @@
   util.inherits(ChecklistCRUD, BaseCRUD);
 
   ChecklistCRUD.prototype._create = function(data, callback) {
-    var t = new this.modelClass(data)
-      , name = '/' + this.key + ':create';
+    var t = new this.modelClass(data), name = '/' + this.key + ':create';
     var self = this;
 
     t.save(function (err, savedObject) {
@@ -33,7 +32,9 @@
         self.emitMessage(name, t);
 
         signals.post_create.send(savedObject, {
-          instance: savedObject, socket: self.socket}, function(err, result){});
+          instance: savedObject,
+          socket: self.socket
+        }, function(err, result) {});
       }
     });
   };
@@ -46,13 +47,13 @@
       var name = '/' + this.key + '/' + field + ':delete';
 
       async.waterfall([
-        function(callback){
+        function(callback) {
           self.isBoardMember(function(err, isMember) {
             callback(err, isMember);
           });
         },
-        function(isMember, callback){
-          if(isMember){
+        function(isMember, callback) {
+          if (isMember) {
             self.modelClass.findByIdAndRemove(data._id, function(err, removedObject) {
               callback(err, removedObject);
             });
@@ -67,7 +68,8 @@
           self.emitMessage(name, removedObject);
 
           signals.post_delete.send(removedObject, {
-            instance: removedObject, socket: self.socket
+            instance: removedObject,
+            socket: self.socket
           }, function(err, result) { });
         }
       });
@@ -76,4 +78,4 @@
 
   module.exports = ChecklistCRUD;
 
-})(module);
+}(module));

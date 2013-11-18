@@ -1,34 +1,40 @@
-var express = require('express')
-  , mongoose = require('mongoose')
-  , card = require('./models/card')
-  , list = require('./models/list')
-  , board = require('./models/board')
-  , routes = require('./routes')
-  , sockets = require('./sockets')
-  , settings = require('./settings')
-  , utils = require('./services/utils')
-  , connect = require('express/node_modules/connect')
-  , redis = require('socket.io/node_modules/redis')
-  , RedisStore = require('socket.io/lib/stores/redis')
-  , RedisSessionStore = require('connect-redis')(express)
-  , sessionStore = new RedisSessionStore({
-      port: settings.redis.port, 
-      host: settings.redis.host, 
-      ttl: settings.redis.ttl })
-  , app = express.createServer()
-  , sio
-  , passport = require('./services/auth')
-  , redisClients = {
-      redisPub: redis.createClient(
-                  settings.redis.port, 
-                  settings.redis.host)
-    , redisSub: redis.createClient(settings.redis.port, 
-        settings.redis.host)
-    , redisClient: redis.createClient(
-        settings.redis.port, 
-        settings.redis.host)
-  }
-  , siteId = 0;
+var express = require('express');
+var mongoose = require('mongoose');
+var card = require('./models/card');
+var list = require('./models/list');
+var board = require('./models/board');
+var routes = require('./routes');
+var sockets = require('./sockets');
+var settings = require('./settings');
+var utils = require('./services/utils');
+var connect = require('express/node_modules/connect');
+var redis = require('socket.io/node_modules/redis');
+var RedisStore = require('socket.io/lib/stores/redis');
+var RedisSessionStore = require('connect-redis')(express);
+var sessionStore = new RedisSessionStore({
+    port: settings.redis.port,
+    host: settings.redis.host,
+    ttl: settings.redis.ttl
+  });
+var app = express.createServer();
+var sio;
+var passport = require('./services/auth');
+var redisClients = {
+    redisPub: redis.createClient(
+      settings.redis.port,
+      settings.redis.host
+    ),
+    redisSub: redis.createClient(
+      settings.redis.port,
+      settings.redis.host
+    ),
+    redisClient: redis.createClient(
+      settings.redis.port,
+      settings.redis.host
+    )
+  };
+var siteUrl;
+var siteId = 0;
 
 app.configure(function () {
   app.set('views', __dirname + '/views');
@@ -50,14 +56,16 @@ app.configure(function () {
   app.use(app.router);
 });
 
-app.configure('development', function(){
-  app.use(express.errorHandler({ 
-    dumpExceptions: true, 
-    showStack: true }));
+app.configure('development', function() {
+  app.use(express.errorHandler({
+    dumpExceptions: true,
+    showStack: true
+  }
+    ));
   app.set("production", false);
 });
 
-app.configure('production', function(){
+app.configure('production', function() {
   app.use(express.errorHandler());
   app.set("production", true);
 });
@@ -74,6 +82,7 @@ app.helpers({
   links: settings.links,
   version: utils.get_version(),
   siteId: siteId,
+  siteUrl: siteUrl
 });
 
 routes.init(app, passport, sessionStore);
@@ -100,7 +109,7 @@ app.listen(settings.app.port, settings.app.host, function() {
 sio = require('socket.io').listen(app);
 sockets.init(sio, sessionStore);
 
-sio.configure( function () {
+sio.configure(function () {
   // Set store for socket.io to use RedisStore instead of MemoryStore
   sio.set('store', new RedisStore(redisClients));
   // enable debugging mode:
@@ -109,7 +118,7 @@ sio.configure( function () {
   // 1 - warn
   // 2 - info
   // 3 - debug
-  if (app.settings.production){
+  if (app.settings.production) {
     sio.set('log level', 0);
   } else {
     sio.set('log level', 3);

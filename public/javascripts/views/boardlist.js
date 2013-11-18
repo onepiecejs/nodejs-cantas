@@ -1,6 +1,6 @@
 // User Default View
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
   "use strict";
 
   cantas.views.BoardsView = Backbone.View.extend({
@@ -16,7 +16,7 @@ $(function ($, _, Backbone) {
     closeBoard: function(event) {
       var boardId = $(event.target).data('board');
       var board = new cantas.models.Board({ _id: boardId});
-      board.patch({'isClosed': true}, {validate:false});
+      board.patch({'isClosed': true}, {validate: false});
 
       $(event.target).closest('li').fadeOut('slow', function() {
         $(event.target).closest('li').remove();
@@ -26,18 +26,18 @@ $(function ($, _, Backbone) {
     openBoard: function(event) {
       var boardId = $(event.target).data('board');
       var board = new cantas.models.Board({ _id: boardId});
-      board.patch({'isClosed': false}, {validate:false});
+      board.patch({'isClosed': false}, {validate: false});
 
       $(event.target).closest('li').fadeOut('slow', function() {
         $(event.target).closest('li').remove();
       });
     },
 
-    close: function(){
+    close: function() {
       this.remove();
     },
 
-    remove: function(){
+    remove: function() {
       this.undelegateEvents();
       this.$el.empty();
       this.stopListening();
@@ -46,16 +46,16 @@ $(function ($, _, Backbone) {
 
     render: function(context) {
       var h3Header;
-      switch(context.title){
-        case 'mine':
-          h3Header = 'My Boards';
-          break;
-        case 'public':
-          h3Header = 'Public Boards';
-          break;
-        case 'closed':
-          h3Header = 'Closed Boards';
-          break;
+      switch (context.title) {
+      case 'mine':
+        h3Header = 'My Boards';
+        break;
+      case 'public':
+        h3Header = 'Public Boards';
+        break;
+      case 'closed':
+        h3Header = 'Closed Boards';
+        break;
       }
       this.$el.html(this.template({boards: context.boards, h3Header: h3Header}));
       cantas.setTitle(context.title);

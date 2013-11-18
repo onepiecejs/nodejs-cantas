@@ -159,7 +159,7 @@ describe("Test send signal", function(done) {
       done(null, true);
     };
     receiver2 = function(sender, args, done) {
-      done(new NameError(), null);
+      done(new Error(), null);
     };
     receiver3 = function(sender, args, done) {
       done(null, false);
@@ -190,9 +190,9 @@ describe("Test send signal", function(done) {
             "receiver1 does not generate any error, so this error is not expected.");
           assert(result.result, "receiver1 should run all as expected.");
         } else if (result.receiver === receiver2) {
-          assert(typeof err === "object" && err instanceof TypeError,
+          assert(typeof result.err === "object" && result.err instanceof Error,
             "receiver2 throws an TypeError, which is not detected here.");
-          assert(result.result === false,
+          assert(result.result === null,
             "When there is error from receiver, this result should be false.");
         } else if (result.receiver === receiver3) {
           assert(result.err === undefined || result.err === null,

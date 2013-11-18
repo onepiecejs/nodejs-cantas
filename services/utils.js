@@ -33,10 +33,10 @@
   module.exports.checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
 
   // return version number and git commit hash if possible
-  module.exports.get_version = function(){
+  module.exports.get_version = function() {
     var version = 'unknown';
     // get version from package.json
-    if (packageInfo.hasOwnProperty('version')){
+    if (packageInfo.hasOwnProperty('version')) {
       version = packageInfo.version;
     }
 
@@ -44,23 +44,23 @@
     var commit = '';
     try {
       var headFile = path.resolve(__dirname + "/../.git/HEAD");
-      if (fs.existsSync(headFile)){
+      if (fs.existsSync(headFile)) {
         var head = fs.readFileSync(headFile, "utf8").trimRight().split(/\s+/);
-        if(head.length === 1){
+        if (head.length === 1) {
           // HEAD file content is commit hash
           // dfc66595a9ca4fe44755d8bda17c20b1178bdfb3
           commit = " GIT@" + head[0].substr(0, 7);
-        }else{
+        } else {
           // HEAD file content is refs
           // ref: refs/heads/cantas
           var refs = path.resolve(__dirname + "/../.git/" + head[1]);
-          if (fs.existsSync(refs)){
+          if (fs.existsSync(refs)) {
             var hash = fs.readFileSync(refs, "utf8");
             commit = " GIT@" + hash.substr(0, 7);
           }
         }
       }
-    } catch (e){
+    } catch (e) {
       console.warn("Warning: can't get git commit hash: ", e);
     }
 
@@ -93,20 +93,20 @@
 
   // sanitizing string to compatible url convension
   module.exports.formatForUrl = function(str) {
-      return str.replace(/_/g, '-')
-          .replace(/ /g, '-')
-          .replace(/:/g, '-')
-          .replace(/\\/g, '-')
-          .replace(/\//g, '-')
-          .replace(/[^a-zA-Z0-9\-]+/g, '')
-          .replace(/-{2,}/g, '-')
-          .toLowerCase();
+    return str.replace(/_/g, '-')
+      .replace(/ /g, '-')
+      .replace(/:/g, '-')
+      .replace(/\\/g, '-')
+      .replace(/\//g, '-')
+      .replace(/[^a-zA-Z0-9\-]+/g, '')
+      .replace(/-{2,}/g, '-')
+      .toLowerCase();
   };
 
   //get filename extension string
   module.exports.getExtension = function(filename) {
-      var i = filename.lastIndexOf('.');
-      return (i < 0) ? '' : filename.substr(i);
+    var i = filename.lastIndexOf('.');
+    return (i < 0) ? '' : filename.substr(i);
   };
 
 }(module));

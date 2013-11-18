@@ -26,12 +26,14 @@
    * Log this activity and send it to others within the board.
    */
   Activity.prototype.log = function(data) {
-    if (!data)
+    if (!data) {
       return;
+    }
 
     var content = data.content;
-    if (!content)
+    if (!content) {
       throw new Error("Missing activity's content");
+    }
 
     var self = this;
     var currentUser = this.socket.getCurrentUser();
@@ -51,11 +53,17 @@
       } else {
         if (boardId === currentBoardId) {
           self.socket.room.emit(
-            self.eventName, savedActivity, {exceptMe: self.notTellMe});
+            self.eventName,
+            savedActivity,
+            {exceptMe: self.notTellMe}
+          );
         } else {
           var eventRoomName = "board:" + boardId;
           self.socket.broadcast.to(eventRoomName).emit(
-            self.eventName, savedActivity, {exceptMe: self.notTellMe});
+            self.eventName,
+            savedActivity,
+            {exceptMe: self.notTellMe}
+          );
         }
       }
     });
@@ -64,4 +72,4 @@
 
   module.exports.Activity = Activity;
 
-})(module);
+}(module));

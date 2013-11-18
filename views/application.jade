@@ -17,8 +17,8 @@ block content
         div.bar
         div.bar
   div.content.clearfix
-  div#card-detail.modal.hide.fade
-  div.window-overlay.archived-window.modal.hide.fade
+  div#card-detail.hide.fade
+  div.window-overlay.modal.hide.fade
   div.config-window.hide.fade
   div.hide.fade
   div.force-alert.hide.fade
@@ -55,6 +55,10 @@ block append scripts
   include backbone/card-attachment-download
   include backbone/archived
   include backbone/archived-item
+  include backbone/import-bugzilla
+  include backbone/syncconfig-item
+  include backbone/syncconfig-item-edit
+  include backbone/syncconfig-item-input
   include backbone/notification-item
   include backbone/comment-item
   include backbone/move-list
@@ -86,6 +90,8 @@ block append scripts
     script(type="text/javascript", src="/javascripts/models/label.js")
     script(type="text/javascript", src="/javascripts/models/board.js")
     script(type="text/javascript", src="/javascripts/views/board.js")
+    script(type="text/javascript", src="/javascripts/models/syncConfig.js")
+    script(type="text/javascript", src="/javascripts/views/syncConfig.js")
     script(type="text/javascript", src="/javascripts/models/list.js")
     script(type="text/javascript", src="/javascripts/views/list.js")
     script(type="text/javascript", src="/javascripts/models/checklist.js")

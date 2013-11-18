@@ -15,9 +15,9 @@
     var fs = require('fs');
     var easyimg = require('easyimage');
 
-    var checkForSessionTimeout = function (req, res, next){
+    var checkForSessionTimeout = function (req, res, next) {
       var sessionID = req.cookies['express.sid'];
-      sessionStore.load(sessionID, function(err, session){
+      sessionStore.load(sessionID, function(err, session) {
         if ((err || !session) && req.xhr) {
           res.status(500).json({error: 'Cantas session timeout'});
         } else if ((err || !session) && !req.xhr) {
@@ -35,10 +35,11 @@
     // login page.
     function ensureAuthenticated(req, res, next) {
       if (req.isAuthenticated()) {
-        if(req.user.isFirstLogin === true) {
+        if (req.user.isFirstLogin === true) {
           User.findByIdAndUpdate(req.user._id, {'isFirstLogin': false}, function(err, updatedData) {
-            if(err)
+            if (err) {
               console.log(err);
+            }
           });
         }
 
@@ -64,7 +65,7 @@
     }
 
     // API - create board
-    app.get('/api/new', checkForSessionTimeout, ensureAuthenticated, function(req,res) {
+    app.get('/api/new', checkForSessionTimeout, ensureAuthenticated, function(req, res) {
       var boardId = boardHandler.createBoard(req.user.username, function(err, boardId) {
         var activitData = {
           'content': "This board is created by " + req.user.username,
@@ -73,169 +74,170 @@
         };
 
         var t = new Activity(activitData);
-        t.save( function (err) {
+        t.save(function (err) {
           if (err) {
             console.log(err);
           }
         });
-
         res.json({"boardId": boardId});
-      })
+      });
     });
 
     // API - get mine boards
-    app.get('/api/mine',checkForSessionTimeout, ensureAuthenticated, function (req, res) {
+    app.get('/api/mine', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
       boardHandler.listMyBoards(req.user.username, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get invited boards
-    app.get('/api/invited',checkForSessionTimeout, ensureAuthenticated, function (req, res) {
+    app.get('/api/invited', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
       boardHandler.listInvitedBoards(req.user.username, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get public boards
-    app.get('/api/public',checkForSessionTimeout, ensureAuthenticated,function (req, res) {
+    app.get('/api/public', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
       boardHandler.listPublicBoards(req.user.username, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get closed boards
-    app.get('/api/closed',checkForSessionTimeout, ensureAuthenticated,function (req, res) {
+    app.get('/api/closed', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
       boardHandler.listClosedBoards(req.user.username, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get archived cards of board
-    app.get('/api/archived/cards/:boardId', checkForSessionTimeout, ensureAuthenticated, function(req, res){
-      boardHandler.archivedCards(req.params.boardId, function(err, items){
-        res.json(items);
+    app.get('/api/archived/cards/:boardId', checkForSessionTimeout,
+      ensureAuthenticated, function(req, res) {
+        boardHandler.archivedCards(req.params.boardId, function(err, items) {
+          res.json(items);
+        });
       });
-    });
 
     // API - get archived lists of board
-    app.get('/api/archived/lists/:boardId', checkForSessionTimeout, ensureAuthenticated,function(req, res){
-      boardHandler.archivedLists(req.params.boardId, function(err, items){
-        res.json(items);
+    app.get('/api/archived/lists/:boardId', checkForSessionTimeout,
+      ensureAuthenticated, function(req, res) {
+        boardHandler.archivedLists(req.params.boardId, function(err, items) {
+          res.json(items);
+        });
       });
-    });
 
     // API - get archived cards of list
-    app.get('/api/archived/getorders/:listId', checkForSessionTimeout, ensureAuthenticated, function(req, res){
-      boardHandler.getOrderCollectionFromList(req.params.listId, function(err, items){
-        res.json(items);
+    app.get('/api/archived/getorders/:listId', checkForSessionTimeout,
+      ensureAuthenticated, function(req, res) {
+        boardHandler.getOrderCollectionFromList(req.params.listId, function(err, items) {
+          res.json(items);
+        });
       });
-    });
 
     // login
     app.get('/login',
       function (req, res) {
-      res.render('login', {'title':'New to Cantas?',
-        message: req.flash('error') });
-    });
+        res.render('login', {'title': 'New to Cantas?',
+          message: req.flash('error') });
+      });
 
     app.post('/login',
-      passport.authenticate('kerberos', { failureRedirect:'/login', failureFlash:true }), function (req, res) {
+      passport.authenticate('kerberos',
+        {failureRedirect: '/login', failureFlash: true}),
+      function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);
       });
 
     // logout
-    app.get('/logout', function(req, res){
+    app.get('/logout', function(req, res) {
       req.logout();
       res.redirect('/');
     });
 
     // route to board
-    app.get('/board/:boardId/:slug?', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
-      boardHandler.boardExists(req.params.boardId, function(err, board){
-        if (board){
-          res.render('application', {title: 'Cantas'});
-        }else{
-          res.status(404).render('404', {title: 'Cantas | 404', url: req.url});
-        }
+    app.get('/board/:boardId/:slug?', checkForSessionTimeout,
+      ensureAuthenticated, function (req, res) {
+        boardHandler.boardExists(req.params.boardId, function(err, board) {
+          if (board) {
+            res.render('application', {title: 'Cantas'});
+          } else {
+            res.status(404).render('404', {title: 'Cantas | 404', url: req.url});
+          }
+        });
       });
-    });
 
     // route to card
-    app.get('/card/:cardId/:slug?', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
-      boardHandler.cardExists(req.params.cardId, function(err, card){
-        if (card){
-          res.render('application', {title: 'Cantas'});
-        }else{
-          res.status(404).render('404', {title: 'Cantas | 404', url: req.url});
-        }
+    app.get('/card/:cardId/:slug?', checkForSessionTimeout,
+      ensureAuthenticated, function (req, res) {
+        boardHandler.cardExists(req.params.cardId, function(err, card) {
+          if (card) {
+            res.render('application', {title: 'Cantas'});
+          } else {
+            res.status(404).render('404', {title: 'Cantas | 404', url: req.url});
+          }
+        });
       });
-    });
 
-    function FSRename(renameParams) {
+    function fSRename(renameParams) {
       var filenameExt = utils.getExtension(renameParams.targetFilename);
       // remove filename string's extension type
       var unSanitizedString = renameParams.targetFilename.replace(/(.*)\.[^.]+$/, "$1");
       var sanitizedFilename = utils.formatForUrl(unSanitizedString) + filenameExt;
       var fullPath = renameParams.targetPath + '/' + sanitizedFilename;
       fs.rename(renameParams.tmpPath, fullPath,
-        function(err){
+        function(err) {
           if (err) {
-            renameParams.res.json({'user_error':'Uploading attachment failed',
+            renameParams.res.json({'user_error': 'Uploading attachment failed',
               'maintainer_error': 'Renaming path failed'});
-          }
-          else {
+          } else {
             var imageRegExp = /(\.|\/)(bmp|gif|jpe?g|png)$/i;
-            if(imageRegExp.test(filenameExt)){
+            if (imageRegExp.test(filenameExt)) {
               var thumbPath_card = fullPath + '-thumb-card' + filenameExt;
               var thumbPath_cardDetail = fullPath + '-thumb-cardDetail' + filenameExt;
               easyimg.info(fullPath, function(err, stdout, stderr) {
                 if (err) {
-                  renameParams.res.json({'user_error':'Uploading attachment failed',
+                  renameParams.res.json({'user_error': 'Uploading attachment failed',
                     'maintainer_error': 'Reading image info failed'});
-                }
-                else {
+                } else {
                   var originalWidth = stdout.width;
                   var originalHeight = stdout.height;
-                  var ratio = 5/3;
+                  var ratio = 5 / 3;
                   var resizeWidth = 0;
                   var resizeHeight = 0;
 
-                  if(originalWidth > 250 || originalHeight > 150) {
-                    if(originalWidth/originalHeight >= ratio) {
+                  if (originalWidth > 250 || originalHeight > 150) {
+                    if (originalWidth / originalHeight >= ratio) {
                       resizeHeight = 150;
-                    }
-                    else {
+                    } else {
                       resizeWidth = 250;
                     }
-                     
                     easyimg.rescrop({
-                        src: fullPath,
-                        dst: thumbPath_card,
-                        width: resizeWidth ? resizeWidth : originalWidth,
-                        height: resizeHeight ? resizeHeight : originalHeight,
-                        cropwidth: 250, 
-                        cropheight: 150
-                      },
+                      src: fullPath,
+                      dst: thumbPath_card,
+                      width: resizeWidth || originalWidth,
+                      height: resizeHeight || originalHeight,
+                      cropwidth: 250,
+                      cropheight: 150
+                    },
                       function(err, image) {
                         if (err) {
-                          renameParams.res.json({'user_error':'Uploading attachment failed',
+                          renameParams.res.json({'user_error': 'Uploading attachment failed',
                             'maintainer_error': 'Generating thumbnail for the card view failed'});
-                        }
-                        else {
+                        } else {
                           easyimg.resize({
-                              src: thumbPath_card,
-                              dst: thumbPath_cardDetail,
-                              width: 70,
-                              height: 42
-                            },
+                            src: thumbPath_card,
+                            dst: thumbPath_cardDetail,
+                            width: 70,
+                            height: 42
+                          },
                             function(err, image) {
                               if (err) {
-                                renameParams.res.json({'user_error':'Uploading attachment failed',
-                                  'maintainer_error': 'Generating thumbnail for the card details view failed'});
-                              }
-                              else {
+                                renameParams.res.json({'user_error': 'Uploading attachment failed',
+                                  'maintainer_error': 'Generating thumbnail for the card' +
+                                    'details view failed'});
+                              } else {
                                 renameParams.res.json({'attachment': {
                                   'cardId': renameParams.cardId,
                                   'uploaderId': renameParams.uploaderId,
@@ -247,23 +249,22 @@
                                   'cardDetailThumbPath': thumbPath_cardDetail
                                 }});
                               }
-                          });
+                            });
                         }
-                    });
-                  }
-                  else {
+                      });
+                  } else {
                     easyimg.resize({
-                        src: fullPath,
-                        dst: thumbPath_cardDetail,
-                        width: 70,
-                        height: 42
-                      },
+                      src: fullPath,
+                      dst: thumbPath_cardDetail,
+                      width: 70,
+                      height: 42
+                    },
                       function(err, image) {
                         if (err) {
-                          renameParams.res.json({'user_error':'Uploading attachment failed',
-                            'maintainer_error': 'Generating thumbnail for the card details view failed'});
-                        }
-                        else {
+                          renameParams.res.json({'user_error': 'Uploading attachment failed',
+                            'maintainer_error':
+                              'Generating thumbnail for the card details view failed'});
+                        } else {
                           renameParams.res.json({'attachment': {
                             'cardId': renameParams.cardId,
                             'uploaderId': renameParams.uploaderId,
@@ -274,12 +275,11 @@
                             'cardDetailThumbPath': thumbPath_cardDetail
                           }});
                         }
-                    });
+                      });
                   }
                 }
               });
-            }
-            else {
+            } else {
               renameParams.res.json({'attachment': {
                 'cardId': renameParams.cardId,
                 'uploaderId': renameParams.uploaderId,
@@ -289,7 +289,7 @@
               }});
             }
           }
-      });
+        });
     }
 
     // rote to upload attachments for card
@@ -308,26 +308,24 @@
         'res': res
       };
       fs.exists(targetPath, function (isExist) {
-        if(!isExist) {
-          fs.mkdir(targetPath, function(err){
+        if (!isExist) {
+          fs.mkdir(targetPath, function(err) {
             if (err) {
-              res.json({'user_error':'Uploading attachment failed',
+              res.json({'user_error': 'Uploading attachment failed',
                 'maintainer_error': 'Making directory failed'});
-            }
-            else {
-              FSRename(renameParams);
+            } else {
+              fSRename(renameParams);
             }
           });
-        }
-        else {
-          FSRename(renameParams);
+        } else {
+          fSRename(renameParams);
         }
       });
     });
 
     // route to download attachment
     app.get('/attachment/:attachmentId/download', function (req, res) {
-      Attachment.findById(req.params.attachmentId, 'path name', function(err, attachment){
+      Attachment.findById(req.params.attachmentId, 'path name', function(err, attachment) {
         var realName = attachment.name;
         var friendlyName = realName.slice(realName.indexOf('-') + 1);
         res.download(attachment.path, friendlyName);
@@ -340,16 +338,14 @@
 
       fs.readFile(tmpPath, 'utf8', function (err, data) {
         if (err) {
-          res.json({'user_error':'Importing the json file from Trello failed.',
+          res.json({'user_error': 'Importing the json file from Trello failed.',
             'maintainer_error': 'Reading the json file failed'});
-        }
-        else {      
+        } else {
           fs.unlink(tmpPath, function(err) {
             if (err) {
-              res.json({'user_error':'Importing the json file from Trello failed.',
+              res.json({'user_error': 'Importing the json file from Trello failed.',
                 'maintainer_error': 'Deleting the temparary version of json file failed'});
-            }
-            else {
+            } else {
               /* add up how many times the callback function is called(including two cases:
                * with error and without error). the callback function will be fired every time
                * the append content ation(including: create or update) is finished.
@@ -361,30 +357,31 @@
               try {
                 importDatasource = JSON.parse(data);
                 targetSuccessCount = importTrello.addupSuccessCount(importDatasource);
-              }
-              catch(err) {
-                res.json({'user_error':'Importing the json file from Trello failed, please check file content.',
-                  'maintainer_error': err.message});
+              } catch (error) {
+                res.json({'user_error': 'Importing the json file from Trello failed,' +
+                                         ' please check file content.',
+                  'maintainer_error': error.message});
                 return;
               }
 
-              importTrello.appendContentToBoard(req.user._id, req.params.boardId, importDatasource, function(err) {
-                if(err) {
-                  errCount++;
-                  // once getting the first error, return failure response to the front view 
-                  if(errCount === 1) {
-                    res.json({'user_error':'Importing the json file from Trello failed.',
-                      'maintainer_error': err});
+              importTrello.appendContentToBoard(req.user._id, req.params.boardId,
+                  importDatasource, function(err) {
+                  if (err) {
+                    errCount++;
+                    // once getting the first error, return failure response to the front view 
+                    if (errCount === 1) {
+                      res.json({'user_error': 'Importing the json file from Trello failed.',
+                        'maintainer_error': err});
+                    }
+                  } else {
+                    successCount++;
+                    // only all the append content actions are completed sucessfully,
+                    // return success response
+                    if (successCount === targetSuccessCount) {
+                      res.json({'success': 'Importing the json file from Trello completed.'});
+                    }
                   }
-                }
-                else {
-                  successCount++;
-                  // only all the append content actions are completed sucessfully, return success response
-                  if(successCount === targetSuccessCount) {
-                    res.json({'success': 'Importing the json file from Trello completed.'});
-                  }
-                }
-              });
+                });
             }
           });
         }
@@ -415,36 +412,45 @@
 
     // route to query user email
     app.get('/api/search_member', ensureAuthenticated, function (req, res) {
-      var regex = new RegExp(req.query["term"], 'i');
-      var query = User.find({email: regex}, {'email': 1}).sort({"updated_at": -1}).sort({"created_at": -1}).limit(80);
+      var regex = new RegExp(req.query.term + '([a-z0-9]*[-_]?[a-z0-9]+)*@', 'i');
+      var query = User.find({email: regex}, {'email': 1}).
+                  sort({"updated_at": -1}).
+                  sort({"created_at": -1}).
+                  limit(2000);
 
       query.exec(function(err, users) {
         if (!err) {
           res.json(users);
         }
       });
-    }); 
+    });
 
     // help page
     app.get('/help', ensureAuthenticated, function (req, res) {
       res.render('application', {title: 'Cantas'});
     });
 
+    // standalone help page
+    app.get('/standalonehelp', function (req, res) {
+      res.render('standalone-help', {title: 'Cantas'});
+    });
+
     // welcome page
     app.get('/welcome', ensureAuthenticated, function (req, res) {
-      if(req.user.isFirstLogin === true)
+      if (req.user.isFirstLogin === true) {
         res.render('application', {title: 'Cantas'});
-      else
+      } else {
         res.redirect('/');
+      }
     });
 
     // route to home page
     var strategyName = settings.auth.strategy;
     app.get('/',
-      passport.authenticate(strategyName, { failureRedirect:'/login' }),
+      passport.authenticate(strategyName, {failureRedirect: '/login'}),
       ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
-    });
+        res.render('application', {title: 'Cantas'});
+      });
 
     // 404 - ALWAYS keep this route as the last one
     app.get('*', ensureAuthenticated, function (req, res) {

@@ -1,4 +1,4 @@
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -34,12 +34,14 @@ $(function ($, _, Backbone) {
     model: cantas.models.Checklist,
 
     initialize: function(models, options) {
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.ioBind("create", this.socket, this.serverCreate, this);
+      }
 
       var _options = options || {};
-      if (_options.card === undefined)
+      if (_options.card === undefined) {
         throw new Error("Missing card object.");
+      }
       this.card = _options.card;
     },
 
@@ -48,8 +50,9 @@ $(function ($, _, Backbone) {
     },
 
     serverCreate: function(data) {
-      if (data.cardId === this.card.id)
+      if (data.cardId === this.card.id) {
         this.add(data);
+      }
     },
 
     dispose: function() {
@@ -64,7 +67,7 @@ $(function ($, _, Backbone) {
   });
 
   cantas.models.ChecklistItem = cantas.models.BaseModel.extend({
-    urlRoot: "checklistitem",
+    urlRoot: "checklistitem"
   });
 
   cantas.models.ChecklistItemCollection = cantas.models.BaseCollection.extend({
@@ -72,24 +75,25 @@ $(function ($, _, Backbone) {
     model: cantas.models.ChecklistItem,
 
     initialize: function(models, options) {
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.ioBind("create", this.socket, this.serverCreate, this);
-
+      }
       var _options = options || {};
-      if (_options.container === undefined)
-        throw new Error(
-          "Missing container that ChecklistItem collection must have one.");
+      if (_options.container === undefined) {
+        throw new Error("Missing container that ChecklistItem collection must have one.");
+      }
       this.container = _options.container;
     },
 
     serverCreate: function(checklistItem) {
-      if (checklistItem.checklistId === this.container.id)
+      if (checklistItem.checklistId === this.container.id) {
         this.add(checklistItem);
+      }
     },
 
     comparator: function(item) {
       return item.get("order");
-    },
+    }
 
   });
 

@@ -19,7 +19,7 @@
       var eventName = 'alert-import-trello-complete';
       var user = socket.getCurrentUser();
       // record import action into activity log
-      var content = user.username + ' has imported new content to this board.'
+      var content = user.username + ' has imported new content to this board.';
       var activity = new LogActivity({socket: socket, exceptMe: false});
       activity.log({
         'content': content,
@@ -28,6 +28,6 @@
       });
       socket.broadcast.to(eventRoomName).emit(eventName, {});
     });
-  }
+  };
 
 }(exports));

@@ -12,9 +12,8 @@
     socket.constructor.prototype.getCurrentBoardId = function() {
       if (this.room.board && this.room.board.length >= 2) {
         return this.room.board.split(':')[1];
-      } else {
-        return null;
       }
+      return null;
     };
 
   };

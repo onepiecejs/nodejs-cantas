@@ -8,8 +8,8 @@
     AttachmentSchema;
 
   AttachmentSchema = new Schema({
-    cardId: {type: ObjectId, required:true, ref: 'Card', index: true},
-    uploaderId: {type: ObjectId, required:true, ref: 'User', index: true},
+    cardId: {type: ObjectId, required: true, ref: 'Card', index: true},
+    uploaderId: {type: ObjectId, required: true, ref: 'User', index: true},
     name: {type: String, required: true},
     size: {type: Number, required: true},
     // fileType field includes picture, video, audio and other

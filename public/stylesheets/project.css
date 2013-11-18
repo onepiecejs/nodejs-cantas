@@ -1,3 +1,29 @@
+@font-face {
+    font-family: "Glyphicons Halflings";
+    src: url("fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("fonts/glyphicons-halflings-regular.woff") format("woff"), url("fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular") format("svg");
+}
+.glyphicon {
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    position: relative;
+    top: 1px;
+}
+.bs-glyphicons .glyphicon {
+    display: block;
+    font-size: 24px;
+    margin: 5px auto 10px;
+}
+.glyphicon-link:before {
+    content: "";
+}
+.glyphicon-list-alt:before {
+    content: "";
+}
+
+/*=======icons as blow============*/
 html,body{
     background: #000000;
     background-image: url("../images/bg-1.png");
@@ -147,6 +173,15 @@ a:link, a:visited {
     margin: -250px 0 0 -430px;
 }
 #card-detail{
+  position: fixed;
+  overflow: auto;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1050;
+  left: 0;
+}
+.card-detail{
     width: 860px;
     top: 50px!important;
     left: 50%;
@@ -169,6 +204,7 @@ a:link, a:visited {
     right: 0;
     position: fixed;
     overflow: auto;
+    min-width: 900px;
 }
 .dropdown-menu{
     top: 23px;
@@ -312,7 +348,7 @@ input:focus, textarea:focus{
 .delete{
     background-color: none;
     background-image: url("../images/delete.png");
-    background-position: 2px 2px;
+    background-position: center center;
     background-repeat: no-repeat;
     background-size: 60% auto;
     border-radius: 3px;
@@ -509,12 +545,28 @@ input:focus, textarea:focus{
     padding: 2px 2px 0;
 }
 .member-bar .role-admin{
-    background: url("../images/admin.png") no-repeat 0 0 / 90% transparent;
+    font-family: FontAwesome;
+    font-style: normal;
+    font-weight: normal;
+    text-decoration: inherit;
+    background-image: none;
+    background-position: 0 0;
+    background-repeat: repeat;
+    display: inline;
+    height: auto;
+    line-height: normal;
+    margin-top: 0;
+    vertical-align: baseline;
+    width: auto;
     position: absolute;
     bottom: -4px;
     right: -4px;
-    height: 16px;
-    width: 16px;
+    color: #fff;
+}
+.role-admin:before {
+    content: "\f007";
+    display: inline-block;
+    text-decoration: inherit;
 }
 .member-bar .role-member{
     background: #5B88C8;
@@ -776,15 +828,24 @@ input:focus, textarea:focus{
     display: none;
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 }
+.alert-window .alert-checkbox{
+    float: right;
+}
 .alert-window .alert-checkbox label{
     display: inline-block;
     margin: 0 3px 0 0;
     color: #777;
 }
+.alert-window .alert-checkbox label input{
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+}
 .alert-window p{
   margin-bottom: 0;
   color: #555;
   font-weight: bold;
+  padding: 9px 0;
 }
 .alert-window button{
     margin: 9px 9px 0 0;
@@ -1908,7 +1969,7 @@ z-index: 10000
     background: #f5f5f5;
     border-right: 2px solid #5ED2AB;
 }
-#card-detail .modal-body .checklist ul li .checkbox{
+.checkbox{
     float: left;
     padding: 0 5px;
     background: #fff;
@@ -1918,7 +1979,7 @@ z-index: 10000
     cursor: pointer;
     border-radius: 10px;
 }
-#card-detail .modal-body .checklist ul li span{
+.checkbox span{
   display: none; 
   position: absolute;
   left: -2px;
@@ -1928,13 +1989,13 @@ z-index: 10000
   background: url(../images/cantas-check.png) no-repeat 0 0;
   background-size: 100%;
 }
-#card-detail .modal-body .checklist ul li .checkbox:hover{
+.checkbox:hover{
   border-color: #45B992;
 }
 #card-detail .modal-body .checklist ul li.checked .checkbox{
   border-color: #45B992;
 }
-#card-detail .modal-body .checklist ul .checkbox:hover span{
+.checkbox:hover span{
   display: none;
 }
 #card-detail .modal-body .checklist ul li.checked .checkbox span{
@@ -2070,8 +2131,16 @@ z-index: 10000
   color: #444;
   margin-bottom: 6px;
 }
+.card-option h4 > .new-item{
+  font-weight: normal;
+  float: right;
+}
 .card-option h4 + span{
   display: inline-block;
+}
+.card-detail-desc > p{
+  display: inline-block;
+  font-size: 14px;
 }
 .card-option{
   display: block;
@@ -2228,7 +2297,7 @@ card{
     border-right: 2px solid #EA586F;
     padding: 9px 0 21px;
     position: relative;
-    margin: 0 0 1px 0;
+    margin: 0 0 9px;
     background: #f5f5f5;
 }
 .comment .comment-list dt{
@@ -2376,6 +2445,7 @@ card{
     position: absolute;
     top: 0;
     width: 100%;
+    margin-top: 0px!important;
 }
 .force-alert .alert-content{
     background-color: #BD403E;
@@ -2432,7 +2502,7 @@ card{
     font-family: Helvetica;
     overflow-y: auto;
     overflow-x: hidden;
-    height: 84%;
+    height: 100%;
     height: calc(100% - 35px);
 }
 .help-content h1{
@@ -2534,6 +2604,18 @@ card{
 }
 .help-content section:nth-child(14) .help-img{
     background-image: url("../images/cantas-help-movecard.gif");
+    background-size: 120%;
+    background-repeat: no-repeat;
+    background-position: 2% 0;
+}
+.help-content section:nth-child(15) .help-img{
+    background-image: url("../images/cantas-help-import-trello.gif");
+    background-size: 120%;
+    background-repeat: no-repeat;
+    background-position: 2% 0;
+}
+.help-content section:nth-child(16) .help-img{
+    background-image: url("../images/cantas-help-import-bugzilla.gif");
     background-size: 120%;
     background-repeat: no-repeat;
     background-position: 2% 0;
@@ -2787,8 +2869,176 @@ card{
 }
 
 
-
-
+/*==================Bugzilla Mapping=================*/
+.mapping-loading{
+  position: absolute;
+  width: 230px;
+  display: inline-block;
+  padding: 6px 9px;
+  z-index: 2;
+  margin: 0 auto;
+  left: 50%;
+  margin-left: -100px;
+  text-align: center; 
+  top: 0;
+}
+.mapping-body{
+  max-height: 400px;
+}
+.mapping-config{
+  margin-top: 10px;
+}
+.mapping-config button{
+  margin-bottom: 0;
+}
+.mapping-config .row-fluid .span1{
+  padding: 1% 2%;
+  background: #f2f2f2;
+}
+.mapping-config .row-fluid .span6{
+  padding: 0.3% 0;
+}
+span.enabled{
+  height: 20px;
+  width: 25px;
+  background: url(../images/cantas-check.png) no-repeat center center;
+  background-size: 40%;
+  display: block;
+  cursor: pointer;
+  position: absolute;
+  left: -18px;
+  top: -10px;
+  width: 60px;
+  height: 80px;
+  background-color: #E8FFE9;
+}
+span.enabled:hover{
+  background-color: #F1FCF2;
+}
+span.disabled{
+  height: 20px;
+  width: 25px;
+  background: url(../images/cantas-disabled.png) no-repeat center center;
+  background-size: 40%;
+  display: block;
+  cursor: pointer;
+  position: absolute;
+  left: -18px;
+  top: -10px;
+  width: 60px;
+  height: 80px;
+  background-color: #FEEAE8;
+}
+.mapping-config div.checked span{
+  display: block;
+}
+.mapping-list{
+  width: 96%;
+  padding: 1% 2%;
+  background: #f2f2f2;
+  margin-bottom: 1%;
+  overflow: hidden;
+  position: relative;
+}
+.add-mode{
+  margin-top: 0px;
+  transition: all 1s ease 1s;
+  -moz-transition: all 1s ease 1s;
+  -webkit-transition: all 1s ease 1s;
+}
+.mapping-disabled{
+  -webkit-filter: contrast(1);
+  opacity: 0.5;
+}
+.mapping-delete{
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 2px;
+  background-size: 50%;
+}
+.input-delete{
+  display: inline-block;
+  margin-left: 4px;
+}
+.mapping-disabled:hover {
+  -webkit-filter: none;
+  opacity: 1;
+}
+.mapping-list .span1{
+  position: relative;
+}
+.mapping-list .span1 button{
+  margin: 20px 0 0 0;
+}
+.mapping-list .span6{
+  position: relative;
+}
+.mapping-list span.glyphicon{
+  font-size: 16px;
+  padding: 5px 7px 7px 6px;
+  background: #fff;
+  color: orange;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+.mapping-list label{
+  display: inline-block;
+  color: #888;
+}
+.mapping-list .span5 p{
+  cursor: pointer;
+  display: inline-block;
+  font-weight: bold;
+  max-height: 36px;
+  overflow: hidden;
+  padding-left: 4%;
+  vertical-align: middle;
+  width: 85%;
+  margin-bottom: 0;
+}
+.mapping-list label + a{
+  margin-left: 9px;
+  text-decoration: underline;
+}
+.mapping-list input{
+  width: 90%;
+}
+.mapping-list input[type="radio"]{
+  width: 30%;
+  margin-left: -10px;
+}
+.mapping-list .alert{
+  position: absolute;
+  margin: -10px 0 0 65%;
+}
+.mapping-list .alert:before {
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #d6e9c6;
+  content: "";
+  display: inline-block;
+  height: 0;
+  vertical-align: top;
+  width: 0;
+  margin: -10px 0 0 35%;
+  position: absolute;
+}
+.mapping-list .alert-danger:before {
+  border-bottom: 6px solid #eed3d7;
+}
+.mapping-list select{
+  width: 99%;
+}
+.mapping-list .mapping-submit{
+  padding-left: 8.5%;
+}
+.mapping-list button{
+  margin-right: 9px;
+}
+/*.window-overlay.modal.fade.in{
+  top: 30%;
+}*/
 /*==================Process Bar=================*/
 .process-loading{
     position: absolute;
@@ -2986,4 +3236,95 @@ card{
          -o-transform-origin: 100% 100%;
             transform-origin :100% 100%;
 }
+/*===============from bootstrap v3.0================*/
+.alert {
+  padding: 3px 6px;
+  margin-bottom: 9px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
 
+.alert h4 {
+  margin-top: 0;
+  color: inherit;
+}
+
+.alert .alert-link {
+  font-weight: bold;
+}
+
+.alert > p,
+.alert > ul {
+  margin-bottom: 0;
+}
+
+.alert > p + p {
+  margin-top: 5px;
+}
+
+.alert-dismissable {
+  padding-right: 35px;
+}
+
+.alert-dismissable .close {
+  position: relative;
+  top: -2px;
+  right: -21px;
+  color: inherit;
+}
+
+.alert-success {
+  color: #468847;
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+}
+
+.alert-success hr {
+  border-top-color: #c9e2b3;
+}
+
+.alert-success .alert-link {
+  color: #356635;
+}
+
+.alert-info {
+  color: #3a87ad;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+}
+
+.alert-info hr {
+  border-top-color: #a6e1ec;
+}
+
+.alert-info .alert-link {
+  color: #2d6987;
+}
+
+.alert-warning {
+  color: #c09853;
+  background-color: #fcf8e3;
+  border-color: #fbeed5;
+}
+
+.alert-warning hr {
+  border-top-color: #f8e5be;
+}
+
+.alert-warning .alert-link {
+  color: #a47e3c;
+}
+
+.alert-danger {
+  color: #b94a48;
+  background-color: #f2dede;
+  border-color: #eed3d7;
+}
+
+.alert-danger hr {
+  border-top-color: #e6c1c7;
+}
+
+.alert-danger .alert-link {
+  color: #953b39;
+}

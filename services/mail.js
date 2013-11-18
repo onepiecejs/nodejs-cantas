@@ -5,9 +5,7 @@ var settings = require("../settings");
 /*
  * Add Zimbra to wellknown mail service so that Nodemailer recognizes it.
  */
-wellknown["Zimbra"] = settings.mailServices.Zimbra;
-
-module.exports = mailer;
+wellknown.Zimbra = settings.mailServices.Zimbra;
 
 function mailer() {}
 
@@ -41,9 +39,11 @@ mailer.prototype.sendmail = function(options, callback) {
   smtpTransport.sendMail(mailOptions, function(error, response) {
     callback(error, response);
   });
-}
+};
 
 mailer.prototype.sendmailFromNoReply = function(options, callback) {
   options.from = "noreply@redhat.com";
   this.sendmail(options, callback);
-}
+};
+
+module.exports = mailer;

@@ -16,21 +16,21 @@
     boardId: { type: ObjectId, required: true, ref: 'Board', index: true },
     listId: { type: ObjectId, ref: 'List', index: true },
 
-    // Query_url is used for querying bug/issue info
+    // QueryUrl is used for querying bug/issue info
     // from external system like bugzilla or jira through API
-    query_url: { type: String },
+    queryUrl: { type: String },
 
     // External system name
-    query_source: { type: String, required: true },
+    queryType: { type: String, required: true },
 
     // If sync external systems based on sync config automatically
-    isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
 
     // Set the interval time when cantas sync external
     // systems automatically, default is 8 hours once
     intervalTime: { type: Number, default: 8 },
 
-    creatorId: { type: ObjectId, required:true, ref: 'User', index: true },
+    creatorId: { type: ObjectId, required: true, ref: 'User', index: true },
     createdOn: { type: Date, default: Date.now },
     updatedOn: { type: Date, default: Date.now }
   });

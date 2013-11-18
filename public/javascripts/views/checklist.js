@@ -2,7 +2,7 @@
  * Checklist View used within Card View.
  */
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -23,9 +23,9 @@ $(function ($, _, Backbone) {
 
       var _options = options || {};
       this.card = _options.card;
-      if (this.card === undefined)
+      if (this.card === undefined) {
         throw new Error("Missing card object");
-
+      }
       this.collection.on("add", this.onChecklistCreated, this);
 
       this.isConfirmDeleteChecklist = true;
@@ -34,14 +34,19 @@ $(function ($, _, Backbone) {
     render: function() {
       var self = this;
       this.collection.fetch({
-        data: {cardId: this.card.id},
+        data: {cardId: this.card.id}
       });
     },
 
     close: function() {
       var subviews = this.checklistViews;
-      for (var name in subviews)
-        subviews[name].close();
+      var i = 0;
+      var name;
+      for (name in subviews) {
+        if (subviews.hasOwnProperty(name)) {
+          subviews[name].close();
+        }
+      }
       this.collection.dispose();
 
       var parent = cantas.views.BaseView;
@@ -58,8 +63,9 @@ $(function ($, _, Backbone) {
       view.renderAll();
       var currentUser = cantas.utils.getCurrentUser();
       var isCurrentUserAdding = checklist.get("authorId") === currentUser.id;
-      if (isCurrentUserAdding)
+      if (isCurrentUserAdding) {
         view.addNewItem();
+      }
     },
 
     addChecklistView: function(view) {
@@ -99,8 +105,12 @@ $(function ($, _, Backbone) {
 
     close: function() {
       var subviews = this.itemViews;
-      for (var name in subviews)
-        subviews[name].close();
+      var name;
+      for (name in subviews) {
+        if (subviews.hasOwnProperty(name)) {
+          subviews[name].close();
+        }
+      }
 
       var parent = cantas.views.BaseView;
       parent.prototype.close.apply(this, arguments);
@@ -115,7 +125,7 @@ $(function ($, _, Backbone) {
         this.$el.find('a.js-checklist-delete').hide();
       }
       // Checklist shouldn't be deleted by others
-      if (cantas.utils.getCurrentUser().id !== this.model.attributes.authorId){
+      if (cantas.utils.getCurrentUser().id !== this.model.attributes.authorId) {
         this.$el.find('a.js-checklist-delete').hide();
       }
       return this;
@@ -174,7 +184,10 @@ $(function ($, _, Backbone) {
       if (checklistSectionView.isConfirmDeleteChecklist) {
         $(event.target.parentNode).focus();
         this.confirmDeleteChecklist(event);
-        $(".modal-scrollable").on("scroll", function(){$("body").click();});
+        $(".modal-scrollable").on("scroll",
+          function() {
+            $("body").click();
+          });
       } else {
         this.removeChecklist();
       }
@@ -221,8 +234,11 @@ $(function ($, _, Backbone) {
       removeChecklistItems.forEach(function(item, index) {
         deleteItems[index] = item;
       });
-      for (var index in deleteItems) {
-        deleteItems[index].destroy();
+      var index;
+      for (index in deleteItems) {
+        if (deleteItems.hasOwnProperty(index)) {
+          deleteItems[index].destroy();
+        }
       }
     },
 
@@ -250,15 +266,14 @@ $(function ($, _, Backbone) {
      * Real function to show input area to allow user to add new checklist item.
      */
     _addNewItem: function() {
-      if(this.$('ul.js-item-entryview div.card-option-edit').length === 0) {
+      if (this.$('ul.js-item-entryview div.card-option-edit').length === 0) {
         var inputView = new cantas.views.ChecklistItemInputView({
           model: null,
           parentView: this
         });
         this.$el.find("ul.js-item-entryview").append(inputView.render().el);
         inputView.focus();
-      }
-      else {
+      } else {
         this.$('ul.js-item-entryview div.card-option-edit textarea').focus();
       }
     },
@@ -271,8 +286,9 @@ $(function ($, _, Backbone) {
       if (iTotalNumber === 0) {
         this.$el.find('a.js-fold-items').hide();
       }
-      if (iTotalNumber > 0)
+      if (iTotalNumber > 0) {
         fPercentage = Math.round(iCompletedNumber / iTotalNumber * 100);
+      }
       this.$el.find(".checklist-title .progress .bar").width(fPercentage + "%");
       this.$el.find(".checklist-title .progress .bar a").text(fPercentage + "%");
     }
@@ -293,7 +309,7 @@ $(function ($, _, Backbone) {
       "click .js-item-delete": "onDeleteItemClick"
     },
 
-    initialize: function(){
+    initialize: function() {
       this.model.on("change:checked", this.checkedChanged, this);
       this.model.on("change:content", this.render, this);
       this.model.on('remove', this.onModelRemove, this);
@@ -301,13 +317,13 @@ $(function ($, _, Backbone) {
 
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
-      if(this.model.get("checked")){
+      if (this.model.get("checked")) {
         this.$el.addClass("checked");
       }
       if (!window.cantas.isBoardMember) {
         this.undelegateEvents();
         this.$el.find('a.js-item-delete').hide();
-      };
+      }
       return this;
     },
 
@@ -371,7 +387,10 @@ $(function ($, _, Backbone) {
       if (checklistView.isConfirmDeleteChecklistItem) {
         $(event.target.parentNode).focus();
         this.confirmDeleteChecklistItem(event);
-        $(".modal-scrollable").on("scroll", function(){$("body").click();});
+        $(".modal-scrollable").on("scroll",
+          function() {
+            $("body").click();
+          });
       } else {
         this.removeChecklistItem();
       }
@@ -388,10 +407,10 @@ $(function ($, _, Backbone) {
       this.model.patch({checked: checked});
     },
 
-    checkedChanged: function(data){
+    checkedChanged: function(data) {
       this.$el.toggleClass("checked");
       this.options.parentView.updateChecklistProgress();
-    },
+    }
 
     // close: function() {
     //   this.model = null;
@@ -438,7 +457,7 @@ $(function ($, _, Backbone) {
     render: function() {
       this.$el.html(this.inputView.render().el);
 
-      if ( this.model !==  null) {
+      if (this.model !==  null) {
         var itemContent = this.model.get("content");
         var updateOn = this.model.get('updatedOn');
         var createOn = this.model.get('createdOn');
@@ -459,9 +478,11 @@ $(function ($, _, Backbone) {
     // This handler runs within EntryView context.
     onConfirmClick: function(event, data) {
       var content = data.entryView.getText();
-      if (content.length === 0) return;
+      if (content.length === 0) {
+        return;
+      }
 
-      if (data.parentView.model !== null){
+      if (data.parentView.model !== null) {
         if (content === data.parentView.model.attributes.content) {
           data.checklistView.itemViews[data.parentView.model.id].$el.show();
 
@@ -488,26 +509,27 @@ $(function ($, _, Backbone) {
 
     // This handler runs within EntryView context.
     onCancelClick: function(event, data) {
-      if ( data.parentView.model !== null ) {
+      if (data.parentView.model !== null) {
         data.checklistView.itemViews[data.parentView.model.id].$el.show();
       }
       data.entryView.remove();
       data.parentView.remove();
-      if(data.checklistView.$('ul.js-item-entryview div.card-option-edit').length === 0) {
+      if (data.checklistView.$('ul.js-item-entryview div.card-option-edit').length === 0) {
         data.checklistView.$el.find("li.js-add-item").show();
       }
     },
 
     convertToCard: function() {
-      if ( this.model === null )
-        return ;
+      if (this.model === null) {
+        return;
+      }
 
       var content = this.model.get('content');
       var cardModel = this.options.parentView.options.card;
       var listId = cardModel.get("listId");
       var boardId = cardModel.get("boardId");
       var cardCollection = cantas.utils.getCurrentBoardModel()
-                                     .listCollection.get(listId).cardCollection;
+                            .listCollection.get(listId).cardCollection;
       var order = cantas.utils.calcPos(cardCollection);
       var newCard = new cantas.models.Card({
         title: content,
@@ -525,7 +547,7 @@ $(function ($, _, Backbone) {
 
       this.model.destroy();
       this.remove();
-    },
+    }
   });
 
 }(jQuery, _, Backbone));

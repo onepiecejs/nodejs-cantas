@@ -1,4 +1,4 @@
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -11,8 +11,8 @@ $(function ($, _, Backbone) {
     },
 
     initialize: function (attributes, options) {
-      this.commentCollection = new cantas.models.CommentCollection;
-      this.attachmentCollection = new cantas.models.AttachmentCollection;
+      this.commentCollection = new cantas.models.CommentCollection();
+      this.attachmentCollection = new cantas.models.AttachmentCollection();
 
       if (!this.noIoBind) {
         this.ioBind('update', this.serverChange, this);
@@ -24,10 +24,11 @@ $(function ($, _, Backbone) {
       this.off();
       this.commentCollection.off();
       this.attachmentCollection.off();
-      if (!this.noIoBind)
+      if (!this.noIoBind) {
         this.ioUnbindAll();
         this.commentCollection.dispose();
         this.attachmentCollection.dispose();
+      }
       return this;
     },
 
@@ -60,7 +61,7 @@ $(function ($, _, Backbone) {
       var inListView = this.inListView;
 
       // check if move in one list.
-      if(typeof inListView === 'undefined') {
+      if (typeof inListView === 'undefined') {
         inListView = fromListView;
       }
 
@@ -69,88 +70,77 @@ $(function ($, _, Backbone) {
       var activeCardArray = inListView.model.cardCollection.where({isArchived: false});
       activeCardArray = _.map(activeCardArray, function(card) {
         return card.get('order');
-      })
-      activeCardArray = activeCardArray.sort(function(a,b) {return a-b });
+      });
+      activeCardArray = activeCardArray.sort(function (a, b) {return a - b; });
 
       var cardCount = activeCardArray.length;
       var cardOrder = -1;
-
+      var firstIndex, lastIndex, beforeIndex, afterIndex;
       //card moving cards to new list
       //case1: move to empty list
-      if (inListView != fromListView &&
-        cardCount === 0 &&
-        typeof activeCardArray[newPosition] === 'undefined' &&
-        typeof activeCardArray[newPosition + 1] === 'undefined') {
+      if (inListView !== fromListView && cardCount === 0 &&
+          typeof activeCardArray[newPosition] === 'undefined' &&
+          typeof activeCardArray[newPosition + 1] === 'undefined') {
         cardOrder = cardOrder + 65536;
       }
 
       //case2: move to frist index of card array
-      if (inListView != fromListView &&
-        cardCount > 0 &&
-        typeof activeCardArray[newPosition -1] === 'undefined' &&
-        typeof activeCardArray[newPosition] != 'undefined' ) {
-        var firstIndex = activeCardArray[newPosition];
+      if (inListView !== fromListView && cardCount > 0 &&
+          typeof activeCardArray[newPosition - 1] === 'undefined' &&
+          typeof activeCardArray[newPosition] !== 'undefined') {
+        firstIndex = activeCardArray[newPosition];
         cardOrder = firstIndex / 2;
       }
 
       //case3: move to inPosition of card array
-      if (inListView != fromListView &&
-        cardCount > 0 &&
-        typeof activeCardArray[newPosition -1] != 'undefined' &&
-        typeof activeCardArray[newPosition] != 'undefined' ) {
-        var beforeIndex = activeCardArray[newPosition - 1];
-        var afterIndex = activeCardArray[newPosition];
+      if (inListView !== fromListView && cardCount > 0 &&
+          typeof activeCardArray[newPosition - 1] !== 'undefined' &&
+          typeof activeCardArray[newPosition] !== 'undefined') {
+        beforeIndex = activeCardArray[newPosition - 1];
+        afterIndex = activeCardArray[newPosition];
         cardOrder = (beforeIndex + afterIndex) / 2;
       }
 
       //case4: move to last index of card array
-      if (inListView != fromListView &&
-        cardCount > 0 &&
-        typeof activeCardArray[newPosition -1] != 'undefined' &&
-        typeof activeCardArray[newPosition] === 'undefined') {
-        var lastIndex = activeCardArray[newPosition - 1];
+      if (inListView !== fromListView && cardCount > 0 &&
+          typeof activeCardArray[newPosition - 1] !== 'undefined' &&
+          typeof activeCardArray[newPosition] === 'undefined') {
+        lastIndex = activeCardArray[newPosition - 1];
         cardOrder = lastIndex + 65536;
       }
 
       //card moving cards in one list
       //case1: move to frist index of card array
-      if (inListView === fromListView &&
-        cardCount > 0 &&
-        newPosition === 0) {
-        var firstIndex = activeCardArray[newPosition];
+      if (inListView === fromListView && cardCount > 0 && newPosition === 0) {
+        firstIndex = activeCardArray[newPosition];
         cardOrder = firstIndex / 2;
       }
 
       //case 2:  moving to inPositions, from top to bottom
-      if (inListView === fromListView &&
-        cardCount > 0 &&
-        typeof activeCardArray[newPosition -1] != 'undefined' &&
-        typeof activeCardArray[newPosition] != 'undefined' &&
-        typeof activeCardArray[newPosition + 1] != 'undefined' &&
-        that.get('order') < activeCardArray[newPosition]
-        ) {
-        var beforeIndex = activeCardArray[newPosition];
-        var afterIndex = activeCardArray[newPosition + 1];
+      if (inListView === fromListView && cardCount > 0 &&
+          typeof activeCardArray[newPosition - 1] !== 'undefined' &&
+          typeof activeCardArray[newPosition] !== 'undefined' &&
+          typeof activeCardArray[newPosition + 1] !== 'undefined' &&
+          that.get('order') < activeCardArray[newPosition]) {
+        beforeIndex = activeCardArray[newPosition];
+        afterIndex = activeCardArray[newPosition + 1];
         cardOrder = (beforeIndex + afterIndex) / 2;
       }
       //from bottom to top
-      if (inListView === fromListView &&
-        cardCount > 0 &&
-        typeof activeCardArray[newPosition -1] != 'undefined' &&
-        typeof activeCardArray[newPosition] != 'undefined' &&
-        typeof activeCardArray[newPosition + 1] != 'undefined' &&
-        that.get('order') > activeCardArray[newPosition]
-        ) {
-        var beforeIndex = activeCardArray[newPosition - 1];
-        var afterIndex = activeCardArray[newPosition];
+      if (inListView === fromListView && cardCount > 0 &&
+          typeof activeCardArray[newPosition - 1] !== 'undefined' &&
+          typeof activeCardArray[newPosition] !== 'undefined' &&
+          typeof activeCardArray[newPosition + 1] !== 'undefined' &&
+          that.get('order') > activeCardArray[newPosition]) {
+        beforeIndex = activeCardArray[newPosition - 1];
+        afterIndex = activeCardArray[newPosition];
         cardOrder = (beforeIndex + afterIndex) / 2;
       }
 
       //case 3,move to last index of card array
-      if (inListView === fromListView &&
-        cardCount > 0 &&
-        newPosition === activeCardArray.length -1) {
-        var lastIndex = activeCardArray[newPosition];
+      if (inListView === fromListView && cardCount > 0
+          && newPosition === activeCardArray.length - 1) {
+        lastIndex = activeCardArray[newPosition];
         cardOrder = lastIndex + 65536;
       }
 
@@ -158,6 +148,19 @@ $(function ($, _, Backbone) {
       if (fromListView.model.id !== inListView.model.id) {
         fromListView.model.cardCollection.remove(that, {silent: true});
         inListView.model.cardCollection.add(that, {silent: true});
+
+        //remove cardView from fromListView's cardViewCache
+        //add in inListView's cardViewCache
+        var cardIdsCache = {};
+        _.each(fromListView.cardViewCache, function(cardView) {
+          cardIdsCache[cardView.model.id] = cardView.cid;
+        });
+        var cardViewCid = cardIdsCache[that.id];
+        if (cardViewCid) {
+          var currentCardView = fromListView.cardViewCache[cardViewCid];
+          delete fromListView.cardViewCache[cardViewCid];
+          inListView.cardViewCache[cardViewCid] = currentCardView;
+        }
 
         //update card quantity
         fromListView.updateCardQuantity();
@@ -169,19 +172,20 @@ $(function ($, _, Backbone) {
       }
 
       // card moving rule-last trigger model changed event.
-      if (cardOrder != -1) {
+      if (cardOrder !== -1) {
         if (inListView === fromListView) {
           that.patch({
             'order': cardOrder,
             original: {order: that.order}
           }, { silent: true });
         }
-        if (inListView !== fromListView)
+        if (inListView !== fromListView) {
           that.patch({
             'order': cardOrder,
             'listId': inListView.model.id,
             original: {listId: fromListView.model.id}
-            }, { silent: true });
+          }, { silent: true });
+        }
       }
     }
   });
@@ -206,9 +210,12 @@ $(function ($, _, Backbone) {
 
       this.socket.removeAllListeners("/card:create");
       this.socket.removeAllListeners("/card:move");
+      this.socket.removeAllListeners("/card:archiveAllCards");
+
       if (!this.noIoBind) {
         this.ioBind('create', this.socket, this.serverCreate, this);
         this.ioBind('move', this.socket, this.serverMove, this);
+        this.ioBind('archiveAllCards', this.socket, this.serverArchiveCards, this);
       }
     },
 
@@ -217,9 +224,6 @@ $(function ($, _, Backbone) {
         item.dispose();
       });
       this.off();
-      if (!this.noIoBind) {
-        this.ioUnbindAll();
-      }
       return this;
     },
 
@@ -236,6 +240,23 @@ $(function ($, _, Backbone) {
       }
     },
 
+    serverArchiveCards: function(data) {
+      var listId = data.listId || null;
+      var archivedCards = data.archivedCards || null;
+      if (archivedCards && listId) {
+        var list = cantas.utils.getCurrentBoardModel().listCollection.get(listId);
+        var cardCollection = list.cardCollection;
+        archivedCards.forEach(function(archivedCard) {
+          var card = cardCollection.get(archivedCard._id);
+          if (typeof card === 'undefined') {
+            cardCollection.add(archivedCard);
+            card = cardCollection.get(archivedCard._id);
+          }
+          card.set(archivedCard);
+        });
+      }
+    },
+
     serverCreate: function (data) {
       if (data) {
         var list = cantas.utils.getCurrentBoardModel().listCollection.get(data.listId);
@@ -243,7 +264,7 @@ $(function ($, _, Backbone) {
         var obj = cards.get(data._id);
         if (typeof obj === 'undefined') {
           cards.add(data);
-        } 
+        }
       }
     },
 

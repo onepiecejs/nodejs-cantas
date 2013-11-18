@@ -1,7 +1,7 @@
 // Admin Config View -- config vote and comment permission
 // -------------------------------------------------------
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -13,7 +13,7 @@ $(function ($, _, Backbone) {
     template: jade.compile($("#template-admin-config-view").text()),
 
     events: {
-      'hidden': 'closeConfigView'
+      'hidden.bs.modal': 'closeConfigView'
     },
 
     render: function() {
@@ -42,8 +42,12 @@ $(function ($, _, Backbone) {
     closeConfigView: function() {
       this.voteConfig.close();
       this.commentConfig.close();
-      this.remove();
-    },
+
+      // clear configView
+      this.$el.empty();
+      this.undelegateEvents();
+      this.stopListening();
+    }
   });
 
   cantas.views.VoteConfig = Backbone.View.extend({
@@ -80,7 +84,6 @@ $(function ($, _, Backbone) {
 
     close: function() {
       this.remove();
-      this.model.dispose();
     },
 
     selectCheckedVoteStatus: function(checkedVoteElement) {
@@ -88,8 +91,8 @@ $(function ($, _, Backbone) {
       var clickIndex = voteOptions.index($(checkedVoteElement));
       var checkedIndex = voteOptions.index(voteOptions.filter('.checked'));
 
-      if(clickIndex > checkedIndex) {
-        voteOptions.slice(0,clickIndex).removeClass('via')
+      if (clickIndex > checkedIndex) {
+        voteOptions.slice(0, clickIndex).removeClass('via')
           .children().removeClass('via');
       }
 
@@ -115,8 +118,9 @@ $(function ($, _, Backbone) {
     },
 
     changeVoteStatus: function(sender, status) {
-      if ($(sender).hasClass('checked'))
+      if ($(sender).hasClass('checked')) {
         return;
+      }
 
       var origin_voteStatus = this.model.get('voteStatus');
       this.model.set('voteStatus', status);
@@ -164,7 +168,6 @@ $(function ($, _, Backbone) {
 
     close: function() {
       this.remove();
-      this.model.dispose();
     },
 
     selectCheckedCommentStatus: function(checkedCommentElement) {
@@ -172,7 +175,7 @@ $(function ($, _, Backbone) {
       var clickIndex = commentOptions.index($(checkedCommentElement));
       var checkedIndex = commentOptions.index(commentOptions.filter('.checked'));
 
-      if(clickIndex > checkedIndex) {
+      if (clickIndex > checkedIndex) {
         commentOptions.slice(0, clickIndex).removeClass('via')
           .children().removeClass('via');
       }
@@ -199,8 +202,9 @@ $(function ($, _, Backbone) {
     },
 
     changeCommentStatus: function(sender, status) {
-      if ($(sender).hasClass('checked'))
+      if ($(sender).hasClass('checked')) {
         return;
+      }
 
       var origin_commentStatus = this.model.get('commentStatus');
       this.model.set('commentStatus', status);

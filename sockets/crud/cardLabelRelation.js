@@ -19,15 +19,15 @@
   util.inherits(CardLabelRelationCRUD, BaseCRUD);
 
   CardLabelRelationCRUD.prototype._read = function(data, callback) {
-    if (data){
+    if (data) {
       this.modelClass
         .find(data)
-        .populate('boardId cardId labelId')
+        .populate('labelId')
         .exec(function (err, result) {
           callback(err, result);
         });
     } else {
-      this.modelClass.find({}, callback );
+      this.modelClass.find({}, callback);
     }
   };
 
@@ -35,7 +35,7 @@
     var self = this;
     var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data['_id']; // _id is not modifiable
+    delete data._id; // _id is not modifiable
 
     this.modelClass.findByIdAndUpdate(_id, data)
       .populate("boardId cardId labelId")
@@ -50,4 +50,4 @@
 
   module.exports = CardLabelRelationCRUD;
 
-})(module);
+}(module));

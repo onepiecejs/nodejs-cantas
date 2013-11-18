@@ -19,7 +19,7 @@
     var self = this;
     var _id = data._id || data.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data['_id']; // _id is not modifiable
+    delete data._id; // _id is not modifiable
 
     this.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
       if (err) {
@@ -32,4 +32,4 @@
 
   module.exports = NotificationCRUD;
 
-})(module);
+}(module));

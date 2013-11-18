@@ -18,32 +18,39 @@ mongoose.connect(
 );
 
 // find cards with assignees
-Card.find({assignees: {$not: {$size: 0}}}).exec(function(err, cards){
+Card.find({assignees: {$not: {$size: 0}}}).exec(function(err, cards) {
   var processed = 0;
   var updated = 0;
-  cards.forEach(function(card){
-    BoardMemberRelation.find({_id: {$in: card.assignees}}, {userId: 1}).exec(function(err, members){
-      if (members.length){
-        var userIds = members.map(function(member){return member.userId});
-        card.assignees = userIds;
-        card.save(function(err, updatedCard){
+  cards.forEach(function(card) {
+    BoardMemberRelation.find({_id: {$in: card.assignees}}, {userId: 1}).
+      exec(function(err, members) {
+        if (members.length) {
+          var userIds = members.map(function(member) {
+            return member.userId;
+          });
+          card.assignees = userIds;
+          card.save(function(err, updatedCard) {
+            processed++;
+            if (err) {
+              console.log("Error ", card.id, " : ", err);
+            } else {
+              updated++;
+            }
+          });
+        } else {
           processed++;
-          if(err){
-            console.log("Error ", card.id, " : ", err);
-          }else{
-            updated++;
-          }
-        });
-      }else{
-        processed++;
-      }
-    });
+        }
+      });
   });
 
   async.until(
-    function(){return cards.length === processed},
-    function(callback){setTimeout(callback, 1000);},
-    function(err){
+    function() {
+      return cards.length === processed;
+    },
+    function(callback) {
+      setTimeout(callback, 1000);
+    },
+    function(err) {
       console.log(util.format("%d of %d cards proceessed.", processed, cards.length));
       console.log(util.format("%d of %d cards updated.", updated, cards.length));
       console.log("finished.");

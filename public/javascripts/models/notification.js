@@ -2,7 +2,7 @@
  * Models for displaying Activity logs.
  */
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -27,13 +27,13 @@ $(function ($, _, Backbone) {
 
     // sort notifications by 'created' in descending order
     comparator: function(a, b) {
-      if (a.get('created') > b.get('created')){
+      if (a.get('created') > b.get('created')) {
         return -1;
-      }else if(a.get('created') < b.get('created')){
-        return 1;
-      }else{
-        return 0;
       }
+      if (a.get('created') < b.get('created')) {
+        return 1;
+      }
+      return 0;
     }
   });
 

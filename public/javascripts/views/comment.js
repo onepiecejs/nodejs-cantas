@@ -1,5 +1,5 @@
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -28,31 +28,29 @@ $(function ($, _, Backbone) {
 
     controlComment: function() {
       var commentStatus = cantas.utils.getCurrentCommentStatus();
-      if (commentStatus == 'disabled') {
+      if (commentStatus === 'disabled') {
         this.$el.find('.js-add-comment-input').hide();
-      } else {
-        if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
-            this.$el.find('.js-add-comment-input').hide();
-          }
-        };
+      } else if (commentStatus === 'enabled' && !window.cantas.isBoardMember) {
+        this.$el.find('.js-add-comment-input').hide();
+      }
     },
 
-    renderCommentItems: function(){
+    renderCommentItems: function() {
       var _this = this;
       this.model.commentCollection.forEach(function(comment) {
         _this.renderComment(comment);
       });
     },
 
-    renderComment: function(comment){
+    renderComment: function(comment) {
       var itemView = new cantas.views.CommentItemView({model: comment});
       this.$el.find(".comment-list").prepend(itemView.render().el);
     },
 
-    saveComment: function(event){
+    saveComment: function(event) {
       event.stopPropagation();
       var content = this.$el.find('.js-add-comment-input').val().trim();
-      if (content === ''){
+      if (content === '') {
         return false;
       }
       var newComment = new cantas.models.Comment({
@@ -64,13 +62,13 @@ $(function ($, _, Backbone) {
       this.hideControls();
     },
 
-    showControls: function(){
+    showControls: function() {
       this.$el.find(".js-comment-controls").show();
     },
 
-    hideControls: function(){
+    hideControls: function() {
       this.$el.find(".js-comment-controls").hide();
-      this.$el.find(".js-add-comment-input").val('')
+      this.$el.find(".js-add-comment-input").val('');
     }
 
   });
@@ -100,16 +98,14 @@ $(function ($, _, Backbone) {
 
     controlComment: function() {
       var commentStatus = cantas.utils.getCurrentCommentStatus();
-      if (commentStatus == 'disabled') {
+      if (commentStatus === 'disabled') {
         this.$el.find('a.js-edit-comment').hide();
-      } else {
-        if (commentStatus == 'enabled' && !window.cantas.isBoardMember) {
-          this.$el.find('a.js-edit-comment').hide();
-        }
+      } else if (commentStatus === 'enabled' && !window.cantas.isBoardMember) {
+        this.$el.find('a.js-edit-comment').hide();
       }
     },
 
-    editComment: function(event){
+    editComment: function(event) {
       event.stopPropagation();
       var commentId = $(event.target).data('cid');
       this.$el.find("dd").hide();
@@ -118,10 +114,10 @@ $(function ($, _, Backbone) {
       editView.$el.find(".js-comment-input").select();
     },
 
-    openNewTab: function(event){
+    openNewTab: function(event) {
       event.preventDefault();
       window.open($(event.target).attr('href'));
-    },
+    }
 
   });
 
@@ -136,32 +132,32 @@ $(function ($, _, Backbone) {
       "click .js-cancel-comment": "closeEditor"
     },
 
-    render: function(){
+    render: function() {
       this.$el.html(this.template());
       var content = this.model.get("content");
       this.$el.find(".js-comment-input").val(content).select();
       return this;
     },
 
-    saveEditedComment: function(event){
+    saveEditedComment: function(event) {
       event.stopPropagation();
       var content = this.$el.find('.js-comment-input').val().trim();
       // comment content can't be blank
-      if (content === ''){
+      if (content === '') {
         return false;
       }
       this.closeEditor(event);
       // patch if content changed
-      if (content !== this.model.get("content")){
+      if (content !== this.model.get("content")) {
         this.model.patch({content: content});
       }
     },
 
-    closeEditor: function(event){
+    closeEditor: function(event) {
       event.stopPropagation();
       this.$el.siblings("dd").show();
       this.$el.remove();
-    },
+    }
 
   });
 

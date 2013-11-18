@@ -4,7 +4,6 @@
         "async": "*",
         "connect-redis": "*",
         "express": "2.5.x",
-        "gss": "git://github.com/davidben/node-gss.git",
         "jade": "*",
         "markdown": "*",
         "moment": "*",
@@ -16,7 +15,8 @@
         "redis": "*",
         "socket.io": "*",
         "xmlrpc": "~1.1.0",
-        "easyimage": "*"
+        "easyimage": "*",
+        "requestify": "*"
     },
     "devDependencies": {
         "expect.js": "*",
@@ -44,5 +44,5 @@
         "lintcheck": "scripts/lintcheck",
         "start": "node app"
     },
-    "version": "0.6.0"
+    "version": "0.7.0"
 }

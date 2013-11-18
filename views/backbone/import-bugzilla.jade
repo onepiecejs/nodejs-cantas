@@ -1,0 +1,16 @@
+script#template-import-bugzilla-view(type="text/template").
+  div 
+    div.modal-header
+      button(type="button",class="close",data-dismiss="modal",aria-hidden="true")×
+      h2.window-title-text    Import Bugs From Bugzilla
+          div.mapping-config
+            div.row-fluid
+              div.span2
+                button.btn.btn-primary.js-add-mapping Add Mapping
+              div.span2
+                button.btn.btn-primary.js-sync-all Sync All
+            div.modal-body.mapping-body
+      div.window_module
+          div.mapping-list.hide.mapping-add
+    footer.modal-footer
+      button.btn(data-dismiss="modal") Close

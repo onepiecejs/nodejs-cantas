@@ -17,7 +17,7 @@ var options = {
     debug:      false, // if debugger statements should be allowed
     devel:      true, // if logging should be allowed (console, alert, etc.)
     eqeq:       false, // if == should be allowed
-    es5:        false, // if ES5 syntax should be allowed
+    es5:        true, // if ES5 syntax should be allowed
     evil:       false, // if eval should be allowed
     forin:      false, // if for in statements need not filter
     fragment:   false, // if HTML fragments should be allowed
@@ -44,5 +44,17 @@ var options = {
     windows:    false, // if MS Windows-specific globals should be predefined
 
     // the names of predefined global variables:
-    "predef":   ['cantas', '_', 'jQuery', 'Backbone', '$', 'window']
+    "predef":   [
+                  'cantas',
+                  '_',
+                  'jQuery',
+                  'Backbone',
+                  '$',
+                  'window',
+                  'jade',
+                  'document',
+                  'SORTABLE',
+                  'markdown',
+                  'moment'
+                ]
 };

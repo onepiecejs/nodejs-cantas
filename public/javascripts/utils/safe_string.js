@@ -1,17 +1,17 @@
 
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
   var tagsToReplace = {
-   '&': "&amp;",
-   '<': "&lt;",
-   '>': "&gt;"
+    '&': "&amp;",
+    '<': "&lt;",
+    '>': "&gt;"
   };
 
   var replaceTag = function(tag) {
-   return tagsToReplace[tag] || tag;
+    return tagsToReplace[tag] || tag;
   };
 
   var utils = cantas.utils || {};

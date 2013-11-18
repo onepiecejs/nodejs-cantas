@@ -17,8 +17,8 @@
 
   BoardMemberRelationCRUD.prototype._read = function(data, callback) {
     this.modelClass.find(data).populate("userId").exec(callback);
-  }
+  };
 
   module.exports = BoardMemberRelationCRUD;
 
-})(module);
+}(module));

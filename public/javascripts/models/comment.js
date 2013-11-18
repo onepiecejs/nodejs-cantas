@@ -1,6 +1,6 @@
 //model comment
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
   "use strict";
 
   cantas.models.Comment = cantas.models.BaseModel.extend({
@@ -53,7 +53,7 @@ $(function ($, _, Backbone) {
     serverCreate: function (data) {
       if (data) {
         var card = cantas.utils.getCardModelById(data.cardId);
-        if (card){
+        if (card) {
           card.commentCollection.add(data);
         }
       }
@@ -69,13 +69,13 @@ $(function ($, _, Backbone) {
 
     // sort comments by 'createdOn' in ascending order
     comparator: function(a, b) {
-      if (a.get('createdOn') > b.get('createdOn')){
+      if (a.get('createdOn') > b.get('createdOn')) {
         return 1;
-      }else if(a.get('createdOn') < b.get('createdOn')){
-        return -1;
-      }else{
-        return 0;
       }
+      if (a.get('createdOn') < b.get('createdOn')) {
+        return -1;
+      }
+      return 0;
     }
 
   });

@@ -41,6 +41,53 @@
     });
   };
 
+  var taskPrepareData = function prepareData(cards, labels, asyncCallback) {
+    var migrationData = [];
+    cards.forEach(function(card) {
+      labels.forEach(function(label) {
+        if (label.boardId.toString() === card.boardId.toString()) {
+          migrationData.push({
+            boardId: card.boardId,
+            cardId: card._id,
+            labelId: label._id
+          });
+        }
+      });
+    });
+    asyncCallback(null, migrationData);
+  };
+
+  /*
+   * Get cards that has no label.
+   */
+  var taskGetCardsHasNoLabels = function getCard(asyncCallback) {
+    CardLabelRelation.find({}).select('cardId').distinct('cardId', function(err, cardIds) {
+      if (err) {
+        asyncCallback(err, null);
+      } else {
+        var condition = {_id: {$nin: cardIds}};
+        Card.find(condition, '_id boardId', asyncCallback);
+      }
+    });
+  };
+
+  /*
+   * Get all labels.
+   */
+  var taskGetBoardsLabels = function getBoardsLabels(cards, asyncCallback) {
+    var boardIds = [];
+    cards.forEach(function(card) {
+      boardIds.push(card.boardId);
+    });
+    Label.find({boardId: {$in: boardIds}}, '_id boardId', function(err, labels) {
+      if (err) {
+        asyncCallback(err, null);
+      } else {
+        asyncCallback(null, cards, labels);
+      }
+    });
+  };
+
   /*
    * Prepare the relation data between card and labels.
    *
@@ -62,53 +109,6 @@
   };
 
   /*
-   * Get cards that has no label.
-   */
-  var taskGetCardsHasNoLabels = function getCard(asyncCallback) {
-    CardLabelRelation.find({}).select('cardId').distinct('cardId', function(err, cardIds) {
-      if (err)
-        asyncCallback(err, null);
-      else {
-        var condition = {_id: {$nin: cardIds}};
-        Card.find(condition, '_id boardId', asyncCallback);
-      }
-    });
-  };
-
-  /*
-   * Get all labels.
-   */
-  var taskGetBoardsLabels = function getBoardsLabels(cards, asyncCallback) {
-    var boardIds = [];
-    cards.forEach(function(card) {
-      boardIds.push(card.boardId);
-    });
-    Label.find({boardId: {$in: boardIds}}, '_id boardId', function(err, labels) {
-      if (err)
-        asyncCallback(err, null);
-      else {
-        asyncCallback(null, cards, labels);
-      }
-    });
-  };
-
-  var taskPrepareData = function prepareData(cards, labels, asyncCallback) {
-    var migrationData = [];
-    cards.forEach(function(card) {
-      labels.forEach(function(label) {
-        if (label.boardId.toString() === card.boardId.toString()) {
-          migrationData.push({
-            boardId: card.boardId,
-            cardId: card._id,
-            labelId: label._id
-          });
-        }
-      });
-    });
-    asyncCallback(null, migrationData);
-  };
-
-  /*
    * TODO: support rollback when error occurs.
    *
    * Build relation between card and labels.
@@ -121,18 +121,19 @@
   var migration = function migration(migrateData, callback) {
     async.map(migrateData,
       function(data, asyncCallback) {
-        var relation = CardLabelRelation(data);
+        var relation = new CardLabelRelation(data);
         relation.save(function(err, savedObject) {
-          if (err)
+          if (err) {
             asyncCallback(err, null);
-          else
+          } else {
             asyncCallback(null, true);
+          }
         });
       },
       function(err, results) {
-        if (err)
+        if (err) {
           callback(err, null);
-        else {
+        } else {
           var result = results.reduce(function(prevValue, curValue) {
             return prevValue && curValue;
           }, true);
@@ -156,10 +157,11 @@
       prepareData,
       migration
     ], function(err, result) {
-      if (err)
+      if (err) {
         die(err);
-      else
+      } else {
         callback(result);
+      }
     });
   };
 

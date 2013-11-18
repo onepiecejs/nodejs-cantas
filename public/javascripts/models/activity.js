@@ -2,7 +2,7 @@
  * Models for displaying Activity logs.
  */
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
 
   "use strict";
 
@@ -11,7 +11,7 @@ $(function ($, _, Backbone) {
     socket: cantas.socket,
     urlRoot: "activity",
 
-    url: function() {
+    url: function () {
       return "/activity/" + this.id;
     }
 
@@ -25,7 +25,7 @@ $(function ($, _, Backbone) {
     url: "/activity",
     model: cantas.models.Activity,
 
-    comparator: function(activity) {
+    comparator: function (activity) {
       return activity.get("createdOn");
     }
   });

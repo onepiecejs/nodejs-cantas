@@ -46,17 +46,20 @@ var async = require('async');
 
   var User = require('../models/user');
 
-  function StockUsers() {};
+  function StockUsers() {}
 
   StockUsers.prototype.load = function(callback) {
     var self = this;
 
     User.find(function(err, users) {
-      if (err)
+      if (err) {
         throw new Error('Fail to load current Cantas users.');
+      }
 
       var lookup = {};
-      for (var i = 0, n = users.length; i < n; i++) {
+      var i;
+      var n;
+      for (i = 0, n = users.length; i < n; i++) {
         var user = users[i];
         lookup[user.username + user.email] = user._id;
       }
@@ -89,11 +92,10 @@ var async = require('async');
 
   NKerberos.prototype.clientInit = function(options) {
     var _options = options || {};
-    if (_options.principal === undefined)
+    if (_options.principal === undefined) {
       throw new Error('Missing principal.');
-
-    var creds = gss.acquireCredential(
-      null, 0, [gss.KRB5_MECHANISM], gss.C_INITIATE);
+    }
+    var creds = gss.acquireCredential(null, 0, [gss.KRB5_MECHANISM], gss.C_INITIATE);
     var zsrName = gss.importName(_options.principal, gss.C_NT_HOSTBASED_SERVICE);
     var context = gss.createInitiator(creds, zsrName, {
       flags: gss.C_MUTUAL_FLAG | gss.C_CONF_FLAG |
@@ -138,10 +140,12 @@ var async = require('async');
 
   function OrgChartSyncTask(options) {
     this.options = options || {};
-    if (this.options.kerberos === undefined)
+    if (this.options.kerberos === undefined) {
       throw new Error('Missing Kerberos options.');
-    if (this.options.xmlrpc === undefined)
+    }
+    if (this.options.xmlrpc === undefined) {
       throw new Error('Missing XMLRPC options.');
+    }
 
     this.NKerberos = module.exports.NKerberos;
     this.StockUsers = module.exports.StockUsers;
@@ -152,8 +156,9 @@ var async = require('async');
 
   OrgChartSyncTask.prototype.parsePrincipal = function(kerberosOptions) {
     var options = kerberosOptions || {};
-    if (options.hostname === undefined || options.serviceName === undefined)
+    if (options.hostname === undefined || options.serviceName === undefined) {
       throw new Error('No enough information to build principal.');
+    }
 
     return options.serviceName + '@' + options.hostname;
   };
@@ -170,10 +175,10 @@ var async = require('async');
 
   OrgChartSyncTask.prototype.isUserValid = function(user) {
     var expectedEmail = this.makeEmailAddr(user.name);
-    return !this.invalidUsernamePattern.test(user.name) &&
+    return (!this.invalidUsernamePattern.test(user.name) &&
            user.user_mail !== undefined &&
            user.user_mail.length === 1 &&
-           user.user_mail.indexOf(expectedEmail) >= 0
+           user.user_mail.indexOf(expectedEmail) >= 0);
   };
 
   /*
@@ -195,15 +200,17 @@ var async = require('async');
         var fullname = user.realname;
 
         var newUser = new User({
-          username: username, email: email, fullname: fullname
+          username: username,
+          email: email,
+          fullname: fullname
         });
         newUser.save(function(err, savedObject) {
           if (err) {
-            self.logError(new Error(
-              'Fail to import ' + user.name + '. ' + err.message));
+            self.logError(new Error('Fail to import ' + user.name + '. ' + err.message));
             asyncCallback(null, false);
-          } else
+          } else {
             asyncCallback(null, true);
+          }
         });
       },
       function(err, results) {
@@ -245,10 +252,11 @@ var async = require('async');
     var ifTotalDone = results.reduce(function(prevValue, curValue) {
       return prevValue && curValue;
     });
-    if (ifTotalDone)
+    if (ifTotalDone) {
       this.logError(new Error('All users are imported.'));
-    else
+    } else {
       this.logError(new Error('Not all users are imported.'));
+    }
 
     // The only and last exit.
     process.exit();
@@ -260,13 +268,14 @@ var async = require('async');
     var pattern = options.pattern;
     var xmlrpcClient = options.xmlrpcClient;
 
-    if (pattern === undefined || xmlrpcClient === undefined)
+    if (pattern === undefined || xmlrpcClient === undefined) {
       throw new Error('No enough information to get users.');
+    }
 
     xmlrpcClient.methodCall(methodName, pattern, function (err, users) {
-      if (err)
+      if (err) {
         context.logError(err);
-      else {
+      } else {
         context.syncUsers(users, asyncCallback);
       }
     });
@@ -283,9 +292,11 @@ var async = require('async');
   OrgChartSyncTask.prototype.getTaskData = function() {
     var result = [];
     var letters = 'abcdefghijklmnopqrstuvwxyz';
-
-    for (var i = 0, n = letters.length; i < n; i++)
+    var i;
+    var n;
+    for (i = 0, n = letters.length; i < n; i++) {
       result.push([{name: {operator: 'LIKE', value: letters[i] + '%'}}]);
+    }
 
     return result;
   };
@@ -305,17 +316,20 @@ var async = require('async');
      * function in a different context.
      */
     var asyncTaskData = [];
-    for (var i = 0, n = taskData.length; i < n; i++)
+    var i;
+    var n;
+    for (i = 0, n = taskData.length; i < n; i++) {
       asyncTaskData.push({
         context: self,
         xmlrpcClient: xmlrpcClient,
         pattern: taskData[i]
       });
+    }
 
     async.map(asyncTaskData, self.taskSyncUsers, function(err, results) {
-      if (err)
+      if (err) {
         self.logError(err);
-      else {
+      } else {
         self.handleSyncResult({asyncTaskData: asyncTaskData, results: results});
       }
     });
@@ -346,9 +360,9 @@ if (runDirectlyFromNode) {
   var syncUsers = module.exports.syncUsers;
 
   var orgchartHostname = process.argv[2];
-  if (orgchartHostname === undefined)
-    throw new Error(
-      'Missing argument providing the hostname of OrgChart service.');
+  if (orgchartHostname === undefined) {
+    throw new Error('Missing argument providing the hostname of OrgChart service.');
+  }
 
   DB.connect();
   StockUsers.load(function() {

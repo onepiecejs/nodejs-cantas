@@ -1,6 +1,6 @@
 //model list
 
-$(function ($, _, Backbone) {
+(function ($, _, Backbone) {
   "use strict";
 
   cantas.models.List = cantas.models.BaseModel.extend({
@@ -33,10 +33,12 @@ $(function ($, _, Backbone) {
     },
 
     validate: function(attrs, options) {
-      if (attrs.title === undefined || attrs.length == 0)
+      if (attrs.title === undefined || attrs.length === 0) {
         return "You must enter a title for list.";
-      if (/^\s+$/.test(attrs.title))
+      }
+      if (/^\s+$/.test(attrs.title)) {
         return "Please enter a effective title for list.";
+      }
     },
 
     // Remove the List and delete its view.
@@ -46,7 +48,7 @@ $(function ($, _, Backbone) {
     },
 
     serverChange: function (data) {
-        this.set(data);
+      this.set(data);
     },
 
     serverDelete: function (data) {
@@ -109,7 +111,9 @@ $(function ($, _, Backbone) {
         var list = listCollection.get(data._id);
         if (typeof list === 'undefined') {
           listCollection.add(data);
+          list = listCollection.get(data._id);
         }
+        list.trigger("change:order", list);
       }
     },
 
@@ -128,7 +132,7 @@ $(function ($, _, Backbone) {
     // next order calculate methods.
     nextOrder: function () {
       if (!this.length) { return 1; }
-      var last = _.max(this.pluck('order'), function(order){
+      var last = _.max(this.pluck('order'), function(order) {
           return order;
         });
       return last + 1;
