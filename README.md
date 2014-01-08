@@ -72,7 +72,7 @@ Thanks for [all Contributors](AUTHORS.md)
 
     ```bash
     # update settings values
-    cp settings.json.example settgins.json
+    cp settings.json.example settings.json
     NODE_ENV=development node app.js
     ```
 > ***Note:***
