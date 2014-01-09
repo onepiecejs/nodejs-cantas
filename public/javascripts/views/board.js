@@ -691,9 +691,9 @@
 
       //render lists iterator
       var that = this;
-      this.model.listCollection.forEach(function (list) {
-        that.addOne(list);
-      });
+      // this.model.listCollection.forEach(function (list) {
+      //   that.addOne(list);
+      // });
 
       this.boardTitleView = new BoardTitleView({
         model: this.model,
@@ -827,10 +827,9 @@
     },
 
     addAll: function() {
-      var that = this;
-      this.model.listCollection.each(function (list) {
-        that.addOne(list);
-      });
+      this.listViewCollection = this.model.listCollection.map(this.addOne, this);
+      this.$('#board').append(_.map(this.listViewCollection, this.getListDom, this));
+      SORTABLE.refreshListSortable();
       this.switchScrollButton();
 
       //disable sort function of lists if user is not board member.
@@ -849,15 +848,10 @@
         }
       });
 
-      //append the view to global viewCollection
-      this.listViewCollection.push(thatListView);
-
-      // only render not archived lists
-      if (list.get("isArchived") === false) {
-        $('#board').append(thatListView.render().el);
-      }
-
       if (options && options.add === true) {
+        this.listViewCollection.push(thatListView);
+        this.$('#board').append(thatListView.render().el);
+        SORTABLE.refreshCardSortable();
         $("#board").find(".list-panel:last").addClass("list-panel-highlight");
         setTimeout(function() {
           $("#board")
@@ -883,10 +877,17 @@
 
         }
 
+      } else {
+        return thatListView;
       }
-      //enable list && card reorder
-      SORTABLE.refreshListSortable();
-      SORTABLE.refreshCardSortable();
+    },
+
+    // get list dom
+    getListDom: function (view) {
+      if (view.model.get('isArchived') === false) {
+        return view.render().el;
+      }
+      return null;
     },
 
     // Important: here i implement moving fast algorithm,

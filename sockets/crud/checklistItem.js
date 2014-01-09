@@ -41,11 +41,13 @@
 
   ChecklistItemCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id || data.id;
+    var patchInfo = self._generatePatchInfo(data);
+    var _id = patchInfo.id;
     var name = '/' + this.key + '/' + _id + ':update';
+    var originData = patchInfo.originData;
+    var changeFields = patchInfo.changeFields;
+    data = patchInfo.data;
 
-    // _id is not modifiable
-    delete data._id;
 
     async.waterfall([
       function(callback) {
@@ -58,9 +60,11 @@
         // patch if isMember
         if (isMember) {
           data.updatedOn = Date.now();
-          self.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
-            callback(err, updatedData);
-          });
+          self.modelClass
+            .findByIdAndUpdate(_id, data)
+            .exec(function(err, updatedData) {
+              callback(err, updatedData);
+            });
         } else {
           callback(true, null);
         }
@@ -73,6 +77,8 @@
 
         signals.post_patch.send(updatedData, {
           instance: updatedData,
+          changeFields: changeFields,
+          originData: originData,
           socket: self.socket
         }, function(err, result) {});
       }

@@ -39,11 +39,7 @@ html
                                 li: a(onclick="cantas.navigateTo('boards/public')") Public Boards
                                 li: a(onclick="cantas.navigateTo('boards/mine')") My Boards
                                 li: a(onclick="cantas.navigateTo('boards/closed')") Closed Boards
-                        li(class="dropdown header-user")
-                            a(class="dropdown-toggle",data-toggle="dropdown") Notification
-                            a(class="reminder") 1
-                            ul(class="dropdown-menu dropdown-notification")
-                                li.all-read: a Mark All as Read
+                        li(class="dropdown header-user js-notification-menu")
                         li(class="dropdown header-user")
                             a(class="dropdown-toggle", onclick="cantas.navigateTo('help')") Help
                     input(type="text",class="quick-search",placeholder="search")
@@ -59,6 +55,7 @@ html
                     div(class="copyright")
                         | <p>Version #{version} <a href="#{links.bugzilla}" target="_blank">Report an Issue</a></p>
                         | <p>INTERNAL USE ONLY</p>
+                        | <p>Copyright &copy; 2013 Red Hat, Inc. All rights reserved.</p>
 
         block scripts
             script(type="text/javascript", src="/socket.io/socket.io.js")

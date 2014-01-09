@@ -404,7 +404,11 @@
     toggleItemDone: function() {
       // only board members can do this.
       var checked = !this.model.get("checked");
-      this.model.patch({checked: checked});
+      var originCheckStatus = this.model.get("checked");
+      this.model.patch({
+        checked: checked,
+        original: {checked: originCheckStatus}
+      });
     },
 
     checkedChanged: function(data) {
@@ -489,7 +493,11 @@
           data.entryView.remove();
           data.parentView.remove();
         } else {
-          data.parentView.model.patch({'content': content});
+          var originContent = data.parentView.model.get('content');
+          data.parentView.model.patch({
+            'content': content,
+            original: {content: originContent}
+          });
           data.checklistView.itemViews[data.parentView.model.id].$el.show();
 
           data.entryView.remove();

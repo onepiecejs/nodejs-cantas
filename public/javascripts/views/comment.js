@@ -4,7 +4,6 @@
   "use strict";
 
   cantas.views.CommentView = Backbone.View.extend({
-    el: "section.card-option.comment",
 
     template: jade.compile($("#template-comment-view").text()),
 
@@ -149,7 +148,11 @@
       this.closeEditor(event);
       // patch if content changed
       if (content !== this.model.get("content")) {
-        this.model.patch({content: content});
+        var originContent = this.model.get("content");
+        this.model.patch({
+          content: content,
+          original: {content: originContent}
+        });
       }
     },
 

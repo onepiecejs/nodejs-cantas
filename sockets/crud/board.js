@@ -37,26 +37,26 @@
     }
     if (action === 'update') {
       content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
-                data.field, data.origin_data[data.field], data.changed_data[data.field]);
+                data.field, data.originData[data.field], data.changedData[data.field]);
       if (data.field === 'isPublic') {
-        if (data.changed_data[data.field] === true) {
+        if (data.changedData[data.field] === true) {
           content = util.format('%s set this board to public', username);
         }
-        if (data.changed_data[data.field] === false) {
+        if (data.changedData[data.field] === false) {
           content = util.format('%s set this board to private', username);
         }
 
       }
       var origin_config, changed_config;
       if (data.field === 'voteStatus') {
-        origin_config = data.origin_data[data.field];
-        changed_config = data.changed_data[data.field];
+        origin_config = data.originData[data.field];
+        changed_config = data.changedData[data.field];
         content = util.format('%s changed vote permission from "%s" to "%s"',
                   username, configDescription[origin_config], configDescription[changed_config]);
       }
       if (data.field === 'commentStatus') {
-        origin_config = data.origin_data[data.field];
-        changed_config = data.changed_data[data.field];
+        origin_config = data.originData[data.field];
+        changed_config = data.changedData[data.field];
         content = util.format('%s changed comment permission from "%s" to "%s"',
                   username, configDescription[origin_config], configDescription[changed_config]);
       }
@@ -88,30 +88,24 @@
 
   BoardCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id || data.id;
+    var patchInfo = self._generatePatchInfo(data);
+    var _id = patchInfo.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data._id; // _id is not modifiable
-    var origin_data = data.original;
-    var change_fields = [];
-    var key;
-    for (key in origin_data) {
-      if (origin_data.hasOwnProperty(key)) {
-        change_fields.push(key);
-      }
-    }
-    delete data.original;
+    var originData = patchInfo.originData;
+    var changeFields = patchInfo.changeFields;
+    data = patchInfo.data;
 
     this.modelClass.findByIdAndUpdate(_id, data, function (err, updatedData) {
       if (err) {
         callback(err, updatedData);
       } else {
         // create activity log
-        if (change_fields.length >= 1) {
-          async.map(change_fields, function(change_field, cb) {
+        if (changeFields.length >= 1) {
+          async.map(changeFields, function(changeField, cb) {
             var changeInfo = {
-              field: change_field,
-              origin_data: origin_data,
-              changed_data: updatedData
+              field: changeField,
+              originData: originData,
+              changedData: updatedData
             };
             self.generateActivityContent(self.key, 'update', changeInfo,
               function(err, content) {
@@ -161,7 +155,7 @@
         if (err) {
           console.log(err);
         } else {
-          var type = "information";
+          var type = Notification.types.information;
           var user = self.socket.handshake.user;
           var message = '', email_message = '';
           if (board.isClosed === true) {
@@ -190,7 +184,8 @@
                 },
                 template: "notification.jade"
               };
-              Notification.notify(self.socket, memberRelation.userId, message, type, emailContext);
+              Notification.mail(self.socket, memberRelation.userId, message, type, emailContext);
+              Notification.notify(self.socket, memberRelation.userId, message, type);
             }
           }
         }

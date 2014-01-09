@@ -8,6 +8,7 @@
   var ChecklistItem = require('./checklistItem');
   var Vote = require('./vote');
   var Attachment = require('./attachment');
+  var User = require('./user');
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
   var CardSchema;
@@ -23,6 +24,7 @@
     assignees: [ {type: ObjectId, ref: 'User', index: true} ],
     listId: { type: ObjectId, required: true, ref: 'List', index: true },
     boardId: { type: ObjectId, required: true, ref: 'Board', index: true },
+    subscribeUserIds: { type: Array },
     perms: {
       delete: {
         users: [ ObjectId ],
@@ -48,6 +50,14 @@
   // model methods
   CardSchema.method('getOrder', function() {
     return this.order;
+  });
+
+  CardSchema.method('getSubscribeUsers', function(callback) {
+    var cardId = this._id;
+    var subscribeUserIds = this.subscribeUserIds;
+    User.find({_id: {$in: subscribeUserIds}}, 'username email', function(err, subscribeUsers) {
+      callback(err, subscribeUsers);
+    });
   });
 
   CardSchema.method('getCover', function(callback) {

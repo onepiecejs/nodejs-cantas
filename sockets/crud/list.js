@@ -31,15 +31,15 @@
     }
     if (action === 'update') {
       content = util.format('%s changed %s %s from "%s" to "%s"',
-        username, model, data.field, data.origin_data[data.field], data.changed_data[data.field]);
+        username, model, data.field, data.originData[data.field], data.changedData[data.field]);
       if (data.field === 'isArchived') {
-        if (data.changed_data[data.field] === true) {
+        if (data.changedData[data.field] === true) {
           content = util.format('%s archived %s "%s"', username, model,
-                                data.changed_data.title);
+                                data.changedData.title);
         }
-        if (data.changed_data[data.field] === false) {
+        if (data.changedData[data.field] === false) {
           content = util.format('%s unarchived %s "%s"', username, model,
-                                data.changed_data.title);
+                                data.changedData.title);
         }
       }
     }

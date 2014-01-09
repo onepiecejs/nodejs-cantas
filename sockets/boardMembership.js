@@ -97,7 +97,8 @@
       var inviter = options.socket.handshake.user;
       var msg = util.format("%s invite you to join board [%s](%s)",
                             inviter.username, board.title, board.url);
-      notification.notify(options.socket, invitee, msg, notification.types.invitation, {
+      notification.notify(options.socket, invitee, msg, notification.types.invitation);
+      notification.mail(options.socket, invitee, msg, notification.types.invitation, {
         body: {
           inviteeName: invitee.username,
           inviterName: inviter.username,

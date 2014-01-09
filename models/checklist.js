@@ -5,7 +5,6 @@
   var mongoose = require("mongoose");
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
-  var ChecklistItem = require("./checklistItem");
 
   var ChecklistSchema = new Schema({
     title: {type: String, default: "New Checklist"},

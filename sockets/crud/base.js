@@ -79,7 +79,7 @@
     }
     if (action === 'update') {
       content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
-                data.field, data.origin_data[data.field], data.changed_data[data.field]);
+                data.field, data.originData[data.field], data.changedData[data.field]);
     }
     callback(null, content);
   };
@@ -190,20 +190,36 @@
     }
   };
 
-  BaseCRUD.prototype._patch = function(data, callback) {
-    var self = this;
+  BaseCRUD.prototype._generatePatchInfo = function(data) {
     var _id = data._id || data.id;
-    var eventKey = '/' + this.key + '/' + _id + ':update';
-    delete data._id; // _id is not modifiable
-    var origin_data = data.original;
-    var change_fields = [];
+    delete data._id;
+    var originData = data.original;
+    var changeFields = [];
     var key;
-    for (key in origin_data) {
-      if (origin_data.hasOwnProperty(key)) {
-        change_fields.push(key);
+    for (key in originData) {
+      if (originData.hasOwnProperty(key)) {
+        changeFields.push(key);
       }
     }
     delete data.original;
+    var patchInfo = {
+      id: _id,
+      data: data,
+      originData: originData,
+      changeFields: changeFields
+    };
+    return patchInfo;
+  };
+
+  BaseCRUD.prototype._patch = function(data, callback) {
+    var self = this;
+    var patchInfo = self._generatePatchInfo(data);
+    //var _id = data._id || data.id;
+    var _id = patchInfo.id || null;
+    var eventKey = '/' + this.key + '/' + _id + ':update';
+    data = patchInfo.data;
+    var originData = patchInfo.originData;
+    var changeFields = patchInfo.changeFields;
 
     this.modelClass.findByIdAndUpdate(_id,
                                       {$set : data},
@@ -211,13 +227,14 @@
         if (err) {
           callback(err, updatedData);
         } else {
+
           // create activity log
-          if (change_fields.length >= 1) {
-            async.map(change_fields, function(change_field, cb) {
+          if (changeFields.length >= 1) {
+            async.map(changeFields, function(changeField, cb) {
               var changeInfo = {
-                field: change_field,
-                origin_data: origin_data,
-                changed_data: updatedData
+                field: changeField,
+                originData: originData,
+                changedData: updatedData
               };
               self.generateActivityContent(self.key, 'update', changeInfo,
                 function(err, content) {

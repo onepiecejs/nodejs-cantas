@@ -1,0 +1,13 @@
+extends notification
+
+block content
+  h4 Hi #{receiver},
+  p
+    | <span>#{sender}</span> edited a comment in card <a href="#{cardUrl}">#{cardTitle}</a>.
+    | <p> original content:
+    | <span> #{originComment}
+    | <p> current content:
+    | <span> #{currentComment}
+  p Regards,
+  p Cantas
+

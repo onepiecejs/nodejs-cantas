@@ -374,7 +374,7 @@
         }
         that.addOne(card, index);
       });
-
+      SORTABLE.refreshCardSortable();
       //disable sort function of cards when user is not board member.
       if (!window.cantas.isBoardMember) {
         $('.connectedSortable').sortable('disable');
@@ -417,6 +417,7 @@
       }
 
       if (context) {
+        SORTABLE.refreshCardSortable();
         this.$('.card:last').addClass('card-highlight');
         setTimeout(function() {
           this.$('.card.card-highlight').removeClass('card-highlight');
@@ -429,9 +430,6 @@
           }, 500);
         }
       }
-
-      //enable card reorder
-      SORTABLE.refreshCardSortable();
     },
 
     showListMenu: function (event) {

@@ -5,6 +5,7 @@
 
   var util = require("util");
   var BaseCRUD = require("./base");
+  var signals = require("../signals");
 
   function CardLabelRelationCRUD(options) {
     BaseCRUD.call(this, options);
@@ -44,6 +45,12 @@
           callback(err, updatedData);
         } else {
           self.emitMessage(name, updatedData);
+
+          signals.post_patch.send(updatedData, {
+            instance: updatedData,
+            socket: self.socket
+          }, function(err, result) {});
+
         }
       });
   };

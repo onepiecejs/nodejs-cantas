@@ -238,12 +238,22 @@ a:link, a:visited {
     left: -80px;
     top: 25px;
     width: 200px;
+    overflow: hidden;
+    max-height: 360px;
+}
+.dropdown-notification-content{
+    left: -80px;
+    top: 25px;
+    width: 200px;
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 320px;
+    max-height: 300px;
 }
 .dropdown-notification .all-read{
     text-align: center;
+}
+.dropdown-notification .show-more{
+    text-align: right;
 }
  #eso-topbar .quick-menu li .all-read a{
     color: #fff;
@@ -252,7 +262,7 @@ a:link, a:visited {
     font-weight: bold;
 }
 .dropdown-notification li.unread{
-    background: rgba(80, 80, 80, 0.9); 
+    background: rgba(80, 80, 80, 0.9);
 }
 .dropdown-notification li span{
     color: #ddd;

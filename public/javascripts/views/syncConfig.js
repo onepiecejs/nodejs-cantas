@@ -286,7 +286,9 @@
       var syncConfig = {};
       syncConfig.lists = [];
       this.model.listCollection.each(function(list, index) {
-        syncConfig.lists.push({'id': list.toJSON()._id, 'name': list.toJSON().title});
+        if (!list.toJSON().isArchived) {
+          syncConfig.lists.push({'id': list.toJSON()._id, 'name': list.toJSON().title});
+        }
       });
       this.$el.html(this.template(syncConfig));
 
@@ -445,7 +447,9 @@
       var configuration = this.parentView.model.toJSON();
       configuration.lists = [];
       this.listCollection.each(function(list) {
-        configuration.lists.push({'id': list.get('_id'), 'name': list.get('title')});
+        if (!list.get('isArchived')) {
+          configuration.lists.push({'id': list.get('_id'), 'name': list.get('title')});
+        }
       });
       this.$el.html(this.template(configuration));
 

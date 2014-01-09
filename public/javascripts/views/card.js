@@ -381,8 +381,6 @@
       this.$el.empty();
       this.$el.html(this.template(data));
       this.$el.attr("id", this.model.id);
-      // refresh card sortable
-      SORTABLE.refreshCardSortable();
 
       this.cardNeonLightsView = new cantas.views.LabelNeonLightsView({
         el: this.$el.find('div.card-filter.clearfix'),
@@ -742,7 +740,8 @@
       "click .js-add-comment": "addComment",
       "click .js-add-attachment": "addAttachment",
       "hidden.bs.modal": "closeCardDetail",
-      "click .js-add-checklist": "onChecklistClick"
+      "click .js-add-checklist": "onChecklistClick",
+      "click .js-subscribe": "onSubscribeClick"
     },
 
     initialize: function (options) {
@@ -750,6 +749,7 @@
       this.model.on('change:title', this.titleChanged, this);
       this.model.on('change:description', this.descriptionChanged, this);
       this.model.on('change:assignees', this.assigneesChanged, this);
+      this.model.on('change:subscribeUserIds', this.subscribeChanged, this);
       this.commentTemplate = jade.compile($("#template-comment-item-view").text());
 
       this.cardLabelCollection = options.cardLabelCollection;
@@ -758,133 +758,124 @@
     },
 
     render: function () {
+      var _this = this;
       var card = this.model.toJSON();
       card.assignees = this._concatAssignees();
       card.description = markdown.toHTML(card.description);
 
-      this.$el.html(this.template({card: card}));
-      this.$el.modal();
-      cantas.setTitle("Card|" + this.model.get("title"));
+      $.when(this.$el.html(this.template({ 'card': card }))).done(function() {
+        _this.$el.modal();
+        cantas.setTitle("Card|" + _this.model.get("title"));
 
-      this.renderAssignView();
-      this.renderLabelView();
-      this.renderVoteView();
+        // Initialize views used in detail view.
+        _this.renderAssignView();
+        _this.renderLabelView();
+        _this.renderVoteView();
+        _this.renderSubscribeStatus();
+        _this.renderCommentView();
+        _this.renderAttachmentView();
 
-      this.renderCommentView();
-
-      this.renderAttachmentView();
-
-      this.cardVotesTotalView = new cantas.views.CardVotesTotalView({
-        el: $("a.card-vote"),
-        collection: this.voteCollection,
-        card: this.model
-      });
-      this.cardVotesTotalView.render();
-
-      // Initialize views used in detail view.
-      this.checklistSectionView = new cantas.views.ChecklistSectionView({
-        el: $("section.js-checklist-section"),
-        collection: new cantas.models.ChecklistCollection([], {
-          card: this.model
-        }),
-        card: this.model
-      });
-
-      this.checklistSectionView.render();
-
-      //disable add/update function when user is not board member.
-      if (!window.cantas.isBoardMember) {
-        this.disableEvents();
-      }
-
-      this.detailsNeonLightsView = new cantas.views.LabelNeonLightsView({
-        el: this.$el.find('div.card-filter.clearfix'),
-        collection: new cantas.models.CardLabelRelationCollection(),
-        card: this.model
-      });
-
-      this.detailsNeonLightsView.turnOn();
-      this.listenTo(this.detailsNeonLightsView, 'setLabelCpation', this.toggleLabelCaption);
-
-      var _this = this;
-
-      this.fileupload = this.$el.find('#attachmentUpload').fileupload({
-        autoUpload: false,
-        url: '/upload/' + card._id,
-        maxFileSize: 10000000,
-        minFileSize: 1,
-        dataType: 'json',
-        messages: {
-          maxFileSize: 'File is too large, the maximum size is 10M.',
-          minFileSize: 'File is too small, the minimum size is 1B.'
-        }
-      }).on('fileuploadadd', function (e, data) {
-        var newAttachmentUploadItemView = new cantas.views.AttachmentUploadItemView({
-          'model': new cantas.models.Attachment(data.files[0]),
-          'data': data,
-          'parentView': _this
+        _this.cardVotesTotalView = new cantas.views.CardVotesTotalView({
+          el: _this.$el.find('a.card-vote'),
+          collection: _this.voteCollection,
+          card: _this.model
         });
-        data.context = newAttachmentUploadItemView.render().$el;
-        var uploadTableEl = _this.$('.js-attachment-upload-table');
-        if (uploadTableEl.find('tbody tr').length === 0) {
-          uploadTableEl.prepend(
-            '<thead><tr><th>Preview</th><th>File Name</th><th>Size</th></tr></thead>'
-          );
-        }
-        _this.$('.js-attachment-upload-table tbody').append(data.context);
-      }).on('fileuploadprocessalways', function (e, data) {
-        var file = data.files[0];
-        if (file.preview) {
-          data.context.find('.upload-preview').append(file.preview);
-        }
-        if (file.error) {
-          data.context.find('.upload-control').append($('<p>', {
-            'class': 'upload-errormessage',
-            'text': file.error
-          })).find('.upload-errormessage').prepend($('<span>', {
-            'class': 'label label-important',
-            'text': 'Error'
-          }));
-        }
-        data.context.find('.js-upload-start').text('Attach').prop('disabled', !!file.error);
-      }).on('fileuploadprogress', function (e, data) {
-        var progress = Math.floor(data.loaded / data.total * 100);
-        data.context.find('.js-upload-progress').prop('aria-valuenow', progress)
-          .find('.bar').css('width', progress + '%');
+        _this.cardVotesTotalView.render();
 
-      }).on('fileuploaddone', function (e, data) {
-        data.context.find('.upload-errormessage').remove();
+        _this.checklistSectionView = new cantas.views.ChecklistSectionView({
+          el: _this.$el.find('section.js-checklist-section'),
+          collection: new cantas.models.ChecklistCollection([], { 'card': _this.model }),
+          card: _this.model
+        });
+        _this.checklistSectionView.render();
 
-        if (data.result.user_error) {
-          _this.reportUploadError(data.context, data.result.user_error);
-          throw new Error(data.result.maintainer_error);
-        } else {
-          data.context.find('.js-upload-abort').text('Finished').prop('disabled', true);
-          data.context.fadeOut().remove();
+        _this.detailsNeonLightsView = new cantas.views.LabelNeonLightsView({
+          el: _this.$el.find('div.card-filter.clearfix'),
+          collection: new cantas.models.CardLabelRelationCollection(),
+          card: _this.model
+        });
+        _this.detailsNeonLightsView.turnOn();
+        _this.listenTo(_this.detailsNeonLightsView, 'setLabelCpation', _this.toggleLabelCaption);
+
+
+        _this.fileupload = _this.$el.find('#attachmentUpload').fileupload({
+          autoUpload: false,
+          url: '/upload/' + card._id,
+          maxFileSize: 10000000,
+          minFileSize: 1,
+          dataType: 'json',
+          messages: {
+            maxFileSize: 'File is too large, the maximum size is 10M.',
+            minFileSize: 'File is too small, the minimum size is 1B.'
+          }
+        }).on('fileuploadadd', function (e, data) {
+          var newAttachmentUploadItemView = new cantas.views.AttachmentUploadItemView({
+            'model': new cantas.models.Attachment(data.files[0]),
+            'data': data,
+            'parentView': _this
+          });
+          data.context = newAttachmentUploadItemView.render().$el;
           var uploadTableEl = _this.$('.js-attachment-upload-table');
           if (uploadTableEl.find('tbody tr').length === 0) {
-            uploadTableEl.find('thead').remove();
+            uploadTableEl.prepend(
+              '<thead><tr><th>Preview</th><th>File Name</th><th>Size</th></tr></thead>'
+            );
           }
+          _this.$('.js-attachment-upload-table tbody').append(data.context);
+        }).on('fileuploadprocessalways', function (e, data) {
+          var file = data.files[0];
+          if (file.preview) {
+            data.context.find('.upload-preview').append(file.preview);
+          }
+          if (file.error) {
+            data.context.find('.upload-control').append($('<p>', {
+              'class': 'upload-errormessage',
+              'text': file.error
+            })).find('.upload-errormessage').prepend($('<span>', {
+              'class': 'label label-important',
+              'text': 'Error'
+            }));
+          }
+          data.context.find('.js-upload-start').text('Attach').prop('disabled', !!file.error);
+        }).on('fileuploadprogress', function (e, data) {
+          var progress = Math.floor(data.loaded / data.total * 100);
+          data.context.find('.js-upload-progress').prop('aria-valuenow', progress)
+            .find('.bar').css('width', progress + '%');
+        }).on('fileuploaddone', function (e, data) {
+          data.context.find('.upload-errormessage').remove();
+          if (data.result.user_error) {
+            _this.reportUploadError(data.context, data.result.user_error);
+            throw new Error(data.result.maintainer_error);
+          } else {
+            data.context.find('.js-upload-abort').text('Finished').prop('disabled', true);
+            data.context.fadeOut().remove();
+            var uploadTableEl = _this.$('.js-attachment-upload-table');
+            if (uploadTableEl.find('tbody tr').length === 0) {
+              uploadTableEl.find('thead').remove();
+            }
+            var newAttachment = new cantas.models.Attachment(data.result.attachment);
+            newAttachment.save();
+          }
+        }).on('fileuploadfail', function (e, data) {
+          data.context.find('.upload-errormessage').remove();
+          if (data.errorThrown !== 'abort') {
+            _this.reportUploadError(data.context, 'Uploading attachment failed');
+          }
+        }).on('fileuploadsubmit', function (e, data) {
+          if (data.files[0].size === 0) {
+            _this.reportUploadError(data.context, 'Uploading attachment failed');
+            data.context.find('.js-upload-start')[0].setAttribute('disabled', 'disabled');
+            return false;
+          }
+        });
 
-          var newAttachment = new cantas.models.Attachment(data.result.attachment);
-          newAttachment.save();
+        // disable add/update function when user is not board member.
+        if (!window.cantas.isBoardMember) {
+          _this.disableEvents();
         }
 
-      }).on('fileuploadfail', function (e, data) {
-        data.context.find('.upload-errormessage').remove();
-
-        if (data.errorThrown !== 'abort') {
-          _this.reportUploadError(data.context, 'Uploading attachment failed');
-        }
-      }).on('fileuploadsubmit', function (e, data) {
-        if (data.files[0].size === 0) {
-          _this.reportUploadError(data.context, 'Uploading attachment failed');
-          data.context.find('.js-upload-start')[0].setAttribute('disabled', 'disabled');
-          return false;
-        }
+        return _this;
       });
-
-      return this;
     },
 
     reportUploadError: function(context, errorMessage) {
@@ -899,6 +890,27 @@
       }));
     },
 
+    onSubscribeClick: function() {
+      var subscribeStatus = this.$el.find('.js-subscribe').text();
+      var originSubscribeUserIds = this.model.attributes.subscribeUserIds;
+      var subscribeUserIds = _.clone(this.model.attributes.subscribeUserIds);
+      var currentUserId = cantas.utils.getCurrentUser().id;
+      var index = subscribeUserIds.indexOf(currentUserId);
+      if (subscribeStatus === 'Subscribe' && index === -1) {
+        subscribeUserIds.push(currentUserId);
+        this.model.patch({
+          'subscribeUserIds': subscribeUserIds,
+          original: {'subscribeUserIds': originSubscribeUserIds}
+        });
+      } else if (subscribeStatus === 'Unsubscribe' && index >= 0) {
+        subscribeUserIds.splice(index, 1);
+        this.model.patch({
+          'subscribeUserIds': subscribeUserIds,
+          original: {'subscribeUserIds': originSubscribeUserIds}
+        });
+      }
+    },
+
     disableEvents: function() {
       this.$el.undelegate('.js-edit-title', 'click');
       this.$el.undelegate('.js-edit-assign', 'click');
@@ -910,13 +922,29 @@
     },
 
     renderCommentView: function() {
-      this.commentView = new cantas.views.CommentView({model: this.model});
+      this.commentView = new cantas.views.CommentView({
+        el: this.$el.find('section.card-option.comment'),
+        model: this.model
+      });
       this.commentView.render();
     },
 
     renderAttachmentView: function() {
-      this.attachmentView = new cantas.views.AttachmentView({model: this.model});
+      this.attachmentView = new cantas.views.AttachmentView({
+        el: this.$el.find('section.card-option.attachment'),
+        model: this.model
+      });
       this.attachmentView.render();
+    },
+
+    renderSubscribeStatus: function() {
+      var currentUserId = cantas.utils.getCurrentUser().id;
+      var subscribeUserIds = this.model.attributes.subscribeUserIds;
+      if (subscribeUserIds && subscribeUserIds.indexOf(currentUserId) >= 0) {
+        this.$el.find(".js-subscribe").text('Unsubscribe');
+      } else {
+        this.$el.find(".js-subscribe").text('Subscribe');
+      }
     },
 
     openEditTitleDialog: function (event) {
@@ -929,13 +957,17 @@
     onTitleSaveClick: function(event) {
       // trim avoid strings with only tabs or whitespaces.
       var newValue = $(".js-title-input").val().trim();
+      var originValue = this.model.get('title');
       // empty title
       if (!newValue) {
         return false;
       }
       this.model.set("title", newValue);
       if (this.model.hasChanged("title")) {
-        this.model.patch({title: newValue});
+        this.model.patch({
+          title: newValue,
+          original: {'title': originValue}
+        });
       }
       this.$el.find(".js-title").show();
       this.$el.find(".js-edit-title-area").hide();
@@ -966,10 +998,14 @@
     onDescriptionSaveClick: function(event) {
       event.stopPropagation();
       var newValue = this.$el.find(".js-desc-input").val().trim();
+      var originValue = this.model.get('description');
 
       this.model.set("description", newValue);
       if (this.model.hasChanged("description")) {
-        this.model.patch({description: newValue});
+        this.model.patch({
+          description: newValue,
+          original: {'description': originValue}
+        });
       }
       this.$el.find(".js-edit-desc").show();
       this.$el.find(".js-edit-desc-area").hide();
@@ -990,6 +1026,7 @@
 
     renderAssignView: function() {
       this.cardAssignView = new cantas.views.CardAssignView({
+        el: this.$el.find('div.window-assign'),
         model: this.model,
         attributes: {
           expandedViewChain: this._expandedViewChain
@@ -1017,6 +1054,7 @@
 
     renderLabelView: function() {
       this.labelAssignView = new cantas.views.LabelAssignView({
+        el: this.$el.find('div.window-label'),
         collection: new cantas.models.CardLabelRelationCollection(),
         card: this.model,
         parentView: this,
@@ -1054,6 +1092,7 @@
 
     renderVoteView: function() {
       this.cardVoteView = new cantas.views.CardVoteView({
+        el: this.$el.find('div.window-vote'),
         collection: this.voteCollection,
         card: this.model,
         attributes: {
@@ -1081,6 +1120,17 @@
     assigneesChanged: function(data) {
       var assignees = this._concatAssignees();
       this.$el.find(".js-assignees").html(assignees);
+    },
+
+    subscribeChanged: function(data) {
+      var subscribeUserIds = data.attributes.subscribeUserIds;
+      var currentUserId = cantas.utils.getCurrentUser().id;
+      var index = subscribeUserIds.indexOf(currentUserId);
+      if (subscribeUserIds && index >= 0) {
+        this.$el.find('.js-subscribe').text('Unsubscribe');
+      } else {
+        this.$el.find('.js-subscribe').text('Subscribe');
+      }
     },
 
     canComment: function() {
@@ -1160,7 +1210,10 @@
 
     archiveCard: function(event) {
       event.stopPropagation();
-      this.model.patch({isArchived: true});
+      this.model.patch({
+        isArchived: true,
+        original: {isArchived: false}
+      });
       this.$el.find(".js-close-card-detail").trigger("click");
     },
 
@@ -1204,7 +1257,6 @@
   });
 
   cantas.views.CardAssignView = Backbone.View.extend({
-    el: "div.window-assign",
 
     template: jade.compile($("#template-card-assign-view").text()),
 
@@ -1258,7 +1310,10 @@
       var oldAssignees = _.pluck(this.model.get("assignees"), "_id");
       if (!_.isEqual(newAssignees.sort(), oldAssignees.sort())) {
         // update if assignees changed
-        this.model.patch({assignees: newAssignees});
+        this.model.patch({
+          assignees: newAssignees,
+          original: {assignees: oldAssignees}
+        });
       }
       // hide assign window
       this.$el.find(".js-close-assign-window").trigger("click");
@@ -1284,8 +1339,6 @@
    * View: LabelAssignView
    */
   cantas.views.LabelAssignView = Backbone.View.extend({
-    el: "div.window-label",
-
     template: jade.compile($("#template-label-assign-view").text()),
 
     events: {
@@ -1523,8 +1576,6 @@
   });
 
   cantas.views.CardVoteView = Backbone.View.extend({
-    el: "div.window-vote",
-
     template: jade.compile($("#template-card-vote-view").text()),
 
     events: {

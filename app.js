@@ -96,7 +96,9 @@ mongoose.connect(
   }
 );
 
-// app.listen(3000);
+// Ignore validate SSL CA at global scope
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+
 app.listen(settings.app.port, settings.app.host, function() {
   if (app.settings.production) {
     // We have to limit node to run under non-privilege user account

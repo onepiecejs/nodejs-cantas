@@ -4,7 +4,6 @@
   "use strict";
 
   cantas.views.AttachmentView = Backbone.View.extend({
-    el: 'section.card-option.attachment',
 
     template: jade.compile($('#template-attachment-view').text()),
 
@@ -227,7 +226,12 @@
     toggleCover: function() {
       // only board members can do this.
       var isCover = !this.model.get("isCover");
-      this.model.patch({'isCover': isCover, 'cardId': this.model.toJSON().cardId});
+      var originCoverStatus = this.model.get("isCover");
+      this.model.patch({
+        'isCover': isCover,
+        'cardId': this.model.toJSON().cardId,
+        original: {isCover: originCoverStatus}
+      });
     }
 
   });

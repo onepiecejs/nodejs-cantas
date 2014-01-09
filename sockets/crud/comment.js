@@ -5,8 +5,8 @@
 
   var async = require("async");
   var util = require("util");
-  var signals = require("../signals");
   var BaseCRUD = require("./base");
+  var signals = require("../signals");
 
   function CommentCRUD(options) {
     BaseCRUD.call(this, options);
@@ -57,9 +57,12 @@
 
   CommentCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id || data.id;
+    var patchInfo = self._generatePatchInfo(data);
+    var _id = patchInfo.id;
     var name = '/' + this.key + '/' + _id + ':update';
-    delete data._id; // _id is not modifiable
+    var originData = patchInfo.originData;
+    var changeFields = patchInfo.changeFields;
+    data = patchInfo.data;
 
     async.waterfall([
       function(callback) {
@@ -91,6 +94,13 @@
       } else {
         updatedData.populate("authorId", function(err, updatedData) {
           self.emitMessage(name, updatedData);
+          signals.post_patch.send(updatedData, {
+            instance: updatedData,
+            originData: originData,
+            changeFields: changeFields,
+            socket: self.socket
+          }, function(err, result) {});
+
         });
       }
     });

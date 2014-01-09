@@ -1,0 +1,11 @@
+extends notification
+
+block content
+  h4 Hi #{receiver},
+  p
+    | <span>#{sender}</span> added a comment in card <a href="#{cardUrl}">#{cardTitle}</a>.
+    | <p> content:
+    | <span> #{comment}
+  p Regards,
+  p Cantas
+

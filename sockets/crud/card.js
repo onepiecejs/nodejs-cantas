@@ -11,6 +11,7 @@
   var Sites = require("../../services/sites");
   var notification = require("../../services/notification");
   var cantasUtils = require('../../services/utils');
+  var signals = require("../signals");
 
   function CardCRUD(options) {
     BaseCRUD.call(this, options);
@@ -31,7 +32,7 @@
           listId = data.createdObject.listId;
         }
         if (action === 'update') {
-          listId = data.changed_data.listId;
+          listId = data.changedData.listId;
         }
         List.findOne({_id: listId}, 'title', function(err, list) {
           if (err) {
@@ -55,29 +56,29 @@
         }
         if (action === 'update') {
           content = util.format('%s changed %s of %s "%s" from "%s" to "%s"', username, data.field,
-                                model, data.changed_data.title, data.origin_data[data.field],
-                                data.changed_data[data.field]);
+                                model, data.changedData.title, data.originData[data.field],
+                                data.changedData[data.field]);
 
           if (data.field === 'isArchived') {
-            if (data.changed_data[data.field] === true) {
+            if (data.changedData[data.field] === true) {
               content = util.format('%s archived %s "%s" from list "%s"',
-                        username, model, data.changed_data.title, list.title);
+                        username, model, data.changedData.title, list.title);
               callback(null, content);
             }
-            if (data.changed_data[data.field] === false) {
+            if (data.changedData[data.field] === false) {
               content = util.format('%s unarchived %s "%s" to list "%s"',
-                        username, model, data.changed_data.title, list.title);
+                        username, model, data.changedData.title, list.title);
               callback(null, content);
             }
           }
 
           if (data.field === 'listId') {
-            List.findOne({_id: data.origin_data[data.field]}, 'title', function(err, fromList) {
+            List.findOne({_id: data.originData[data.field]}, 'title', function(err, fromList) {
               if (err) {
                 return callback(err, null);
               }
               content = util.format('%s moved %s "%s" from list "%s" to list "%s"',
-                          username, model, data.changed_data.title, fromList.title, list.title);
+                          username, model, data.changedData.title, fromList.title, list.title);
               callback(null, content);
             });
           }
@@ -138,19 +139,14 @@
 
   CardCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id || data.id;
+    //var _id = data._id || data.id;
+    var patchInfo = self._generatePatchInfo(data);
+    var _id = patchInfo.id;
+    var user = this.socket.getCurrentUser();
     var name = '/' + this.key + '/' + _id + ':update';
-    // _id is not modifiable 
-    delete data._id;
-    var origin_data = data.original;
-    var change_fields = [];
-    var key;
-    for (key in origin_data) {
-      if (origin_data.hasOwnProperty(key)) {
-        change_fields.push(key);
-      }
-    }
-    delete data.original;
+    var originData = patchInfo.originData;
+    var changeFields = patchInfo.changeFields;
+    data = patchInfo.data;
 
     if (data.assignees) {
       async.waterfall([
@@ -161,39 +157,105 @@
               callback(err, card);
             } else {
               var newAssignees = [];
+              var originAssignees = originData.assignees || null;
               data.assignees.forEach(function(assignee) {
                 if (card.assignees.indexOf(assignee) === -1) {
                   newAssignees.push(assignee);
                 }
               });
+
+              //remove assignees
+              var removedAssignees = [];
+              if (originAssignees) {
+                originAssignees.forEach(function(assignee) {
+                  if (data.assignees.indexOf(assignee) === -1) {
+                    removedAssignees.push(assignee);
+                  }
+                });
+              }
+
               card.assignees = data.assignees;
               card.save(function(err, updatedCard) {
                 if (err) {
                   callback(err, updatedCard);
                 } else {
-                  callback(null, updatedCard, newAssignees);
+                  callback(null, updatedCard, newAssignees, removedAssignees);
                 }
               });
             }
           });
         },
-        function(updatedCard, newAssignees, callback) {
-          // send notification to new assignees
+        function(updatedCard, newAssignees, removedAssignees, callback) {
+          // send notification and email to new assignees
+          var assigner = user;
           if (newAssignees.length) {
-            var assigner = self.socket.getCurrentUser();
             User.find({_id: {$in: newAssignees}}, function(err, users) {
               users.forEach(function(assignee) {
                 var safeTitle = cantasUtils.safeMarkdownString(updatedCard.title);
-                var msg = util.format("%s assign card [%s](%s) to you.",
+                var msg = util.format("%s assigned card [%s](%s) to you.",
                   assigner.username, safeTitle, updatedCard.url);
-                notification.notify(self.socket, assignee, msg, notification.types.information, {
-                  body: {
-                    assigner: assigner.username,
-                    assignee: assignee.username,
-                    cardTitle: updatedCard.title,
-                    cardUrl: Sites.currentSite() + updatedCard.url
-                  },
-                  template: "assign.jade"
+                if (assigner.username !== assignee.username) {
+                  notification.notify(self.socket, assignee, msg, notification.types.information);
+                  notification.mail(self.socket, assignee, msg, notification.types.information, {
+                    body: {
+                      assigner: assigner.username,
+                      assignee: assignee.username,
+                      cardTitle: updatedCard.title,
+                      cardUrl: Sites.currentSite() + updatedCard.url
+                    },
+                    template: "assign.jade",
+                  });
+                }
+                // send notification to subscribers.
+                updatedCard.getSubscribeUsers(function(err, subscribeUsers) {
+                  var notifyMsg = util.format("%s assigned card [%s](%s) to %s.",
+                    assigner.username, safeTitle, updatedCard.url, assignee.username);
+                  subscribeUsers.forEach(function(subscriber) {
+                    if (assigner.username === subscriber.username) {
+                      notifyMsg = util.format("you assigned card [%s](%s) to %s.",
+                        safeTitle, updatedCard.url, assignee.username);
+                    }
+                    if (assignee.username !== subscriber.username) {
+                      notification.notify(self.socket, subscriber, notifyMsg,
+                                          notification.types.information);
+                    }
+                  });
+                });
+              });
+            });
+          }
+          if (removedAssignees.length) {
+            User.find({_id: {$in: removedAssignees}}, function(err, users) {
+              users.forEach(function(assignee) {
+                var safeTitle = cantasUtils.safeMarkdownString(updatedCard.title);
+                var msg = util.format("%s cancel assignment of card [%s](%s) to you.",
+                  assigner.username, safeTitle, updatedCard.url);
+                if (assigner.username !== assignee.username) {
+                  notification.notify(self.socket, assignee, msg, notification.types.information);
+                  notification.mail(self.socket, assignee, msg, notification.types.information, {
+                    body: {
+                      assigner: assigner.username,
+                      assignee: assignee.username,
+                      cardTitle: updatedCard.title,
+                      cardUrl: Sites.currentSite() + updatedCard.url
+                    },
+                    template: "assign.jade",
+                  });
+                }
+                // send notification to subscribers.
+                updatedCard.getSubscribeUsers(function(err, subscribeUsers) {
+                  var notifyMsg = util.format("%s cancelled assignment of card [%s](%s) to %s.",
+                    assigner.username, safeTitle, updatedCard.url, assignee.username);
+                  subscribeUsers.forEach(function(subscriber) {
+                    if (assigner.username === subscriber.username) {
+                      notifyMsg = util.format("you cancelled assignment of card [%s](%s) to %s.",
+                        safeTitle, updatedCard.url, assignee.username);
+                    }
+                    if (assignee.username !== subscriber.username) {
+                      notification.notify(self.socket, subscriber, notifyMsg,
+                                          notification.types.information);
+                    }
+                  });
                 });
               });
             });
@@ -220,14 +282,15 @@
           if (err) {
             callback(err, updatedData);
           } else {
-            // create activity log
-            if (change_fields.length >= 1) {
-              async.map(change_fields, function(change_field, cb) {
+            if (changeFields.length >= 1) {
+              async.map(changeFields, function(changeField, cb) {
                 var changeInfo = {
-                  field: change_field,
-                  origin_data: origin_data,
-                  changed_data: updatedData
+                  field: changeField,
+                  originData: originData,
+                  changedData: updatedData
                 };
+
+                // create activity log
                 self.generateActivityContent(self.key, 'update', changeInfo,
                   function(err, content) {
                     if (err) {
@@ -246,6 +309,13 @@
             }
             updatedData.populate("assignees", function(err, updatedData) {
               self.emitMessage(name, updatedData);
+
+              signals.post_patch.send(updatedData, {
+                instance: updatedData,
+                changeFields: changeFields,
+                originData: originData,
+                socket: self.socket
+              }, function(err, result) {});
             });
           }
         });

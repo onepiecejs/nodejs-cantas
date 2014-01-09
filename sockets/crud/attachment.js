@@ -136,12 +136,14 @@
 
   AttachmentCRUD.prototype._patch = function(data, callback) {
     var self = this;
-    var _id = data._id || data.id;
-    var _cardId = data.cardId;
+    var patchInfo = self._generatePatchInfo(data);
+    var _id = patchInfo.id;
     var name = '/' + this.key + '/' + _id + ':update';
+    var originData = patchInfo.originData;
+    var changeFields = patchInfo.changeFields;
+    data = patchInfo.data;
 
-    // _id is not modifiable
-    delete data._id;
+    var _cardId = data.cardId;
     delete data.cardId;
 
     async.waterfall([
@@ -196,8 +198,12 @@
       } else {
         self.emitMessage(name, updatedData);
 
-        signals.post_patch.send(updatedData, {instance: updatedData, socket: self.socket},
-          function(err, result) {});
+        signals.post_patch.send(updatedData, {
+          instance: updatedData,
+          changeFields: changeFields,
+          originData: originData,
+          socket: self.socket
+        }, function(err, result) {});
       }
     });
   };
