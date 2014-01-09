@@ -49,7 +49,7 @@ Thanks for [all Contributors](AUTHORS.md)
 - checkout source code and update node packages via npm
 
     ```bash
-    git clone git@github.com:xiaods/nodejs-cantas.git
+    git clone git@github.com:onepiecejs/nodejs-cantas.git
     cd nodejs-cantas
     npm install
     ```
@@ -74,6 +74,11 @@ Thanks for [all Contributors](AUTHORS.md)
     ```bash
     # update settings values
     cp settings.json.example settings.json
+
+    # setup initalize data
+    node scripts/db_init_label_metadata.js
+
+    # start the app
     NODE_ENV=development node app.js
     ```
 > ***Note:***
