@@ -1,7 +1,7 @@
 # Cantas
 
 Cantas is a real-time collaborative web application.This is a side project,
-used as internal productivity tool in [Red Hat](https://www.redhat.com/). 
+used as internal productivity tool in [Red Hat](https://www.redhat.com/).
 We believed this is the best open source project for
 learning HTML5/Nodejs/socket.io/backbone.js technology.
 
@@ -9,14 +9,15 @@ Thanks for [all Contributors](AUTHORS.md)
 
 ![project screenshot](./public/images/cantas-help-list.gif)
 
-## Update news  
-### Current stable: v0.7
+## Update news
+### Current stable: v1.0
 
 ###new features:
 
-1. we can importing bugzilla bugs as a card to one board.
-2. now support nodejs 0.10.x runtime
-
+1. Let cantas codebase follow jslint code style convention and pass unit
+   testing.
+2. Speed up the loading process of the board with a lot of lists
+3. Subscribe card activity
 
 ## Setup development environment
 
