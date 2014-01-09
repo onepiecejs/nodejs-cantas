@@ -4,7 +4,6 @@
         "async": "*",
         "connect-redis": "*",
         "express": "2.5.x",
-        "gss": "git://github.com/davidben/node-gss.git",
         "jade": "*",
         "markdown": "*",
         "moment": "*",
