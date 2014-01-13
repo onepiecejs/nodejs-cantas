@@ -1508,6 +1508,11 @@ z-index: 10000
     color: #fff;
     text-align: center;
 }
+#loginWithGoogle {
+    position: relative;
+    top: 5px;
+    left: 20px;
+}
 /*================Board List================*/
  .board-list {
     margin: 0 auto;

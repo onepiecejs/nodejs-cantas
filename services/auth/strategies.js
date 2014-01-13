@@ -21,6 +21,7 @@
   var krb5 = require('node-krb5');
   var LocalStrategy = require('passport-local').Strategy;
   var RemoteUserStrategy = require('./remoteUserStrategy');
+  var GoogleStrategy = require('passport-google').Strategy;
   var settings = require('../../settings');
   var User = require('../../models/user');
   var utils = require('../utils');
@@ -127,6 +128,30 @@
 
   }
 
+  var CantasGoogleStrategy = new GoogleStrategy({
+      returnURL: settings.sites.phases.local + '/auth/google/return',
+      realm: settings.sites.phases.local
+    },
+    function(identifier, profile, done) {
+      process.nextTick(function () {
+        User.findOne({'email': profile.emails[0].value}, function (err, user) {
+          if (err) { return done(err); }
+          if (user === null) {
+            var newUser = new User({
+              username: profile.emails[0].value,
+              email: profile.emails[0].value
+            });
+            newUser.save(function(err, userSaved) {
+              return done(null, newUser);
+            });
+          } else {
+            return done(null, user);
+          }
+        });
+      });
+    }
+  );
+
   /*
    * To export predefine strategies.
    *
@@ -137,7 +162,8 @@
     // defualt we need comments CantasDummyStrategy
     // 'dummy': CantasDummyStrategy,
     'kerberos': CantasKerberosStrategy,
-    'remote': CantasRemoteUserStrategy
+    'remote': CantasRemoteUserStrategy,
+    'google': CantasGoogleStrategy
   };
 
 }(module));

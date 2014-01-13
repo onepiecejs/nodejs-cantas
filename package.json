@@ -12,6 +12,7 @@
         "nodemailer": "*",
         "passport": "*",
         "passport-local": "*",
+        "passport-google": "*",
         "redis": "*",
         "socket.io": "*",
         "xmlrpc": "~1.1.0",

@@ -150,6 +150,17 @@
         res.redirect(redirectUrl);
       });
 
+    // log in with google account
+    app.get('/auth/google', 
+      passport.authenticate('google', {failureRedirect: '/login'}));
+
+    app.get('/auth/google/return', 
+      passport.authenticate('google', {failureRedirect: '/login'}),
+      function (req, res) {
+        var redirectUrl = req.session.redirectUrl || "/welcome";
+        res.redirect(redirectUrl);
+      });
+
     // logout
     app.get('/logout', function(req, res) {
       req.logout();
@@ -445,10 +456,8 @@
     });
 
     // route to home page
-    var strategyName = settings.auth.strategy;
-    app.get('/',
-      passport.authenticate(strategyName, {failureRedirect: '/login'}),
-      ensureAuthenticated, function (req, res) {
+    app.get('/', ensureAuthenticated,
+      function (req, res) {
         res.render('application', {title: 'Cantas'});
       });
 
