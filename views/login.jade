@@ -21,6 +21,7 @@ html
             input(type="text",name="username",id="username-login",placeholder="kerberos Name",tabindex="1",a  utocomplete="off",autocorrect="off",spellcheck="false",autocapitalize="off",autofocus="")
             input(type="password",placeholder="Password",name="password",id="password-login",tabindex="2")
             button(type="submit",class="btn btn-inverse login-button",tabindex="3") Log In
+            a#loginWithGoogle(href="/auth/google") Log in with Google
         p= message
     div#browser-version-alert.force-alert.hide.fade
       div.alert-content
