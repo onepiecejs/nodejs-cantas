@@ -4,8 +4,8 @@
 
 Summary: Cantas is a task management tool
 Name: nodejs-%{npmname}
-Version: 0.7.0
-Release: 5%{?dist}
+Version: 1.0.0
+Release: 1%{?dist}
 Group: Development/Languages
 License: MIT
 URL: https://github.com/xiaods/cantas
@@ -27,7 +27,7 @@ Requires: nodejs-passport >= 0.1.16
 Requires: nodejs-passport-local >= 0.1.6-1
 Requires: nodejs-async >= 0.1.16
 Requires: nodejs-moment >= 2.0.0
-Requires: nodejs-node-krb5 >= 0.0.3
+Requires: nodejs-node-krb5 >= 0.0.3-4
 Requires: nodejs-nodemailer >= 0.4.1
 Requires: nodejs-forever >= 0.10.9
 Requires: nodejs-markdown >= 0.4.0
@@ -130,6 +130,9 @@ fi
 %config(noreplace) %{_sysconfdir}/sysconfig/cantas-settings.json
 
 %changelog
+* Fri Feb 07 2013 Xiao Deshi <dxiao@redhat.com> 1.0.0-1
+- bumped verion to 1.0.0
+
 * Wed Dec 04 2013 Xiao Deshi <dxiao@redhat.com> 0.7.0-5
 - FIX: rebuild the package (dxiao@redhat.com)
 

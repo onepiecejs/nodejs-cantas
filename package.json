@@ -1,5 +1,6 @@
 {
     "author": "HSS-IED-BJ",
+    "description": "cantas is a real-time collaborative application.",
     "dependencies": {
         "async": "*",
         "connect-redis": "*",
@@ -45,5 +46,9 @@
         "lintcheck": "scripts/lintcheck",
         "start": "node app"
     },
-    "version": "0.7.0"
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onepiecejs/nodejs-cantas.git"
+    }
 }
