@@ -18,6 +18,7 @@ Thanks for [all Contributors](AUTHORS.md)
    testing.
 2. Speed up the loading process of the board with a lot of lists
 3. Subscribe card activity
+4. support login with google account
 
 ## Setup development environment
 
