@@ -5,6 +5,7 @@
         "async": "*",
         "connect-redis": "*",
         "express": "2.5.x",
+        "express-session": "1.0.x",
         "jade": "*",
         "markdown": "*",
         "moment": "*",

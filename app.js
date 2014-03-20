@@ -1,4 +1,5 @@
 var express = require('express');
+var session = require('express-session');
 var mongoose = require('mongoose');
 var card = require('./models/card');
 var list = require('./models/list');
@@ -10,7 +11,7 @@ var utils = require('./services/utils');
 var connect = require('express/node_modules/connect');
 var redis = require('socket.io/node_modules/redis');
 var RedisStore = require('socket.io/lib/stores/redis');
-var RedisSessionStore = require('connect-redis')(express);
+var RedisSessionStore = require('connect-redis')(session);
 var sessionStore = new RedisSessionStore({
     port: settings.redis.port,
     host: settings.redis.host,
