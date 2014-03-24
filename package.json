@@ -3,7 +3,7 @@
     "description": "cantas is a real-time collaborative application.",
     "dependencies": {
         "async": "*",
-        "connect-redis": "*",
+        "connect-redis": "1.4.x",
         "express": "2.5.x",
         "jade": "*",
         "markdown": "*",
