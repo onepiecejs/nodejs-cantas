@@ -9,6 +9,8 @@
   var Vote = require('./vote');
   var Attachment = require('./attachment');
   var User = require('./user');
+  var Board = require('./board');
+  var List = require('./list');
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
   var CardSchema;
@@ -127,6 +129,36 @@
       callback(err, badges);
     });
   });
+
+
+  /**
+   * Get the cards board meta (id, title and status)
+   */
+  CardSchema.method('getBoardMeta', function(callback) {
+    if ( ! this.boardId ) {
+      return null;
+    }
+
+    Board.findOne({
+      _id: this.boardId
+    }, 'title isPublic isClosed', callback);
+  });
+  
+
+  /**
+   * Get the cards list meta (id, title)
+   */
+  CardSchema.method('getListMeta', function(callback) {
+    if ( ! this.listId ) {
+      return null;
+    }
+
+    List.findOne({
+      _id: this.listId
+    }, 'title', callback);
+  });
+
+
 
   module.exports = mongoose.model('Card', CardSchema);
 

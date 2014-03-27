@@ -12,6 +12,7 @@ $(function ($, _, Backbone) {
       "": "home",
       "boards/new": "newBoard",
       "boards/:query": "listBoards",
+      "cards/:query": "listCards",
       "board/:boardId(/:slug)": "joinBoard",
       "card/:cardId(/:slug)": "renderCardDetail",
       "help": "help",
@@ -54,28 +55,69 @@ $(function ($, _, Backbone) {
     },
 
     listBoards: function(query) {
+      if(cantas.utils.isBrowserVersionLow()) {
+        return cantas.utils.renderBrowserVesionPrompt();
+      }
+
+      // Create the dashboard layout view
+      var dashboardView = new cantas.views.DashboardView().render();
+      dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-boards-' + query));
+
+      $("body div.process-loading").show();
+      $.ajax({
+        url: '/api/' + query,
+        success: function(boards) {
+          $("body div.process-loading").hide();
+          var boardsView = new cantas.views.BoardsView().render({"title": query, "boards": boards});
+          
+          // Set the dashboard content section
+          dashboardView.setContentView(boardsView);
+
+          // Swithch the main view out for the dashboard view
+          this.switchView(dashboardView);
+        }.bind(this),
+        error: function() {
+          cantas.utils.renderTimeoutBox();
+          return false;
+        }
+      });
+    },
+
+
+    listCards: function(query) {
       var that = this;
       if(cantas.utils.isBrowserVersionLow()) {
-        cantas.utils.renderBrowserVesionPrompt();
+        return cantas.utils.renderBrowserVesionPrompt();
       }
-      else {
-        $("body div.process-loading").show();
-        $.ajax({
-          url: '/api/' + query,
-          success: function(boards) {
-            $("body div.process-loading").hide();
-            var boardsView = new cantas.views.BoardsView();
-            that.switchView(boardsView, {"title": query, "boards": boards});
-            $(".board-option").find(".active").removeClass("active");
-            $(".js-boards-" + query).parent().addClass("active");
-          },
-          error: function() {
-            cantas.utils.renderTimeoutBox();
-            return false;
-          }
-        });
-      }
+
+      // Create the dashboard layout view and set the navigation view
+      var dashboardView = new cantas.views.DashboardView().render();
+      dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-cards-' + query));
+
+      $("body div.process-loading").show();
+
+      // Get the user's cards and set the card list view
+      new cantas.models.CardCollection().fetch({
+        data: {
+          isArchived: false,
+          creatorId: cantas.utils.getCurrentUser().id
+        },
+        success: function (collection) {
+          $("body div.process-loading").hide();
+
+          // Set the dashboard content section
+          dashboardView.setContentView(new cantas.views.CardListView({
+            collection: collection
+          }).render());
+
+          that.switchView(dashboardView);
+        },
+        error: function(model, xhr, options) {
+          // Could not fetch cards
+        }
+      });
     },
+
 
     joinBoard: function(boardId) {
       var sock = cantas.socket;

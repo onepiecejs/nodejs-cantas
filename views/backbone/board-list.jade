@@ -1,40 +1,25 @@
 script#template-board-list-view(type="text/template")
-  |div.row-fluid.board-list
-  |  div.span2.board-option
-  |    ul
+  |div.board-ul-title
+  |  h3= h3Header
+  |  a.btn.btn-warning.new-board(type="text", onclick="cantas.navigateTo('boards/new')") New Board
+  |div.board-ul-wapper
+  |  div.clearfix.board-ul-header
+  |    span.owner.board-name Board Name
+  |    span Creation Time
+  |    span Owner
+  |ul.board-ul
+  |  each board in boards
+  |    if board.isClosed == true
+  |      li.board-close
+  |        div.owner.board-name= board.title
+  |        span= cantas.utils.formatDate(board.created)
+  |        span= board.creatorId.username
+  |        if board.creatorId._id == cantas.user.id
+  |          a.js-open-board.reopen.board-list-status(data-board= board._id, title="Open this board")
+  |    else
   |      li
-  |      li
-  |        span
-  |        a.js-boards-public(onclick="cantas.navigateTo('boards/public')") Public Boards
-  |      li.active
-  |        span
-  |        a.js-boards-mine(onclick="cantas.navigateTo('boards/mine')") My Boards
-  |      li
-  |        span
-  |        a.js-boards-closed(onclick="cantas.navigateTo('boards/closed')") Closed Board
-  |      li
-  |  div.span10.my-board
-  |    div.board-ul-title
-  |      h3= h3Header
-  |      a.btn.btn-warning.new-board(type="text", onclick="cantas.navigateTo('boards/new')") New Board
-  |    div.board-ul-wapper
-  |      div.clearfix.board-ul-header
-  |        span.owner.board-name Board Name
-  |        span Creation Time
-  |        span Owner
-  |    ul.board-ul
-  |      each board in boards
-  |        if board.isClosed == true
-  |          li.board-close
-  |            div.owner.board-name= board.title
-  |            span= cantas.utils.formatDate(board.created)
-  |            span= board.creatorId.username
-  |            if board.creatorId._id == cantas.user.id
-  |              a.js-open-board.reopen.board-list-status(data-board= board._id, title="Open this board")
-  |        else
-  |          li
-  |            a.owner.board-name(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
-  |            span= cantas.utils.formatDate(board.created)
-  |            span= board.creatorId.username
-  |            if board.creatorId._id == cantas.user.id
-  |              a.js-close-board.delete.board-list-status(data-board= board._id, title="Close this board")
+  |        a.owner.board-name(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
+  |        span= cantas.utils.formatDate(board.created)
+  |        span= board.creatorId.username
+  |        if board.creatorId._id == cantas.user.id
+  |          a.js-close-board.delete.board-list-status(data-board= board._id, title="Close this board")

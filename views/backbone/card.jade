@@ -41,4 +41,18 @@ script#template-card-view(type="text/template")
   |        span.card-due-date= "Due " + dueDateDisplay
   |    div.card-index(title="Card Position")
   |    span.order-number= index
+  |    - if( typeof index !== "undefined" ) {
+  |      div.card-index(title="Card Position")
+  |      span.order-number= index
+  |    - }
   |    div.card-filter.clearfix
+  |  div.card-meta Posted under 
+  |    - if( board.isClosed ) {
+  |    span.muted= list.title
+  |    |   in 
+  |    span.muted= board.title
+  |    - } else {
+  |    a(onclick="cantas.navigateTo('board/\#{board._id}')")= list.title 
+  |    |   in 
+  |    a(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
+  |    - }

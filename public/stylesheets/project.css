@@ -1394,7 +1394,7 @@ input:focus, textarea:focus  .list-panel>li{
     box-shadow: 1px 2px 2px #999;
     z-index: 99;*/
 }
-.card-container :hover{
+.card-container:hover{
     cursor: move;
 }
 .destroy:hover{
@@ -1543,6 +1543,28 @@ input:focus, textarea:focus  .list-panel>li{
     background: #ccc url("../images/cantas-due-date.png") no-repeat 3px 3px;
     background-size: 12px auto;
 }
+
+/* Closed Card */
+.card-closed .card-container {
+    opacity: 0.75;
+}
+.card-closed .card-container:hover {
+    cursor: not-allowed;
+}
+.card-closed .card {
+    border-color: #999;
+}
+.card-closed .card-index {
+    border-color: transparent transparent #999 #999;
+}
+
+/* Card Meta */
+.card-container .card-meta {
+    display: none;
+    padding: 0 15px;
+    margin-top: -2px;
+}
+
 .add-plugein, .add-list, .add-list-none{
     color: #888;
     padding: 9px;
@@ -1631,6 +1653,24 @@ input:focus, textarea:focus  .list-panel>li{
     margin: 0 9px;
     display: inline-block;
     opacity: 0.6;
+}
+
+
+/*=============Static card===============*/
+
+.card-archive-list {}
+.card-archive-list .list-card-static {
+    float: left;
+    width: 24%;
+}
+.list-card-static:nth-child(4n + 1) {
+    clear: left;
+}
+.list-card-static:not(.card-closed) .card-container:hover {
+    cursor: pointer;
+}
+.list-card-static .card-container .card-meta {
+    display: block;
 }
 
 
@@ -1929,46 +1969,51 @@ z-index: 10000
   cursor: auto;
 }
 
-.board-list .board-option{
+/*===================dashboard navigation=================*/
+.dashboard-layout {
+    margin: 0 auto;
+    height: 100%;
+}
+.dashboard-navigation {
     height: 100%;
     background: #6094D0;
 }
-.board-list .board-option ul{
+.dashboard-navigation ul {
     float: right;
     padding: 45px 0 0;
     width: 100%;
     height: 100%;
 }
-.board-list .board-option li{
+.dashboard-navigation li{
     text-align: right;
     border-bottom: 1px solid #4983BC;
     border-top: 1px solid #81B5EC;
 }
-.board-list .board-option li.active{
+.dashboard-navigation li.active{
     background: #3064A0;
     box-shadow: 1px 1px 4px #0E407C inset;
 }
-.board-list .board-option li:hover{
+.dashboard-navigation li:hover{
     background: #3064A0;
 }
-.board-list .board-option li:hover span{
+.dashboard-navigation li:hover span{
     display: inline-block;
 }
-.board-list .board-option li span{
+.dashboard-navigation li span{
     display: none;
     float: left;
     height: 100%;
     width: 6px;
 }
-.board-list .board-option li:first-child{
+.dashboard-navigation li:first-child{
     border-top: none;
     height: 0;
 }
-.board-list .board-option li:last-child{
+.dashboard-navigation li:last-child{
     border-bottom: none;
     height: 0;
 }
-.board-list .board-option li a{
+.dashboard-navigation li a{
     display: block;
     outline: none;
     padding: 18px 9px;
@@ -1977,12 +2022,12 @@ z-index: 10000
     text-shadow: 1px 3px 6px #6094D0, 0 0 0 #181818, 1px 3px 6px #6094D0;
     font-weight: bold;
 }
-.board-list .board-option li a:hover, .board-list .board-option li:hover a{
+.dashboard-navigation li a:hover, .dashboard-navigation li:hover a{
     color: #eee;
     text-decoration: underline;
     text-shadow: none;
 }
-.board-list .board-option li.active a{
+.dashboard-navigation li.active a{
     color: #eee;
     text-decoration: none;
     text-shadow: none;

@@ -4,7 +4,6 @@
   "use strict";
 
   cantas.views.BoardsView = Backbone.View.extend({
-    el: '.content',
 
     events: {
       "click .js-close-board": "closeBoard",
@@ -59,6 +58,7 @@
       }
       this.$el.html(this.template({boards: context.boards, h3Header: h3Header}));
       cantas.setTitle(context.title);
+      return this;
     }
   });
 
