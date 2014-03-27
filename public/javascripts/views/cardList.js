@@ -12,6 +12,7 @@
     events: {},
 
     template: jade.compile($("#template-card-list-view").text()),
+    noResultsTemplate: jade.compile($("#template-card-list-view-no-results").text()),
 
     initialize: function() {
       this.listenTo(this.collection, 'change', this.render.bind(this));
@@ -31,6 +32,14 @@
       }));
 
       var $cardContainer = this.$el.find('.card-archive-list');
+
+      // If there are no cards, display a message
+      if ( _.size(this.collection) < 1 ) {
+        $cardContainer.html(this.noResultsTemplate({
+          message: "Could not find any cards!"
+        }));
+        return this;
+      }
 
       // Render each of the card views
       var index = 1;

@@ -93,7 +93,11 @@ $(function ($, _, Backbone) {
       var method = "fetchMyCards", title = "My Cards";
 
       if ( query === "subscribed" ) {
-        method = "fetchSubscribedCards", title = "Subscribed Cards"
+        method = "fetchSubscribedCards", title = "Subscribed Cards";
+      }
+
+      if ( query === "assigned" ) {
+        method = "fetchAssignedCards", title = "Assigned Cards";
       }
 
       // Create the dashboard layout view and set the navigation view

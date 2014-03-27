@@ -309,6 +309,27 @@
     },
 
 
+    /**
+     * Get cards the current user is assigned to
+     *
+     * @param {func} [success]  Success callback
+     * @param {func} [error]    Error callback
+     * @return {void}
+     */
+    fetchAssignedCards: function(success, error) {
+      this.fetch({
+        data: {
+          isArchived: false,
+          assignees: {
+            $in: [cantas.utils.getCurrentUser().id]
+          }
+        },
+        success: success,
+        error: error
+      });
+    },
+
+
     collectionCleanup: function (callback) {
       this.ioUnbindAll();
       this.each(function (model) {
