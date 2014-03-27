@@ -34,7 +34,7 @@
       var $cardContainer = this.$el.find('.card-archive-list');
 
       // If there are no cards, display a message
-      if ( _.size(this.collection) < 1 ) {
+      if (_.size(this.collection) < 1) {
         $cardContainer.html(this.noResultsTemplate({
           message: "Could not find any cards!"
         }));
@@ -52,7 +52,7 @@
             index: null
           }
         });
-        
+
         this.childViews.push(cardView);
         cardView.render().$el.appendTo($cardContainer);
       }.bind(this));

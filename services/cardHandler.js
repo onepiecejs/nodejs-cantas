@@ -4,8 +4,8 @@
 (function(exports) {
 
   var mongoose = require('mongoose'),
-      Card = require('./../models/card'),
-      async = require('async');
+    Card = require('./../models/card'),
+    async = require('async');
 
 
   /**
@@ -16,7 +16,7 @@
    * @return {void}
    */
   exports.listMyCards = function(user, callback) {
-    
+
     Card.find({
       isArchived: false,
       creatorId: user._id

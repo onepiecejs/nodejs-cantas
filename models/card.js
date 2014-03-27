@@ -135,7 +135,7 @@
    * Get the cards board meta (id, title and status)
    */
   CardSchema.method('getBoardMeta', function(callback) {
-    if ( ! this.boardId ) {
+    if (!this.boardId) {
       return null;
     }
 
@@ -143,13 +143,13 @@
       _id: this.boardId
     }, 'title isPublic isClosed', callback);
   });
-  
+
 
   /**
    * Get the cards list meta (id, title)
    */
   CardSchema.method('getListMeta', function(callback) {
-    if ( ! this.listId ) {
+    if (!this.listId) {
       return null;
     }
 

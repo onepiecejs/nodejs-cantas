@@ -131,26 +131,25 @@
   var CantasGoogleStrategy = new GoogleStrategy({
       returnURL: settings.sites.phases.local + '/auth/google/return',
       realm: settings.sites.phases.local
-    }, function(identifier, profile, done) {
-      process.nextTick(function() {
-        User.findOne({'email': profile.emails[0].value}, function (err, user) {
-          if (err) {
-            return done(err);
-          }
-          if (user === null) {
-            var newUser = new User({
-              username: profile.emails[0].value,
-              email: profile.emails[0].value
-            });
-            newUser.save(function(err, userSaved) {
-              return done(null, newUser);
-            });
-          } else {
-            return done(null, user);
-          }
+    },
+      function(identifier, profile, done) {
+        process.nextTick(function () {
+          User.findOne({'email': profile.emails[0].value}, function (err, user) {
+            if (err) { return done(err); }
+            if (user === null) {
+              var newUser = new User({
+                username: profile.emails[0].value,
+                email: profile.emails[0].value
+              });
+              newUser.save(function(err, userSaved) {
+                return done(null, newUser);
+              });
+            } else {
+              return done(null, user);
+            }
+          });
         });
       });
-    });
 
   /*
    * To export predefine strategies.

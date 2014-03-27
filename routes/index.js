@@ -115,7 +115,7 @@
     // API - get my cards
     app.get('/api/cards/mine', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
       cardHandler.listMyCards(req.user, function(err, cards) {
-        if ( err ) {
+        if (err) {
           res.json(400, {
             success: false
           });
@@ -167,6 +167,7 @@
     app.get('/auth/google', passport.authenticate('google', {failureRedirect: '/login'}));
 
     app.get('/auth/google/return', passport.authenticate('google', {failureRedirect: '/login'}),
+
       function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);

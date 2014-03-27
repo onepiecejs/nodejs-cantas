@@ -52,10 +52,10 @@
      * @return {object}
      */
     renderChildViews: function() {
-      if ( this.navigationView ) {
+      if (this.navigationView) {
         this.$el.find('.dashboard-navigation').append(this.navigationView.$el);
       }
-      if ( this.contentView ) {
+      if (this.contentView) {
         this.$el.find('.dashboard-content').append(this.contentView.$el);
       }
       return this;
@@ -63,11 +63,11 @@
 
 
     close: function() {
-      if ( this.contentView ) {
+      if (this.contentView) {
         this.contentView.close();
       }
 
-      if ( this.navigationView ) {
+      if (this.navigationView) {
         this.navigationView.close();
       }
 
