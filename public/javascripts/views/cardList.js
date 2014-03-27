@@ -23,11 +23,11 @@
      * @param  {object} context
      * @return {object}
      */
-    render: function() {
-      cantas.setTitle("My Cards");
+    render: function(context) {
+      cantas.setTitle(this.options.title);
 
       this.$el.html(this.template({
-        h3Header: "My Cards"
+        h3Header: this.options.title
       }));
 
       var $cardContainer = this.$el.find('.card-archive-list');

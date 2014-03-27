@@ -288,6 +288,27 @@
     },
 
 
+    /**
+     * Get cards the current user is subscribed to
+     *
+     * @param {func} [success]  Success callback
+     * @param {func} [error]    Error callback
+     * @return {void}
+     */
+    fetchSubscribedCards: function(success, error) {
+      this.fetch({
+        data: {
+          isArchived: false,
+          subscribeUserIds: {
+            $in: [cantas.utils.getCurrentUser().id]
+          }
+        },
+        success: success,
+        error: error
+      });
+    },
+
+
     collectionCleanup: function (callback) {
       this.ioUnbindAll();
       this.each(function (model) {

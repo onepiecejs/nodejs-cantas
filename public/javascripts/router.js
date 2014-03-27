@@ -90,6 +90,12 @@ $(function ($, _, Backbone) {
         return cantas.utils.renderBrowserVesionPrompt();
       }
 
+      var method = "fetchMyCards", title = "My Cards";
+
+      if ( query === "subscribed" ) {
+        method = "fetchSubscribedCards", title = "Subscribed Cards"
+      }
+
       // Create the dashboard layout view and set the navigation view
       var dashboardView = new cantas.views.DashboardView().render();
       dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-cards-' + query));
@@ -97,15 +103,16 @@ $(function ($, _, Backbone) {
       $("body div.process-loading").show();
 
       // Get the user's cards and set the card list view
-      new cantas.models.CardCollection().fetchMyCards(function(collection) {
-          $("body div.process-loading").hide();
+      new cantas.models.CardCollection()[method](function(collection) {
+        $("body div.process-loading").hide();
 
-          // Set the dashboard content section
-          dashboardView.setContentView(new cantas.views.CardListView({
-            collection: collection
-          }).render());
+        // Set the dashboard content section
+        dashboardView.setContentView(new cantas.views.CardListView({
+          collection: collection,
+          title: title
+        }).render());
 
-          that.switchView(dashboardView);
+        that.switchView(dashboardView);
       });
     },
 
