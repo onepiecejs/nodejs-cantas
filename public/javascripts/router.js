@@ -97,12 +97,7 @@ $(function ($, _, Backbone) {
       $("body div.process-loading").show();
 
       // Get the user's cards and set the card list view
-      new cantas.models.CardCollection().fetch({
-        data: {
-          isArchived: false,
-          creatorId: cantas.utils.getCurrentUser().id
-        },
-        success: function (collection) {
+      new cantas.models.CardCollection().fetchMyCards(function(collection) {
           $("body div.process-loading").hide();
 
           // Set the dashboard content section
@@ -111,10 +106,6 @@ $(function ($, _, Backbone) {
           }).render());
 
           that.switchView(dashboardView);
-        },
-        error: function(model, xhr, options) {
-          // Could not fetch cards
-        }
       });
     },
 

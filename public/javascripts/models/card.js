@@ -268,6 +268,26 @@
       }
     },
 
+
+    /**
+     * Get any cards created by the current user
+     *
+     * @param {func} [success]  on collection fetch success callback
+     * @param {func} [error]    error callback
+     * @return {void}
+     */
+    fetchMyCards: function(success, error) {
+      this.fetch({
+        data: {
+          isArchived: false,
+          creatorId: cantas.utils.getCurrentUser().id
+        },
+        success: success,
+        error: error
+      });
+    },
+
+
     collectionCleanup: function (callback) {
       this.ioUnbindAll();
       this.each(function (model) {
