@@ -9,7 +9,7 @@ Developer
 * Chaobin Tang <cbtchn@gmail.com>
 * YuGuang Wang
 * Zheng Liu
-* Xuebin Dong
+* Xuebin Dong <zhexiany@gmail.com> (front-end)
 * Haibo Lin
 * Jian Chen
 
