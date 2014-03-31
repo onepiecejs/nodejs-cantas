@@ -31,7 +31,7 @@
         h3Header: this.options.title
       }));
 
-      var $cardContainer = this.$el.find('.card-archive-list');
+      var $cardContainer = this.$('.card-archive-list');
 
       // If there are no cards, display a message
       if (_.size(this.collection) < 1) {

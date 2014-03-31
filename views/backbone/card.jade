@@ -46,15 +46,3 @@ script#template-card-view(type="text/template")
   |      span.order-number= index
   |    - }
   |    div.card-filter.clearfix
-  |  div.card-meta Posted under 
-  |    - if ( typeof (list) !== 'undefined' && typeof (board) !== 'undefined' ) {
-  |      - if( board.isClosed ) {
-  |      span.muted= list.title
-  |      |   in 
-  |      span.muted= board.title
-  |      - } else {
-  |      a(onclick="cantas.navigateTo('board/\#{board._id}')")= list.title 
-  |      |   in 
-  |      a(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
-  |      - }
-  |    - }

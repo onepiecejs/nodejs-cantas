@@ -64,22 +64,24 @@ $(function ($, _, Backbone) {
       dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-boards-' + query));
 
       $("body div.process-loading").show();
-      $.ajax({
-        url: '/api/' + query,
-        success: function(boards) {
-          $("body div.process-loading").hide();
-          var boardsView = new cantas.views.BoardsView().render({"title": query, "boards": boards});
-          
-          // Set the dashboard content section
-          dashboardView.setContentView(boardsView);
 
-          // Swithch the main view out for the dashboard view
-          this.switchView(dashboardView);
-        }.bind(this),
-        error: function() {
-          cantas.utils.renderTimeoutBox();
-          return false;
-        }
+      $.ajax({
+        url: '/api/' + query
+      })
+      .done(function(boards) {
+        $("body div.process-loading").hide();
+
+        var boardsView = new cantas.views.BoardsView().render({"title": query, "boards": boards});
+        
+        // Set the dashboard content section
+        dashboardView.setContentView(boardsView);
+
+        // Swithch the main view out for the dashboard view
+        this.switchView(dashboardView);
+      }.bind(this))
+      .fail(function() {
+        cantas.utils.renderTimeoutBox();
+        return false;
       });
     },
 

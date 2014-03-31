@@ -56,10 +56,21 @@
         h3Header = 'Closed Boards';
         break;
       }
-      this.$el.html(this.template({boards: context.boards, h3Header: h3Header}));
+
+      this.$el.html(this.template({
+        boards: context.boards,
+        h3Header: h3Header,
+        isCreator: this.isCreator
+      }));
+
       cantas.setTitle(context.title);
       return this;
+    },
+
+    isCreator: function(board) {
+      return board.creatorId._id == cantas.user.id;
     }
+
   });
 
 }(jQuery, _, Backbone));
