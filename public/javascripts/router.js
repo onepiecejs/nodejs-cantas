@@ -92,33 +92,34 @@ $(function ($, _, Backbone) {
         return cantas.utils.renderBrowserVesionPrompt();
       }
 
-      var method = "fetchMyCards", title = "My Cards";
-
-      if ( query === "subscribed" ) {
-        method = "fetchSubscribedCards", title = "Subscribed Cards";
-      }
-
-      if ( query === "assigned" ) {
-        method = "fetchAssignedCards", title = "Assigned Cards";
-      }
-
       // Create the dashboard layout view and set the navigation view
       var dashboardView = new cantas.views.DashboardView().render();
       dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-cards-' + query));
 
       $("body div.process-loading").show();
 
+      // Get the default filters for cards collection
+      var cardFilters = new cantas.models.CardFilter();
+
       // Get the user's cards and set the card list view
-      new cantas.models.CardCollection()[method](function(collection) {
-        $("body div.process-loading").hide();
+      new cantas.models.CardCollection().fetch({
+        data: cardFilters.morph(),
+        success: function(collection) {
+          $("body div.process-loading").hide();
 
-        // Set the dashboard content section
-        dashboardView.setContentView(new cantas.views.CardListView({
-          collection: collection,
-          title: title
-        }).render());
+          // Set the dashboard content section
+          dashboardView.setContentView(new cantas.views.CardListView({
+            collection: collection,
+            title: "My Cards",
+            filters: cardFilters
+          }).render());
 
-        that.switchView(dashboardView);
+          that.switchView(dashboardView);
+        },
+        error: function() {
+          cantas.utils.renderTimeoutBox();
+          return false;
+        }
       });
     },
 

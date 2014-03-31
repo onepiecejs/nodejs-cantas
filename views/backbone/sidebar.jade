@@ -1,0 +1,46 @@
+script#template-sidebar-view(type="text/template").
+  nav
+    ul(class='sidebar-items')
+  div(class='panel-container')
+
+script#template-card-filter-panel-view(type="text/template").
+  h3.panel-title Filter Cards
+  form(class='filter-form')
+    div(class='filter-group')
+      h5(class='filter-title') Filter By Keyword
+      input(type='text', placeholder='Enter keyword...', name='keyword', value=keyword)
+    div(class='filter-group')
+      h5(class='filter-title') Show Cards
+      label(class='checkbox')
+        input(type='checkbox', name='created', checked=(created ? 'checked' : undefined))
+        | Created By Me
+      label(class='checkbox')
+        input(type='checkbox', name='subscribed', checked=(subscribed ? 'checked' : undefined))
+        | Subscribed Cards
+      label(class='checkbox')
+        input(type='checkbox', name='assigned', checked=(assigned ? 'checked' : undefined))
+        | Assigned to me
+    div(class='filter-group')
+      h5(class='filter-title') Due Date
+      label(class='radio')
+        input(type='radio', name='dueDate', value='day', checked=(dueDate=='day' ? 'checked' : undefined))
+        | Within the next day
+      label(class='radio')
+        input(type='radio', name='dueDate', value='week', checked=(dueDate=='week' ? 'checked' : undefined))
+        | Within the next week
+      label(class='radio')
+        input(type='radio', name='dueDate', value='any', checked=(dueDate=='any' ? 'checked' : undefined))
+        | Anytime
+    div(class='filter-group')
+      h5(class='filter-title') Hidden Cards
+      label(class='checkbox')
+        input(type='checkbox', name='archived', checked=(archived ? 'checked' : undefined))
+        | Show archived cards
+    div(class='form-footer')
+      input(type='submit', class='btn btn-warning', value='filter')
+
+
+script#template-card-filter-panel-link-view(type="text/template").
+  a(title='Filter Cards')
+    i(class='icon icon-filter')
+    span(class='badge badge-important')= total

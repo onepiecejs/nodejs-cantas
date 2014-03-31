@@ -18,7 +18,8 @@
         "socket.io": "*",
         "xmlrpc": "~1.1.0",
         "easyimage": "*",
-        "requestify": "*"
+        "requestify": "*",
+        "lodash": "*"
     },
     "devDependencies": {
         "expect.js": "*",

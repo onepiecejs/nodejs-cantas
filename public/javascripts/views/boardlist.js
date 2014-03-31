@@ -68,7 +68,7 @@
     },
 
     isCreator: function(board) {
-      return board.creatorId._id == cantas.user.id;
+      return board.creatorId._id === cantas.user.id;
     }
 
   });

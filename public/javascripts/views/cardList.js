@@ -15,7 +15,8 @@
     noResultsTemplate: jade.compile($("#template-card-list-view-no-results").text()),
 
     initialize: function() {
-      this.listenTo(this.collection, 'change', this.render.bind(this));
+      this.filters = this.options.filters || new cantas.models.CardFilter();
+      this.listenTo(this.collection, 'reset add remove change', this.renderCards.bind(this));
     },
 
     /**
@@ -31,7 +32,18 @@
         h3Header: this.options.title
       }));
 
-      var $cardContainer = this.$('.card-archive-list');
+      this.renderCards();
+      this.renderSidebar();
+
+      return this;
+    },
+
+
+    /**
+     * Render this list of cards
+     */
+    renderCards: function() {
+      var $cardContainer = this.$('.card-archive-list').empty();
 
       // If there are no cards, display a message
       if (_.size(this.collection) < 1) {
@@ -56,8 +68,26 @@
         this.childViews.push(cardView);
         cardView.render().$el.appendTo($cardContainer);
       }.bind(this));
+    },
 
-      return this;
+
+    /**
+     * Render the sidebar for displaying filters, etc.
+     */
+    renderSidebar: function() {
+      var sidebarView = new cantas.views.SidebarView().render();
+      this.childViews.push(sidebarView);
+
+      // Add card filtering panel
+      sidebarView.addPanel(
+        new cantas.views.CardFilterPanelView({
+          context: sidebarView,
+          filters: this.filters,
+          collection: this.collection
+        })
+      );
+
+      this.$el.append(sidebarView.$el);
     },
 
 

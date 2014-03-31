@@ -73,6 +73,7 @@ block append scripts
   include backbone/admin-config
   include backbone/vote-config
   include backbone/comment-config
+  include backbone/sidebar
 
   - if (process.env.NODE_ENV == 'production')
     script(type="text/javascript", src="/javascripts/dist/cantas-app.min.js")
@@ -118,6 +119,7 @@ block append scripts
 
     script(type="text/javascript", src="/javascripts/models/visitor.js")
     script(type="text/javascript", src="/javascripts/views/boardActiveUsers.js")
+    script(type="text/javascript", src="/javascripts/views/sidebar.js")
 
     script(type="text/javascript", src="/javascripts/views/adminConfig.js")
 

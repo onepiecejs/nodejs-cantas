@@ -191,6 +191,100 @@
   });
 
 
+  // Card Collection Filter Model
+  // ----------------------------
+
+  cantas.models.CardFilter = Backbone.Model.extend({
+
+    defaults: {
+      keyword: null, // Keyword query
+      created: true, // Show cards created by user
+      subscribed: true, // Show card the user is subscribed to
+      assigned: true, // Show cards the user has been assigned to
+      dueDate: 'any', // Card due date: 'day', 'week', 'any'
+      archived: false, // Show archived cards
+      // closed: false // Show closed cards (cannot be done in a single query)
+    },
+
+    /**
+     * Morph the filters info a query
+     * 
+     * @return {object}
+     */
+    morph: function() {
+      var morphed = {};
+
+      // Build a regex for a keyword search
+      if (_.isString(this.get('keyword')) && this.get('keyword').length) {
+        morphed.title = {
+          $regex: this.get('keyword'),
+          $options: 'gi'
+        };
+      }
+
+      // The user must have either created, subscribed or archived
+      // Otherwise query cards they are assigned to
+      // If they have one or more of these it will be an or query
+      if (!this.get('created') && !this.get('assigned') && !this.get('subscribed')) {
+        morphed.$or = [
+          { creatorId: cantas.user.id },
+          { assignees: cantas.user.id },
+          { subscribeUserIds: cantas.user.id }
+        ];
+      } else {
+        morphed.$or = [];
+
+        // Filter cards created by the user
+        if (this.get('created') === true) {
+          morphed.$or.push({
+            creatorId: cantas.user.id
+          });
+        }
+
+        // Filter cards assigned to the user
+        if (this.get('assigned') === true) {
+          morphed.$or.push({
+            assignees: cantas.user.id
+          });
+        }
+
+        // Filter cards the user has subscribed to
+        if (this.get('subscribed') === true) {
+          morphed.$or.push({
+            subscribeUserIds: cantas.user.id
+          });
+        }
+      }
+
+      // Show cards that are archived
+      if (this.get('archived') === false) {
+        morphed.isArchived = false;
+      }
+
+      // TODO: Filter by due date (needs to be added to the card model first)
+
+      return morphed;
+    },
+
+    /**
+     * Get the total number of active filters
+     * 
+     * @return {integer}
+     */
+    totalActive: function() {
+      var total = _.compact(_.toArray(this.toJSON())).length;
+
+      // Any does not count as a filter
+      if (this.get('dueDate') === 'any') {
+        total--;
+      }
+
+      return total;
+    }
+
+  });
+
+
   // Card Collection
   // ---------------
 
@@ -267,68 +361,6 @@
         }
       }
     },
-
-
-    /**
-     * Get any cards created by the current user
-     *
-     * @param {func} [success]  on collection fetch success callback
-     * @param {func} [error]    error callback
-     * @return {void}
-     */
-    fetchMyCards: function(success, error) {
-      this.fetch({
-        data: {
-          isArchived: false,
-          creatorId: cantas.utils.getCurrentUser().id
-        },
-        success: success,
-        error: error
-      });
-    },
-
-
-    /**
-     * Get cards the current user is subscribed to
-     *
-     * @param {func} [success]  Success callback
-     * @param {func} [error]    Error callback
-     * @return {void}
-     */
-    fetchSubscribedCards: function(success, error) {
-      this.fetch({
-        data: {
-          isArchived: false,
-          subscribeUserIds: {
-            $in: [cantas.utils.getCurrentUser().id]
-          }
-        },
-        success: success,
-        error: error
-      });
-    },
-
-
-    /**
-     * Get cards the current user is assigned to
-     *
-     * @param {func} [success]  Success callback
-     * @param {func} [error]    Error callback
-     * @return {void}
-     */
-    fetchAssignedCards: function(success, error) {
-      this.fetch({
-        data: {
-          isArchived: false,
-          assignees: {
-            $in: [cantas.utils.getCurrentUser().id]
-          }
-        },
-        success: success,
-        error: error
-      });
-    },
-
 
     collectionCleanup: function (callback) {
       this.ioUnbindAll();
