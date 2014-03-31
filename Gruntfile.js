@@ -91,6 +91,7 @@ module.exports = function (grunt) {
           'public/javascripts/views/adminConfig.js',
           'public/javascripts/views/voteConfig.js',
           'public/javascripts/views/commentConfig.js',
+          'public/javascripts/views/sidebar.js',
           'public/javascripts/router.js',
         ],
         dest: 'public/javascripts/dist/cantas-app.js'
@@ -163,6 +164,7 @@ module.exports = function (grunt) {
           'public/javascripts/views/voteConfig.js',
           'public/javascripts/views/commentConfig.js',
           'public/javascripts/views/attachment.js',
+          'public/javascripts/views/sidebar.js',
           'public/javascripts/vendor/jquery.fileupload.js'
         ],
         options: {

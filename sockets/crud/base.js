@@ -13,6 +13,7 @@
   var List = require("../../models/list");
   var BoardMemberRelation = require("../../models/boardMemberRelation");
   var LogActivity = require("../../services/activity").Activity;
+  var signals = require("../signals");
 
   /*
    * Constructor to create an object to provide CRUD methods.
