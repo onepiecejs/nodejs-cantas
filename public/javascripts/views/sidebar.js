@@ -12,7 +12,7 @@
    *    rendering themselves / their own behavior
    * 
    */
-  cantas.views.SidebarView = Backbone.View.extend({
+  cantas.views.SidebarView = cantas.views.BaseView.extend({
 
     className: "side-bar",
 
@@ -136,10 +136,6 @@
       }.bind(this));
     },
 
-    close: function() {
-      this.remove();
-    },
-
     remove: function() {
       this.undelegateEvents();
       this.$el.remove();
@@ -152,7 +148,7 @@
   /**
    * Panel for filtering card collections
    */
-  cantas.views.CardFilterPanelView = Backbone.View.extend({
+  cantas.views.CardFilterPanelView = cantas.views.BaseView.extend({
 
     context: null,
     isOpen: false,
@@ -163,7 +159,7 @@
     linkTemplate: jade.compile($("#template-card-filter-panel-link-view").text()),
 
     events: {
-      'submit .filter-form': 'submitAction'
+      'submit .js-filter-form': 'submitAction'
     },
 
     initialize: function() {
@@ -239,11 +235,6 @@
         archived: this.$('.js-cardfilter-archived').is(':checked'),
         closed: this.$('.js-cardfilter-closed').is(':checked')
       });
-    },
-
-
-    close: function() {
-      this.remove();
     },
 
     remove: function() {

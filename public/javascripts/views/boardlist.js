@@ -3,7 +3,7 @@
 (function ($, _, Backbone) {
   "use strict";
 
-  cantas.views.BoardsView = Backbone.View.extend({
+  cantas.views.BoardsView = cantas.views.BaseView.extend({
 
     events: {
       "click .js-close-board": "closeBoard",
@@ -30,10 +30,6 @@
       $(event.target).closest('li').fadeOut('slow', function() {
         $(event.target).closest('li').remove();
       });
-    },
-
-    close: function() {
-      this.remove();
     },
 
     remove: function() {
