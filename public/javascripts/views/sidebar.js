@@ -106,7 +106,7 @@
         .show();
 
       // Close panels when clicking outside them
-      $(document).on('click', this.closePanels.bind(this));
+      $(document).on('click.sidebar.close', this.closePanels.bind(this));
 
       panel.isOpen = true;
     },
@@ -119,7 +119,7 @@
         .hide()
         .empty();
 
-      $(document).off('click');
+      $(document).off('click.sidebar.close');
 
       panel.isOpen = false;
       panel.close();
