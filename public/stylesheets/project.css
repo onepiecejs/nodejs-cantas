@@ -1457,6 +1457,7 @@ input:focus, textarea:focus  .list-panel>li{
     position: relative;
 }
 .card:hover{
+    background: #F9F9F9;
     /*-moz-transform: rotate(1deg);
     -webkit-transform: rotate(1deg);*/
    /* border-bottom-right-radius: 40px 4px;
