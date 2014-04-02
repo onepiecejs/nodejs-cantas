@@ -231,13 +231,13 @@
      */
     getFilters: function() {
       return this.filters.set({
-        keyword: this.$('[name="keyword"]').val(),
-        created: this.$('[name="created"]').is(':checked'),
-        subscribed: this.$('[name="subscribed"]').is(':checked'),
-        assigned: this.$('[name="assigned"]').is(':checked'),
-        dueDate: this.$('[name="dueDate"]:checked').val(),
-        archived: this.$('[name="archived"]').is(':checked'),
-        closed: this.$('[name="closed"]').is(':checked')
+        keyword: this.$('.js-cardfilter-keyword').val(),
+        created: this.$('.js-cardfilter-created').is(':checked'),
+        subscribed: this.$('.js-cardfilter-subscribed').is(':checked'),
+        assigned: this.$('.js-cardfilter-assigned').is(':checked'),
+        dueDate: this.$('.js-cardfilter-dueDate:checked').val(),
+        archived: this.$('.js-cardfilter-archived').is(':checked'),
+        closed: this.$('.js-cardfilter-closed').is(':checked')
       });
     },
 
