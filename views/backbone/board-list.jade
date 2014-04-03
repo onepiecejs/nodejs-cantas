@@ -18,7 +18,7 @@ script#template-board-list-view(type="text/template")
   |          a.js-open-board.reopen.board-list-status(data-board= board._id, title="Open this board")
   |    else
   |      li
-  |        a.owner.board-name(onclick="cantas.navigateTo('board/\#{board._id}')")= board.title
+  |        a.owner.board-name.js-view-board(href="/board/\#{board._id}")= board.title
   |        span= cantas.utils.formatDate(board.created)
   |        span= board.creatorId.username
   |        if isCreator(board)

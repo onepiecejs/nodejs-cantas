@@ -7,7 +7,8 @@
 
     events: {
       "click .js-close-board": "closeBoard",
-      "click .js-open-board": "openBoard"
+      "click .js-open-board": "openBoard",
+      "click .js-view-board": "viewBoard",
     },
 
     template: jade.compile($("#template-board-list-view").text()),
@@ -30,6 +31,11 @@
       $(event.target).closest('li').fadeOut('slow', function() {
         $(event.target).closest('li').remove();
       });
+    },
+
+    viewBoard: function(e) {
+      e.preventDefault();
+      cantas.navigateTo($(e.target).attr('href'));
     },
 
     remove: function() {

@@ -379,6 +379,10 @@
       data.index = this.attributes.index;
       data.dueDateDisplay = this.getDueDateDisplay();
 
+      data.coverURL = this.getCoverUrl(data.cover);
+      data.checkitemsProgress = data.badges.checkitemsChecked + '/' + data.badges.checkitems;
+      data.badgesVotes = data.badges.votesYes + '/' + data.badges.votesNo;
+
       this.$el.empty();
       this.$el.html(this.template(data));
       this.$el.attr("id", this.model.id);
@@ -434,6 +438,16 @@
         return firendly;
       }
       return false;
+    },
+
+    getCoverUrl: function(cover) {
+      if (!cover) {
+        return null;
+      }
+
+      var url = window.location.protocol + '//' + window.location.host;
+      url += cover.slice(cover.indexOf('/attachments'));
+      return 'url("' + url + '")';
     },
 
     updateOnEnter: function(e) {

@@ -4,8 +4,11 @@
 (function ($, _, Backbone) {
   "use strict";
 
-  cantas.views.DashboardNavigationView = Backbone.View.extend({
-    events: {},
+  cantas.views.DashboardNavigationView = cantas.views.BaseView.extend({
+
+    events: {
+      'click a': 'openDashboard'
+    },
 
     template: jade.compile($("#template-dashboard-navigation-view").text()),
 
@@ -22,8 +25,9 @@
       return this;
     },
 
-    close: function() {
-      this.remove();
+    openDashboard: function(e) {
+      e.preventDefault();
+      cantas.navigateTo($(e.target).attr('href'));
     },
 
     remove: function() {
@@ -36,4 +40,3 @@
   });
 
 }(jQuery, _, Backbone));
-

@@ -3,48 +3,29 @@ script#template-card-view(type="text/template")
   |  div.card.clearfix
   |    a.setting.card-setting
   |    p= title
-  |    - if(typeof cover === 'string') {
-  |    -   if(cover) {
-  |    -     var coverURL = 'url("' + window.location.protocol + '//' + window.location.host  + cover.slice(cover.indexOf('/attachments')) + '")';
-  |    -     if(coverURL.indexOf('thumb-card') > -1) {
-  |    div.card-cover(style='background-image:\#{coverURL};')
-  |    -     }
-  |    -     else {
-  |    div.card-cover.original-size(style='background-image:\#{coverURL};')
-  |    -     }
-  |    -   }
-  |    -   else {
-  |    div.card-cover.hide
-  |    -   }
-  |    - }
+  |    if typeof cover === 'string'
+  |      if cover
+  |        if coverURL.indexOf('thumb-card') > -1
+  |          div.card-cover(style='background-image:\#{coverURL};')
+  |        else
+  |          div.card-cover.original-size(style='background-image:\#{coverURL};')
+  |      else
+  |        div.card-cover.hide
   |    section.card-items
-  |      - assignees.forEach(function(assignee){
-  |      span.card-assignee(title="Assignee: "+assignee.username + "")= assignee.username
-  |      - })
-  |      - if(typeof badges === "object"){
-  |      -   if(badges.comments !== 0){
-  |      span.card-comment(title="\#{badges.comments} comment(s).")= badges.comments
-  |      -   }
-  |      -   if(badges.checkitems !== 0){
-  |      -     var checkitemsProgress = badges.checkitemsChecked + '/' + badges.checkitems;
-  |      span.card-checklist(title=" \#{checkitemsProgress} checklist items completed.")= checkitemsProgress
-  |      -   }
-  |      -   if((badges.votesYes + badges.votesNo) !== 0){
-  |      -   var badgesVotes = badges.votesYes + '/' + badges.votesNo;
-  |      span.card-vote(title=" \#{badges.votesYes} agree,  \#{badges.votesNo} disagree.")= badgesVotes
-  |      -   }
-  |      -   if(badges.attachments !== 0){
-  |      span.card-attachment(title=" \#{badges.attachments} attachment(s).")= badges.attachments
-  |      -   }
-  |      - }
-  |      if dueDateDisplay
-  |        span.card-due-date= "Due " + dueDateDisplay
-  |    div.card-index(title="Card Position")
-  |    span.order-number= index
-  |    - if( typeof index !== "undefined" ) {
+  |      each assignee in assignees
+  |        span.card-assignee(title="Assignee: "+assignee.username + "")= assignee.username
+  |      if typeof badges === "object"
+  |        if badges.comments !== 0
+  |          span.card-comment(title="\#{badges.comments} comment(s).")= badges.comments
+  |        if badges.checkitems !== 0
+  |          span.card-checklist(title=" \#{checkitemsProgress} checklist items completed.")= checkitemsProgress
+  |        if (badges.votesYes + badges.votesNo) !== 0
+  |          span.card-vote(title=" \#{badges.votesYes} agree,  \#{badges.votesNo} disagree.")= badgesVotes
+  |        if badges.attachments !== 0
+  |          span.card-attachment(title=" \#{badges.attachments} attachment(s).")= badges.attachments
+  |    if typeof index !== "undefined"
   |      div.card-index(title="Card Position")
   |      span.order-number= index
-  |    - }
   |    div.card-filter.clearfix
 
 script#template-card-meta-view(type="text/template")
