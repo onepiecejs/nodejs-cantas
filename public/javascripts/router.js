@@ -16,7 +16,7 @@ $(function ($, _, Backbone) {
       "board/:boardId(/:slug)": "joinBoard",
       "card/:cardId(/:slug)": "renderCardDetail",
       "help": "help",
-      "account": "settings",
+      "settings": "settings",
       "welcome": "welcome",
       "search/:query": "search"
     },

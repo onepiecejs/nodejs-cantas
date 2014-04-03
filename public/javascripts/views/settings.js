@@ -6,7 +6,7 @@
 
   "use strict";
 
-  cantas.views.settingsView = Backbone.View.extend({
+  cantas.views.settingsView = cantas.views.BaseView.extend({
     events: {
     },
 

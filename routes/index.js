@@ -468,8 +468,8 @@
       res.render('application', {title: 'Cantas'});
     });
 
-    // settings page
-    app.get('/account', ensureAuthenticated, function (req, res) {
+    // account settings page
+    app.get('/settings', ensureAuthenticated, function (req, res) {
       res.render('application', {title: 'Cantas'});
     });
 
