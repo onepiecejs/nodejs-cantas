@@ -305,35 +305,35 @@
             type: "GET",
             data: req
           })
-          .success(function (data) {
-            var re = $.ui.autocomplete.escapeRegex(req.term);
-            var matcher = new RegExp("^" + re, "i");
-            var beginningMatchedData = $.grep(data, function(element) {
-              return matcher.test(element.email);
-            });
-            var middleMatchedData = $.grep(data, function(element) {
-              return !matcher.test(element.email);
-            });
-            var targetMatchedData = [];
-            var count = 0;
-            var i = 0;
-            for (i; i < 20; i++) {
-              if (beginningMatchedData[i]) {
-                targetMatchedData.push(beginningMatchedData[i].email);
-              } else if (middleMatchedData[count] && count < 20) {
-                targetMatchedData.push(middleMatchedData[count].email);
-                count++;
-              } else {
-                break;
+            .success(function (data) {
+              var re = $.ui.autocomplete.escapeRegex(req.term);
+              var matcher = new RegExp("^" + re, "i");
+              var beginningMatchedData = $.grep(data, function(element) {
+                return matcher.test(element.email);
+              });
+              var middleMatchedData = $.grep(data, function(element) {
+                return !matcher.test(element.email);
+              });
+              var targetMatchedData = [];
+              var count = 0;
+              var i = 0;
+              for (i; i < 20; i++) {
+                if (beginningMatchedData[i]) {
+                  targetMatchedData.push(beginningMatchedData[i].email);
+                } else if (middleMatchedData[count] && count < 20) {
+                  targetMatchedData.push(middleMatchedData[count].email);
+                  count++;
+                } else {
+                  break;
+                }
               }
-            }
-            res($.map(targetMatchedData, function(el) {
-              return {
-                label: el,
-                value: el
-              };
-            }));
-          });
+              res($.map(targetMatchedData, function(el) {
+                return {
+                  label: el,
+                  value: el
+                };
+              }));
+            });
         },
         minLength: 1,
         messages: {

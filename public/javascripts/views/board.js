@@ -217,28 +217,28 @@
             $.ajax({
               url: queryCards
             })
-            .success(function(items) {
-              var sortArray = _.pluck(items, 'order');
-              sortArray.sort(function(a, b) {
-                return (a - b);
+              .success(function(items) {
+                var sortArray = _.pluck(items, 'order');
+                sortArray.sort(function(a, b) {
+                  return (a - b);
+                });
+                var lastCardOrder = null;
+                if (typeof _.last(sortArray) === 'undefined') {
+                  lastCardOrder = -1;
+                } else {
+                  lastCardOrder = _.last(sortArray);
+                }
+                var newCardOrder = lastCardOrder + 65536;
+                model.patch({
+                  isArchived: false,
+                  'order': newCardOrder,
+                  original: {isArchived: true}
+                }, { silent: true });
+              })
+              .fail(function() {
+                cantas.utils.renderTimeoutBox();
+                return false;
               });
-              var lastCardOrder = null;
-              if (typeof _.last(sortArray) === 'undefined') {
-                lastCardOrder = -1;
-              } else {
-                lastCardOrder = _.last(sortArray);
-              }
-              var newCardOrder = lastCardOrder + 65536;
-              model.patch({
-                isArchived: false,
-                'order': newCardOrder,
-                original: {isArchived: true}
-              }, { silent: true });
-            })
-            .fail(function() {
-              cantas.utils.renderTimeoutBox();
-              return false;
-            });
           } else {
             // if the listView exist in this board
             var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];
