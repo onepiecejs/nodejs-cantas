@@ -41,6 +41,7 @@ script#template-card-filter-panel-view(type="text/template").
 
 
 script#template-card-filter-panel-link-view(type="text/template").
-  a(title='Filter Cards')
-    i(class='icon icon-filter')
-    span(class='badge badge-important')= total
+  li(data-panel=panel)
+    a(title='Filter Cards')
+      i(class='icon icon-filter')
+      span(class='badge badge-important')= total

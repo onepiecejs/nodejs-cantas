@@ -21,7 +21,8 @@
     events: {
       'click .panel-container': function(e) {
         e.stopPropagation();
-      }
+      },
+      'click .sidebar-items li': 'togglePanel'
     },
 
     template: jade.compile($("#template-sidebar-view").text()),
@@ -54,11 +55,19 @@
         that = this;
 
       _.each(this.panels, function(panel) {
-        panel.renderLink()
-          .appendTo($linkList.append('<li></li>').find('li'))
-          .on('click', function(e) {
-            that.togglePanel(e, panel);
-          });
+        panel.renderLink().appendTo($linkList);
+      });
+    },
+
+    /**
+     * Get a panel int he sidebar by ID
+     *
+     * @param {string} id The panel's id
+     * @return {panelView} 
+     */
+    getPanel: function(id) {
+      return _.find(this.panels, function(panel) {
+        return panel.id === id;
       });
     },
 
@@ -79,15 +88,22 @@
      * @param {object}   panel  The panel view to remove
      * @return {object}
      */
-    removePanel: function(panel) {},
+    removePanel: function(panel) {
+      this.panels = _.without(this.panels, panel);
+      this.renderSidebar();
+    },
 
 
     /**
      * Toggle the open state of a sidebar panel
      */
-    togglePanel: function(e, panel) {
+    togglePanel: function(e) {
       e.preventDefault();
       e.stopPropagation();
+
+      var panelId = $(e.target).parents('li').attr('data-panel'),
+        panel = this.getPanel(panelId);
+
       if (panel.isOpen) {
         return this.closePanel(panel);
       }
@@ -154,6 +170,7 @@
     isOpen: false,
 
     className: "sidebar-panel panel-filter",
+    id: _.uniqueId('card-panel-'),
 
     template: jade.compile($("#template-card-filter-panel-view").text()),
     linkTemplate: jade.compile($("#template-card-filter-panel-link-view").text()),
@@ -184,7 +201,8 @@
      */
     renderLink: function() {
       return $(this.linkTemplate({
-        total: this.filters.totalActive()
+        total: this.filters.totalActive(),
+        panel: this.id
       }));
     },
 
@@ -247,4 +265,3 @@
 
 
 }(jQuery, _, Backbone));
-
