@@ -377,6 +377,7 @@
     render: function() {
       var data = this.model.toJSON();
       data.index = this.attributes.index;
+      data.dueDateDisplay = this.getDueDateDisplay();
 
       this.$el.empty();
       this.$el.html(this.template(data));
@@ -422,6 +423,17 @@
       this.voteCollection.dispose();
       this.remove();
       return this;
+    },
+
+    getDueDateDisplay: function() {
+      if (this.model.get('dueDate')) {
+        var dueDate = this.model.get('dueDate'),
+          date = new Date(dueDate),
+          m = window.moment.utc(date),
+          firendly = m.calendar();
+        return firendly;
+      }
+      return false;
     },
 
     updateOnEnter: function(e) {
@@ -737,6 +749,7 @@
       "click .js-edit-assign": "toggleAssignWindow",
       "click .js-edit-label": "toggleLabelWindow",
       "click .js-edit-vote": "toggleVoteWindow",
+      "click .js-edit-due-date": "toggleDueDateWindow",
       "click .js-add-comment": "addComment",
       "click .js-add-attachment": "addAttachment",
       "hidden.bs.modal": "closeCardDetail",
@@ -772,6 +785,7 @@
         _this.renderLabelView();
         _this.renderVoteView();
         _this.renderSubscribeStatus();
+        _this.renderDueDateView();
         _this.renderCommentView();
         _this.renderAttachmentView();
 
@@ -1052,6 +1066,34 @@
       }
     },
 
+    renderDueDateView: function() {
+      this.cardDueDateView = new cantas.views.CardDueDateView({
+        el: this.$el.find('div.window-due-date'),
+        model: this.model,
+        attributes: {
+          expandedViewChain: this._expandedViewChain
+        }
+      });
+      this.cardDueDateView.render();
+    },
+
+    toggleDueDateWindow: function(event) {
+      event.stopPropagation();
+      if (this.cardDueDateView.isExpanded === false) {
+        this.cardDueDateView.render();
+        this.cardDueDateView.$el.show();
+        this.cardDueDateView.isExpanded = true;
+        // FIXME: scroll to cardDueDateView
+        $('.modal-scrollable').scrollTop(0);
+        this.cardDueDateView.attributes.expandedViewChain = cantas.utils.rememberMe(
+          this.cardDueDateView,
+          this.cardDueDateView.attributes.expandedViewChain
+        );
+      } else {
+        this.cardDueDateView.collapse();
+      }
+    },
+
     renderLabelView: function() {
       this.labelAssignView = new cantas.views.LabelAssignView({
         el: this.$el.find('div.window-label'),
@@ -1179,6 +1221,10 @@
         this.cardAssignView.remove();
       }
 
+      if (this.cardDueDateView) {
+        this.cardDueDateView.remove();
+      }
+
       if (this.labelAssignView) {
         this.labelAssignView.remove();
       }
@@ -1189,6 +1235,10 @@
 
       if (this.cardVoteView) {
         this.cardVoteView.remove();
+      }
+
+      if (this.cardDueDateView) {
+        this.cardDueDateView.remove();
       }
 
       this.cardLabelCollection.dispose();
@@ -1709,5 +1759,86 @@
     }
 
   });
+
+
+
+  cantas.views.CardDueDateView = Backbone.View.extend({
+
+    template: jade.compile($("#template-card-due-date-view").text()),
+
+    events: {
+      "click .js-save": "save",
+      "click .js-close": "collapse",
+    },
+
+    initialize: function() {
+      this.isExpanded = false;
+    },
+
+    render: function() {
+      var defaultDate;
+
+      if (this.model.get('dueDate')) {
+        defaultDate = moment.utc(new Date(this.model.get('dueDate')));
+      } else {
+        defaultDate = null;
+      }
+
+      this.$el.html(this.template(_.extend({}, this.model, {
+        dueDate: (defaultDate) ? defaultDate.format('DD/MM/YYYY') : null,
+        dueTime: (defaultDate) ? defaultDate.format('hh:mm A') : null
+      })));
+
+      this.$('.js-datepicker').datepicker({
+        altField: this.$('[name="due-date"]'),
+        altFormat: "dd/mm/yy",
+        defaultDate: (defaultDate) ? defaultDate.format('MM/DD/YYYY') : null
+      });
+
+      this.$('.js-timepicker').timepicker({
+        dropdown: false
+      });
+
+      return this;
+    },
+
+    save: function() {
+      var date = this.$('.js-due-date').val(),
+        time = this.$('.js-due-time').val(),
+        m;
+
+      if (_.isEmpty(date)) {
+        this.model.patch({
+          dueDate: null
+        });
+        this.collapse();
+        return;
+      }
+
+      if (_.isEmpty(time)) {
+        m = window.moment(date, "DD/MM/YYYY");
+      } else {
+        m = window.moment(date + ' ' + time, "DD/MM/YYYY hh:mm A");
+      }
+
+      if (m.isValid()) {
+        this.model.patch({
+          dueDate: m.toJSON()
+        });
+      }
+      this.collapse();
+    },
+
+    collapse: function() {
+      this.$el.hide();
+      this.isExpanded = false;
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this,
+        this.attributes.expandedViewChain
+      );
+    }
+
+  });
+
 
 }(jQuery, _, Backbone));

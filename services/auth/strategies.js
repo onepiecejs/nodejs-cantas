@@ -131,11 +131,12 @@
   var CantasGoogleStrategy = new GoogleStrategy({
       returnURL: settings.sites.phases.local + '/auth/google/return',
       realm: settings.sites.phases.local
-    },
-    function(identifier, profile, done) {
-      process.nextTick(function () {
+    }, function(identifier, profile, done) {
+      process.nextTick(function() {
         User.findOne({'email': profile.emails[0].value}, function (err, user) {
-          if (err) { return done(err); }
+          if (err) {
+            return done(err);
+          }
           if (user === null) {
             var newUser = new User({
               username: profile.emails[0].value,
@@ -149,8 +150,7 @@
           }
         });
       });
-    }
-  );
+    });
 
   /*
    * To export predefine strategies.

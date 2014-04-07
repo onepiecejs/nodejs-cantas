@@ -151,11 +151,9 @@
       });
 
     // log in with google account
-    app.get('/auth/google', 
-      passport.authenticate('google', {failureRedirect: '/login'}));
+    app.get('/auth/google', passport.authenticate('google', {failureRedirect: '/login'}));
 
-    app.get('/auth/google/return', 
-      passport.authenticate('google', {failureRedirect: '/login'}),
+    app.get('/auth/google/return', passport.authenticate('google', {failureRedirect: '/login'}),
       function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);

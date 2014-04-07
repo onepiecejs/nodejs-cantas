@@ -37,6 +37,8 @@ script#template-card-view(type="text/template")
   |      span.card-attachment(title=" \#{badges.attachments} attachment(s).")= badges.attachments
   |      -   }
   |      - }
+  |      if dueDateDisplay
+  |        span.card-due-date= "Due " + dueDateDisplay
   |    div.card-index(title="Card Position")
   |    span.order-number= index
   |    div.card-filter.clearfix

@@ -43,7 +43,8 @@ module.exports = function (grunt) {
           'public/javascripts/vendor/jquery.fileupload.js',
           'public/javascripts/vendor/jquery.fileupload-process.js',
           'public/javascripts/vendor/jquery.fileupload-image.js',
-          'public/javascripts/vendor/jquery.fileupload-validate.js'
+          'public/javascripts/vendor/jquery.fileupload-validate.js',
+          'public/javascripts/vendor/jquery.timepicker.js'
         ],
         dest: 'public/javascripts/dist/vendor.js'
       },
