@@ -1762,13 +1762,15 @@
 
 
 
-  cantas.views.CardDueDateView = Backbone.View.extend({
+  cantas.views.CardDueDateView = cantas.views.BaseView.extend({
 
     template: jade.compile($("#template-card-due-date-view").text()),
 
     events: {
       "click .js-save": "save",
       "click .js-close": "collapse",
+      "focus .js-due-date": "showCalendar",
+      "focus .js-due-time": "showClock"
     },
 
     initialize: function() {
@@ -1789,17 +1791,32 @@
         dueTime: (defaultDate) ? defaultDate.format('hh:mm A') : null
       })));
 
-      this.$('.js-datepicker').datepicker({
+      this.$calendar = this.$('.js-datepicker').datepicker({
         altField: this.$('[name="due-date"]'),
         altFormat: "dd/mm/yy",
         defaultDate: (defaultDate) ? defaultDate.format('MM/DD/YYYY') : null
-      });
+      }).hide();
 
-      this.$('.js-timepicker').timepicker({
-        dropdown: false
-      });
+      this.$clock = this.$('.js-timepicker').timepicker({
+        timeOnly: true,
+        timeFormat: "hh:mm TT",
+        altField: this.$('[name="due-time"]'),
+        altFieldTimeOnly: true,
+        hour: (defaultDate) ? defaultDate.format('HH') : null,
+        minute: (defaultDate) ? defaultDate.format('mm') : null
+      }).hide();
 
       return this;
+    },
+
+    showCalendar: function() {
+      this.$clock.hide();
+      this.$calendar.show();
+    },
+
+    showClock: function() {
+      this.$clock.show();
+      this.$calendar.hide();
     },
 
     save: function() {
