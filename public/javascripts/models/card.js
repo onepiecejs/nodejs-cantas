@@ -194,7 +194,11 @@
   // Card Collection Filter Model
   // ----------------------------
 
-  cantas.models.CardFilter = Backbone.Model.extend({
+  cantas.models.CardFilter = function(filters) {
+    this.filters = filters || this.defaults;
+  };
+
+  cantas.models.CardFilter.prototype = {
 
     defaults: {
       keyword: null, // Keyword query
@@ -206,8 +210,17 @@
       // closed: false // Show closed cards (cannot be done in a single query)
     },
 
+    toJSON: function(options) {
+      return _.clone(this.filters);
+    },
+
+    set: function(newFilters) {
+      _.extend(this.filters, newFilters);
+      return this.filters;
+    },
+
     /**
-     * Morph the filters info a query
+     * Morph the filters into a query
      * 
      * @return {object}
      */
@@ -215,9 +228,9 @@
       var morphed = {};
 
       // Build a regex for a keyword search
-      if (_.isString(this.get('keyword')) && this.get('keyword').length) {
+      if (_.isString(this.filters.keyword) && this.filters.keyword.length) {
         morphed.title = {
-          $regex: this.get('keyword'),
+          $regex: this.filters.keyword,
           $options: 'gi'
         };
       }
@@ -225,7 +238,7 @@
       // The user must have either created, subscribed or archived
       // Otherwise query cards they are assigned to
       // If they have one or more of these it will be an or query
-      if (!this.get('created') && !this.get('assigned') && !this.get('subscribed')) {
+      if (!this.filters.created && !this.filters.assigned && !this.filters.subscribed) {
         morphed.$or = [
           { creatorId: cantas.user.id },
           { assignees: cantas.user.id },
@@ -235,21 +248,21 @@
         morphed.$or = [];
 
         // Filter cards created by the user
-        if (this.get('created') === true) {
+        if (this.filters.created === true) {
           morphed.$or.push({
             creatorId: cantas.user.id
           });
         }
 
         // Filter cards assigned to the user
-        if (this.get('assigned') === true) {
+        if (this.filters.assigned === true) {
           morphed.$or.push({
             assignees: cantas.user.id
           });
         }
 
         // Filter cards the user has subscribed to
-        if (this.get('subscribed') === true) {
+        if (this.filters.subscribed === true) {
           morphed.$or.push({
             subscribeUserIds: cantas.user.id
           });
@@ -257,7 +270,7 @@
       }
 
       // Show cards that are archived
-      if (this.get('archived') === false) {
+      if (this.filters.archived === false) {
         morphed.isArchived = false;
       }
 
@@ -275,14 +288,14 @@
       var total = _.compact(_.toArray(this.toJSON())).length;
 
       // Any does not count as a filter
-      if (this.get('dueDate') === 'any') {
+      if (this.filters.dueDate === 'any') {
         total--;
       }
 
       return total;
     }
+  };
 
-  });
 
 
   // Card Collection

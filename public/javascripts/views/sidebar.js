@@ -225,9 +225,9 @@
      */
     filterCollection: function() {
       $("body div.process-loading").show();
-      var filters = this.getFilters();
+      this.getFilters();
       this.collection.fetch({
-        data: filters.morph(),
+        data: this.filters.morph(),
         success: function() {
           $("body div.process-loading").hide();
         },
