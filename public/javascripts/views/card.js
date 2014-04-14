@@ -777,7 +777,7 @@
       card.assignees = this._concatAssignees();
       card.description = markdown.toHTML(card.description);
 
-      if ( card.dueDate ) {
+      if (card.dueDate) {
         card.dueDateDisplay = moment.utc(new Date(card.dueDate)).calendar();
       }
 
