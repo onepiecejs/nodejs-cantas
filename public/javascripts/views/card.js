@@ -380,8 +380,16 @@
       data.dueDateDisplay = this.getDueDateDisplay();
 
       data.coverURL = this.getCoverUrl(data.cover);
-      data.checkitemsProgress = data.badges.checkitemsChecked + '/' + data.badges.checkitems;
-      data.badgesVotes = data.badges.votesYes + '/' + data.badges.votesNo;
+
+      if (data.badges) {
+        // Format checklist progress
+        if (data.badges.checkitems > 0) {
+          data.checkitemsProgress = data.badges.checkitemsChecked + '/' + data.badges.checkitems;
+        }
+
+        // Get votes tally
+        data.badgesVotes = data.badges.votesYes + '/' + data.badges.votesNo;
+      }
 
       this.$el.empty();
       this.$el.html(this.template(data));
