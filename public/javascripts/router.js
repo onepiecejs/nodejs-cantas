@@ -98,20 +98,25 @@ $(function ($, _, Backbone) {
 
       $("body div.process-loading").show();
 
-      // Get the default filters for cards collection
-      var cardFilters = new cantas.models.CardFilter();
-
       // Get the user's cards and set the card list view
       new cantas.models.CardCollection().fetch({
-        data: cardFilters.morph(),
+        // Needs to be the same as the morphed filters in 
+        // cantas.views.CardFilterPanelView
+        data: {
+          $or: [
+            { creatorId: cantas.user.id },
+            { assignees: cantas.user.id },
+            { subscribeUserIds: cantas.user.id }
+          ],
+          isArchived: false
+        },
         success: function(collection) {
           $("body div.process-loading").hide();
 
           // Set the dashboard content section
           dashboardView.setContentView(new cantas.views.CardListView({
             collection: collection,
-            title: "My Cards",
-            filters: cardFilters
+            title: "My Cards"
           }).render());
 
           that.switchView(dashboardView);

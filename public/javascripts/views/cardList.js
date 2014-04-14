@@ -15,7 +15,6 @@
     noResultsTemplate: jade.compile($("#template-card-list-view-no-results").text()),
 
     initialize: function() {
-      this.filters = this.options.filters || new cantas.models.CardFilter();
       this.listenTo(this.collection, 'reset add remove change', this.renderCards.bind(this));
     },
 
@@ -82,7 +81,6 @@
       sidebarView.addPanel(
         new cantas.views.CardFilterPanelView({
           context: sidebarView,
-          filters: this.filters,
           collection: this.collection
         })
       );

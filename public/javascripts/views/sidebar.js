@@ -161,6 +161,7 @@
   });
 
 
+
   /**
    * Panel for filtering card collections
    */
@@ -168,6 +169,16 @@
 
     context: null,
     isOpen: false,
+
+    defaultFilters: {
+      keyword: null, // Keyword query
+      created: true, // Show cards created by user
+      subscribed: true, // Show card the user is subscribed to
+      assigned: true, // Show cards the user has been assigned to
+      dueDate: 'any', // Card due date: 'day', 'week', 'any'
+      archived: false, // Show archived cards
+      // closed: false // Show closed cards (cannot be done in a single query)
+    },
 
     className: "sidebar-panel panel-filter",
     id: _.uniqueId('card-panel-'),
@@ -181,7 +192,7 @@
 
     initialize: function() {
       this.context = this.options.context;
-      this.filters = this.options.filters || new cantas.models.CardFilter();
+      this.filters = this.defaultFilters;
       return this;
     },
 
@@ -190,7 +201,7 @@
      */
     render: function(context) {
       this.delegateEvents();
-      this.$el.html(this.template(this.filters.toJSON()));
+      this.$el.html(this.template(this.filters));
       return this;
     },
 
@@ -201,7 +212,7 @@
      */
     renderLink: function() {
       return $(this.linkTemplate({
-        total: this.filters.totalActive(),
+        total: this.totalActiveFilters(),
         panel: this.id
       }));
     },
@@ -227,7 +238,7 @@
       $("body div.process-loading").show();
       this.getFilters();
       this.collection.fetch({
-        data: this.filters.morph(),
+        data: this.morphFilters(),
         success: function() {
           $("body div.process-loading").hide();
         },
@@ -244,7 +255,7 @@
      * @return {object}
      */
     getFilters: function() {
-      return this.filters.set({
+      this.filters = _.extend({}, this.defaultFilters, {
         keyword: this.$('.js-cardfilter-keyword').val(),
         created: this.$('.js-cardfilter-created').is(':checked'),
         subscribed: this.$('.js-cardfilter-subscribed').is(':checked'),
@@ -253,7 +264,85 @@
         archived: this.$('.js-cardfilter-archived').is(':checked'),
         closed: this.$('.js-cardfilter-closed').is(':checked')
       });
+      return this.filters;
     },
+
+
+    /**
+     * Get the total number of active filters
+     * 
+     * @return {integer}
+     */
+    totalActiveFilters: function() {
+      var total = _.compact(_.toArray(this.filters)).length;
+
+      // Any does not count as a filter
+      if (this.filters.dueDate === 'any') {
+        total--;
+      }
+
+      return total;
+    },
+
+
+    /**
+     * Morph the filters into a query
+     * 
+     * @return {object}
+     */
+    morphFilters: function() {
+      var morphed = {};
+
+      // Build a regex for a keyword search
+      if (_.isString(this.filters.keyword) && this.filters.keyword.length) {
+        morphed.title = {
+          $regex: this.filters.keyword,
+          $options: 'gi'
+        };
+      }
+
+      // The user must have either created, subscribed or archived
+      // Otherwise query cards they are assigned to
+      // If they have one or more of these it will be an or query
+      if (!this.filters.created && !this.filters.assigned && !this.filters.subscribed) {
+        morphed.$or = [
+          { creatorId: cantas.user.id },
+          { assignees: cantas.user.id },
+          { subscribeUserIds: cantas.user.id }
+        ];
+      } else {
+        morphed.$or = [];
+
+        // Filter cards created by the user
+        if (this.filters.created === true) {
+          morphed.$or.push({
+            creatorId: cantas.user.id
+          });
+        }
+
+        // Filter cards assigned to the user
+        if (this.filters.assigned === true) {
+          morphed.$or.push({
+            assignees: cantas.user.id
+          });
+        }
+
+        // Filter cards the user has subscribed to
+        if (this.filters.subscribed === true) {
+          morphed.$or.push({
+            subscribeUserIds: cantas.user.id
+          });
+        }
+      }
+
+      // Show cards that are archived
+      if (this.filters.archived === false) {
+        morphed.isArchived = false;
+      }
+
+      return morphed;
+    },
+
 
     remove: function() {
       this.undelegateEvents();
