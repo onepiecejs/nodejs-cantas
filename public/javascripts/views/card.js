@@ -1833,10 +1833,6 @@
         hour: (defaultDate) ? defaultDate.format('HH') : 23,
         minute: (defaultDate) ? defaultDate.format('mm') : 59,
         onSelect: function(datetimeText, datepickerInstance) {
-          if (datetimeText === '12:00 AM') {
-            _self.$('[name="due-time"]').val('00:00 AM');
-          }
-
           if (!_self.validateDateTime()) {
             _self.resetDueDate();
           }
