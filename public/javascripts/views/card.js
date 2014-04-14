@@ -763,6 +763,7 @@
       this.model.on('change:description', this.descriptionChanged, this);
       this.model.on('change:assignees', this.assigneesChanged, this);
       this.model.on('change:subscribeUserIds', this.subscribeChanged, this);
+      this.model.on('change:dueDate', this.dueDateChanged, this);
       this.commentTemplate = jade.compile($("#template-comment-item-view").text());
 
       this.cardLabelCollection = options.cardLabelCollection;
@@ -775,6 +776,10 @@
       var card = this.model.toJSON();
       card.assignees = this._concatAssignees();
       card.description = markdown.toHTML(card.description);
+
+      if ( card.dueDate ) {
+        card.dueDateDisplay = moment.utc(new Date(card.dueDate)).calendar();
+      }
 
       $.when(this.$el.html(this.template({ 'card': card }))).done(function() {
         _this.$el.modal();
@@ -1172,6 +1177,20 @@
         this.$el.find('.js-subscribe').text('Unsubscribe');
       } else {
         this.$el.find('.js-subscribe').text('Subscribe');
+      }
+    },
+
+    /**
+     * Display the due date when it is changes
+     */
+    dueDateChanged: function() {
+      var $elem = this.$('.js-edit-due-date'),
+        dueDate = this.model.get('dueDate');
+
+      if (dueDate) {
+        $elem.text(moment.utc(new Date(dueDate)).calendar());
+      } else {
+        $elem.text('Due date');
       }
     },
 
@@ -1768,6 +1787,7 @@
 
     events: {
       "click .js-save": "save",
+      "click .js-delete": "delete",
       "click .js-close": "collapse",
       "focus .js-due-date": "showCalendar",
       "focus .js-due-time": "showClock"
@@ -1778,7 +1798,8 @@
     },
 
     render: function() {
-      var defaultDate;
+      var defaultDate,
+        _self = this;
 
       if (this.model.get('dueDate')) {
         defaultDate = moment.utc(new Date(this.model.get('dueDate')));
@@ -1794,7 +1815,13 @@
       this.$calendar = this.$('.js-datepicker').datepicker({
         altField: this.$('[name="due-date"]'),
         altFormat: "dd/mm/yy",
-        defaultDate: (defaultDate) ? defaultDate.format('MM/DD/YYYY') : null
+        defaultDate: (defaultDate) ? defaultDate.format('MM/DD/YYYY') : null,
+        minDate: new Date(),
+        onSelect: function() {
+          if (!_self.validateDateTime()) {
+            _self.resetDueDate();
+          }
+        }
       }).hide();
 
       this.$clock = this.$('.js-timepicker').timepicker({
@@ -1802,41 +1829,77 @@
         timeFormat: "hh:mm TT",
         altField: this.$('[name="due-time"]'),
         altFieldTimeOnly: true,
-        hour: (defaultDate) ? defaultDate.format('HH') : null,
-        minute: (defaultDate) ? defaultDate.format('mm') : null
+        stepMinute: 10,
+        hour: (defaultDate) ? defaultDate.format('HH') : 23,
+        minute: (defaultDate) ? defaultDate.format('mm') : 59,
+        onSelect: function(datetimeText, datepickerInstance) {
+          if (datetimeText === '12:00 AM') {
+            _self.$('[name="due-time"]').val('00:00 AM');
+          }
+
+          if (!_self.validateDateTime()) {
+            _self.resetDueDate();
+          }
+        }
       }).hide();
 
       return this;
     },
 
     showCalendar: function() {
+      $('.js-due-date').blur();
       this.$clock.hide();
       this.$calendar.show();
     },
 
     showClock: function() {
+      $('.js-due-time').blur();
       this.$clock.show();
       this.$calendar.hide();
     },
 
-    save: function() {
+    /**
+     * Reset the due date to now
+     */
+    resetDueDate: function() {
+      this.$('.js-datepicker').datepicker('setDate', new Date());
+      this.$('.js-timepicker').timepicker('setTime', new Date());
+    },
+
+    /**
+     * Get the date and time selected by the user
+     *  - Returns a moment.js object
+     * 
+     * @return {Moment}
+     */
+    getUserInput: function() {
       var date = this.$('.js-due-date').val(),
-        time = this.$('.js-due-time').val(),
-        m;
+        time = this.$('.js-due-time').val();
 
-      if (_.isEmpty(date)) {
-        this.model.patch({
-          dueDate: null
-        });
-        this.collapse();
-        return;
-      }
+      return window.moment(date + ' ' + time, "DD/MM/YYYY hh:mm A");
+    },
 
-      if (_.isEmpty(time)) {
-        m = window.moment(date, "DD/MM/YYYY");
-      } else {
-        m = window.moment(date + ' ' + time, "DD/MM/YYYY hh:mm A");
-      }
+    /**
+     * Make sure the selected date time is not before now
+     */
+    validateDateTime: function() {
+      var m = this.getUserInput();
+      return (m.isValid() && !m.isBefore());
+    },
+
+    /**
+     * Remove the due date
+     */
+    delete: function() {
+      this.model.patch({
+        dueDate: null
+      });
+
+      this.collapse();
+    },
+
+    save: function() {
+      var m = this.getUserInput();
 
       if (m.isValid()) {
         this.model.patch({

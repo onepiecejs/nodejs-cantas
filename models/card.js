@@ -18,7 +18,7 @@
     description: { type: String, default: 'Description'},
     isArchived: { type: Boolean, default: false },
     created: { type: Date, default: Date.now },
-    dueDate: { type: Date, default: null },
+    dueDate: { type: Date, required: false, default: null },
     order: { type: Number, default: -1},
     creatorId: { type: ObjectId, required: true, index: true },
     assignees: [ {type: ObjectId, ref: 'User', index: true} ],

@@ -161,6 +161,14 @@
     border-radius: 3px;
 }
 
+.ui-datepicker .ui-datepicker-unselectable, .ui-datepicker .ui-datepicker-unselectable:hover {
+    color: #ccc;
+    cursor: default;
+}
+.ui-datepicker .ui-datepicker-unselectable .ui-state-default {
+    background: transparent;
+}
+
 /*!
  * jQuery UI Slider 1.10.4
  * http://jqueryui.com
@@ -2139,6 +2147,12 @@ z-index: 10000
     left: auto;
     right: 150px;
     display: none;
+}
+
+.window-due-date .input-due-date, .window-due-date .input-due-time {
+    cursor: pointer;
+    box-shadow: none;
+    outline: none;
 }
 
 #card-detail .modal-header section .window-label{

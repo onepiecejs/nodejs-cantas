@@ -14,7 +14,11 @@ script#template-card-detail-view(type="text/template")
   |        div.card-filter.clearfix
   |      a.card-vote.js-edit-vote
   |      a.js-subscribe
-  |      a.card-due-date.js-edit-due-date Due date
+  |      a.card-due-date.js-edit-due-date
+  |        if card.dueDateDisplay
+  |          span= card.dueDateDisplay
+  |        else 
+  |          span Due Date
   |      div.modal.window-label.window-detail.hide
   |      div.modal.window-assign.window-detail.hide
   |      div.modal.window-vote.window-detail.hide
