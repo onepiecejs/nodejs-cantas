@@ -1858,8 +1858,15 @@
      * Reset the due date to now
      */
     resetDueDate: function() {
-      this.$('.js-datepicker').datepicker('setDate', new Date());
-      this.$('.js-timepicker').timepicker('setTime', new Date());
+      var now = new Date();
+
+      // Minimum step for minutes is 10
+      // Therefore; rount up minutes to the nearest 10
+      var coeff = 1000 * 60 * 10;
+      var roundedDate = new Date(Math.ceil(now.getTime() / coeff) * coeff);
+
+      this.$('.js-datepicker').datepicker('setDate', roundedDate);
+      this.$('.js-timepicker').timepicker('setTime', roundedDate);
     },
 
     /**
