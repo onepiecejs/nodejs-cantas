@@ -377,6 +377,7 @@
     render: function() {
       var data = this.model.toJSON();
       data.index = this.attributes.index;
+      data.dueDateDisplay = this.getDueDateDisplay();
 
       this.$el.empty();
       this.$el.html(this.template(data));
@@ -422,6 +423,17 @@
       this.voteCollection.dispose();
       this.remove();
       return this;
+    },
+
+    getDueDateDisplay: function() {
+      if (this.model.get('dueDate')) {
+        var dueDate = this.model.get('dueDate'),
+          date = new Date(dueDate),
+          m = window.moment.utc(date),
+          firendly = m.calendar();
+        return firendly;
+      }
+      return false;
     },
 
     updateOnEnter: function(e) {
@@ -737,6 +749,7 @@
       "click .js-edit-assign": "toggleAssignWindow",
       "click .js-edit-label": "toggleLabelWindow",
       "click .js-edit-vote": "toggleVoteWindow",
+      "click .js-edit-due-date": "toggleDueDateWindow",
       "click .js-add-comment": "addComment",
       "click .js-add-attachment": "addAttachment",
       "hidden.bs.modal": "closeCardDetail",
@@ -750,6 +763,7 @@
       this.model.on('change:description', this.descriptionChanged, this);
       this.model.on('change:assignees', this.assigneesChanged, this);
       this.model.on('change:subscribeUserIds', this.subscribeChanged, this);
+      this.model.on('change:dueDate', this.dueDateChanged, this);
       this.commentTemplate = jade.compile($("#template-comment-item-view").text());
 
       this.cardLabelCollection = options.cardLabelCollection;
@@ -763,6 +777,10 @@
       card.assignees = this._concatAssignees();
       card.description = markdown.toHTML(card.description);
 
+      if (card.dueDate) {
+        card.dueDateDisplay = moment.utc(new Date(card.dueDate)).calendar();
+      }
+
       $.when(this.$el.html(this.template({ 'card': card }))).done(function() {
         _this.$el.modal();
         cantas.setTitle("Card|" + _this.model.get("title"));
@@ -772,6 +790,7 @@
         _this.renderLabelView();
         _this.renderVoteView();
         _this.renderSubscribeStatus();
+        _this.renderDueDateView();
         _this.renderCommentView();
         _this.renderAttachmentView();
 
@@ -1052,6 +1071,34 @@
       }
     },
 
+    renderDueDateView: function() {
+      this.cardDueDateView = new cantas.views.CardDueDateView({
+        el: this.$el.find('div.window-due-date'),
+        model: this.model,
+        attributes: {
+          expandedViewChain: this._expandedViewChain
+        }
+      });
+      this.cardDueDateView.render();
+    },
+
+    toggleDueDateWindow: function(event) {
+      event.stopPropagation();
+      if (this.cardDueDateView.isExpanded === false) {
+        this.cardDueDateView.render();
+        this.cardDueDateView.$el.show();
+        this.cardDueDateView.isExpanded = true;
+        // FIXME: scroll to cardDueDateView
+        $('.modal-scrollable').scrollTop(0);
+        this.cardDueDateView.attributes.expandedViewChain = cantas.utils.rememberMe(
+          this.cardDueDateView,
+          this.cardDueDateView.attributes.expandedViewChain
+        );
+      } else {
+        this.cardDueDateView.collapse();
+      }
+    },
+
     renderLabelView: function() {
       this.labelAssignView = new cantas.views.LabelAssignView({
         el: this.$el.find('div.window-label'),
@@ -1133,6 +1180,20 @@
       }
     },
 
+    /**
+     * Display the due date when it is changes
+     */
+    dueDateChanged: function() {
+      var $elem = this.$('.js-edit-due-date'),
+        dueDate = this.model.get('dueDate');
+
+      if (dueDate) {
+        $elem.text(moment.utc(new Date(dueDate)).calendar());
+      } else {
+        $elem.text('Due date');
+      }
+    },
+
     canComment: function() {
       var commentStatus = cantas.utils.getCurrentCommentStatus();
       var canComment = true;
@@ -1179,6 +1240,10 @@
         this.cardAssignView.remove();
       }
 
+      if (this.cardDueDateView) {
+        this.cardDueDateView.remove();
+      }
+
       if (this.labelAssignView) {
         this.labelAssignView.remove();
       }
@@ -1189,6 +1254,10 @@
 
       if (this.cardVoteView) {
         this.cardVoteView.remove();
+      }
+
+      if (this.cardDueDateView) {
+        this.cardDueDateView.remove();
       }
 
       this.cardLabelCollection.dispose();
@@ -1709,5 +1778,150 @@
     }
 
   });
+
+
+
+  cantas.views.CardDueDateView = cantas.views.BaseView.extend({
+
+    template: jade.compile($("#template-card-due-date-view").text()),
+
+    events: {
+      "click .js-save": "save",
+      "click .js-delete": "delete",
+      "click .js-close": "collapse",
+      "focus .js-due-date": "showCalendar",
+      "focus .js-due-time": "showClock"
+    },
+
+    initialize: function() {
+      this.isExpanded = false;
+    },
+
+    render: function() {
+      var defaultDate,
+        _self = this;
+
+      if (this.model.get('dueDate')) {
+        defaultDate = moment.utc(new Date(this.model.get('dueDate')));
+      } else {
+        defaultDate = null;
+      }
+
+      this.$el.html(this.template(_.extend({}, this.model, {
+        dueDate: (defaultDate) ? defaultDate.format('DD/MM/YYYY') : null,
+        dueTime: (defaultDate) ? defaultDate.format('hh:mm A') : null
+      })));
+
+      this.$calendar = this.$('.js-datepicker').datepicker({
+        altField: this.$('[name="due-date"]'),
+        altFormat: "dd/mm/yy",
+        defaultDate: (defaultDate) ? defaultDate.format('MM/DD/YYYY') : null,
+        minDate: new Date(),
+        onSelect: function() {
+          if (!_self.validateDateTime()) {
+            _self.resetDueDate();
+          }
+        }
+      }).hide();
+
+      this.$clock = this.$('.js-timepicker').timepicker({
+        timeOnly: true,
+        timeFormat: "hh:mm TT",
+        altField: this.$('[name="due-time"]'),
+        altFieldTimeOnly: true,
+        stepMinute: 10,
+        hour: (defaultDate) ? defaultDate.format('HH') : 23,
+        minute: (defaultDate) ? defaultDate.format('mm') : 59,
+        onSelect: function(datetimeText, datepickerInstance) {
+          if (!_self.validateDateTime()) {
+            _self.resetDueDate();
+          }
+        }
+      }).hide();
+
+      return this;
+    },
+
+    showCalendar: function() {
+      $('.js-due-date').blur();
+      this.$clock.hide();
+      this.$calendar.show();
+    },
+
+    showClock: function() {
+      $('.js-due-time').blur();
+      this.$clock.show();
+      this.$calendar.hide();
+    },
+
+    /**
+     * Reset the due date to now
+     */
+    resetDueDate: function() {
+      var now = new Date();
+
+      // Minimum step for minutes is 10
+      // Therefore; rount up minutes to the nearest 10
+      var coeff = 1000 * 60 * 10;
+      var roundedDate = new Date(Math.ceil(now.getTime() / coeff) * coeff);
+
+      this.$('.js-datepicker').datepicker('setDate', roundedDate);
+      this.$('.js-timepicker').timepicker('setTime', roundedDate);
+    },
+
+    /**
+     * Get the date and time selected by the user
+     *  - Returns a moment.js object
+     * 
+     * @return {Moment}
+     */
+    getUserInput: function() {
+      var date = this.$('.js-due-date').val(),
+        time = this.$('.js-due-time').val();
+
+      return window.moment(date + ' ' + time, "DD/MM/YYYY hh:mm A");
+    },
+
+    /**
+     * Make sure the selected date time is not before now
+     */
+    validateDateTime: function() {
+      var m = this.getUserInput();
+      return (m.isValid() && !m.isBefore());
+    },
+
+    /**
+     * Remove the due date
+     */
+    delete: function() {
+      this.model.patch({
+        dueDate: null
+      });
+
+      this.collapse();
+    },
+
+    save: function() {
+      var m = this.getUserInput();
+
+      if (m.isValid()) {
+        this.model.patch({
+          dueDate: m.toJSON()
+        });
+      }
+      this.collapse();
+    },
+
+    collapse: function() {
+      this.$el.hide();
+      this.isExpanded = false;
+      this.attributes.expandedViewChain = cantas.utils.forgetMe(
+        this,
+        this.attributes.expandedViewChain
+      );
+    }
+
+  });
+
 
 }(jQuery, _, Backbone));

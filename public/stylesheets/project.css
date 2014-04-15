@@ -23,6 +23,248 @@
     content: "";
 }
 
+
+/*!
+ * jQuery UI Datepicker 1.10.4
+ * http://jqueryui.com
+ *
+ * Copyright 2014 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/datepicker/#theming
+ */
+.ui-datepicker {
+    z-index: 9999;
+    width: 17em;
+    padding: .2em .2em 0;
+    display: none;
+    background: #FFF;
+    padding: 10px;
+    border: 1px solid #CCC;
+    border-radius: 6px;
+    margin-top: 6px;
+}
+.ui-datepicker .ui-datepicker-header {
+    position: relative;
+    padding: .2em 0;
+}
+.ui-datepicker .ui-datepicker-prev,
+.ui-datepicker .ui-datepicker-next {
+    position: absolute;
+    top: 2px;
+    width: 1.8em;
+    height: 1.8em;
+}
+.ui-datepicker .ui-datepicker-prev-hover,
+.ui-datepicker .ui-datepicker-next-hover {
+    top: 1px;
+}
+.ui-datepicker .ui-datepicker-prev {
+    left: 2px;
+}
+.ui-datepicker .ui-datepicker-next {
+    right: 6px;
+}
+.ui-datepicker .ui-datepicker-prev-hover {
+    left: 2px;
+}
+.ui-datepicker .ui-datepicker-next-hover {
+    right: 6px;
+}
+.ui-datepicker .ui-datepicker-prev span,
+.ui-datepicker .ui-datepicker-next span {
+    display: block;
+    position: absolute;
+    left: 50%;
+    margin-left: -8px;
+    top: 50%;
+    margin-top: -8px;
+}
+.ui-datepicker .ui-datepicker-next span {
+    right: 0;
+    left: auto;
+}
+.ui-datepicker .ui-datepicker-title {
+    margin: 0 2.3em;
+    line-height: 1.8em;
+    text-align: center;
+    font-weight: bold;
+}
+.ui-datepicker .ui-datepicker-title select {
+    font-size: 1em;
+    margin: 1px 0;
+}
+.ui-datepicker select.ui-datepicker-month,
+.ui-datepicker select.ui-datepicker-year {
+    width: 49%;
+}
+.ui-datepicker table {
+    width: 100%;
+    font-size: .9em;
+    border-collapse: collapse;
+    margin: 0 0 .4em;
+}
+.ui-datepicker th {
+    padding: .7em .3em;
+    text-align: center;
+    font-weight: bold;
+    border: 0;
+}
+.ui-datepicker td {
+    border: 0;
+    padding: 1px;
+}
+.ui-datepicker td span,
+.ui-datepicker td a {
+    display: block;
+    padding: .2em;
+    text-align: center;
+    text-decoration: none;
+}
+.ui-datepicker .ui-datepicker-buttonpane {
+    background-image: none;
+    margin: .7em 0 0 0;
+    padding: 0 .2em;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+}
+.ui-datepicker .ui-datepicker-buttonpane button {
+    float: right;
+    margin: .5em .2em .4em;
+    cursor: pointer;
+    padding: .2em .6em .3em .6em;
+    width: auto;
+    overflow: visible;
+}
+.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current {
+    float: left;
+}
+.ui-state-default:hover {
+    color: inherit;
+    background: #eee;
+    border-radius: 3px;
+}
+.ui-datepicker .ui-state-highlight, .ui-datepicker .ui-state-highlight:hover {
+    height: auto;
+    width: auto;
+    background: #eee;
+    color: inherit;
+    margin: 0;
+    opacity: 1;
+    box-shadow: none;
+}
+.ui-datepicker .ui-state-active, .ui-datepicker .ui-state-active:hover {
+    background: #6094D0;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.ui-datepicker .ui-datepicker-unselectable, .ui-datepicker .ui-datepicker-unselectable:hover {
+    color: #ccc;
+    cursor: default;
+}
+.ui-datepicker .ui-datepicker-unselectable .ui-state-default {
+    background: transparent;
+}
+
+/*!
+ * jQuery UI Slider 1.10.4
+ * http://jqueryui.com
+ *
+ * Copyright 2014 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/slider/#theming
+ */
+.ui-slider {
+    position: relative;
+    text-align: left;
+}
+.ui-slider .ui-slider-handle {
+    position: absolute;
+    z-index: 2;
+    width: 1.2em;
+    height: 1.2em;
+    cursor: default;
+}
+.ui-slider .ui-slider-range {
+    position: absolute;
+    z-index: 1;
+    font-size: .7em;
+    display: block;
+    border: 0;
+    background-position: 0 0;
+}
+
+/* For IE8 - See #6727 */
+.ui-slider.ui-state-disabled .ui-slider-handle,
+.ui-slider.ui-state-disabled .ui-slider-range {
+    filter: inherit;
+}
+
+.ui-slider-horizontal {
+    background: #EEE;
+    border-radius: 10px;
+    height: 6px;
+}
+.ui-slider-horizontal .ui-slider-handle {
+    top: -5px;
+    margin-left: -.6em;
+}
+.ui-slider-horizontal .ui-slider-range {
+    top: 0;
+    height: 100%;
+}
+.ui-slider-horizontal .ui-slider-range-min {
+    left: 0;
+}
+.ui-slider-horizontal .ui-slider-range-max {
+    right: 0;
+}
+
+.ui-slider-vertical {
+    width: .8em;
+    height: 100px;
+}
+.ui-slider-vertical .ui-slider-handle {
+    left: -.3em;
+    margin-left: 0;
+    margin-bottom: -.6em;
+}
+.ui-slider-vertical .ui-slider-range {
+    left: 0;
+    width: 100%;
+}
+.ui-slider-vertical .ui-slider-range-min {
+    bottom: 0;
+}
+.ui-slider-vertical .ui-slider-range-max {
+    top: 0;
+}
+
+/*! jQuery Timepicker Addon - v1.4.4 - 2014-03-29
+* http://trentrichardson.com/examples/timepicker
+* Copyright (c) 2014 Trent Richardson; Licensed MIT */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; margin: 25px 10px; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 0 0 40%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui_tpicker_time, .ui_tpicker_time_label, .ui-datepicker-buttonpane {
+    display: none;
+}
+.ui-timepicker-div .ui_tpicker_minute_label {
+    margin-top: 15px;
+}
+.ui-timepicker-div .ui_tpicker_minute {
+    margin-top: 32px;
+}
+
 /*=======icons as blow============*/
 html,body{
     background: #000000;
@@ -1297,6 +1539,10 @@ input:focus, textarea:focus  .list-panel>li{
     background: #ccc url("../images/cantas-attachment.png") no-repeat 2px 1px;
     background-size: 12px auto;
 }
+.card .card-items .card-due-date{
+    background: #ccc url("../images/cantas-due-date.png") no-repeat 3px 3px;
+    background-size: 12px auto;
+}
 .add-plugein, .add-list, .add-list-none{
     color: #888;
     padding: 9px;
@@ -1761,6 +2007,53 @@ z-index: 10000
     color: #fff;
     vertical-align: middle;
 }
+
+.card-options .menu-links > li {
+    position: relative;
+    float: left;
+    margin: 10px 10px 10px 0;
+}
+
+.card-options .menu-links > li > a {
+    display: block;
+    padding: 4px 18px;
+    border-radius: 3px;
+    background: #6094D0;
+    color: #fff;
+    text-align: center;
+}
+
+.card-options .modal {
+    position: absolute;
+    max-width: 320px;
+    top: 30px;
+    left: 0;
+    z-index: 100;
+    margin: 0;
+}
+
+#form-due-date {
+    position: relative;
+}
+#form-due-date .ui-datepicker-inline {
+    overflow: auto;
+    width: auto;
+}
+
+.due-date-inputs {
+    overflow: auto;
+}
+.due-date-inputs input {
+    max-width: 125px;
+}
+.due-date-inputs .field-date, .due-date-inputs .field-time {
+    float: left;
+    width: 47%;
+}
+.due-date-inputs .field-time {
+    float: right;
+}
+
 #card-detail .card-label .card-filter{
     margin: 3px 0;
 }
@@ -1848,6 +2141,20 @@ z-index: 10000
     font-weight: blod;
     font-size: 15px;
 }
+
+.window-due-date {
+    top: 290px;
+    left: auto;
+    right: 150px;
+    display: none;
+}
+
+.window-due-date .input-due-date, .window-due-date .input-due-time {
+    cursor: pointer;
+    box-shadow: none;
+    outline: none;
+}
+
 #card-detail .modal-header section .window-label{
     left: 390px;
     top: 290px;

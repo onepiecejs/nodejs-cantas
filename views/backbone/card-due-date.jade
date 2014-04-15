@@ -1,0 +1,19 @@
+script#template-card-due-date-view(type="text/template")
+  |header.modal-header
+  |  button#close-board-edit.close.js-close ×
+  |  h3 Due Date
+  |div.modal-body
+  |  form(id="form-due-date")
+  |    div.due-date-inputs
+  |      div.field-date
+  |        label Date
+  |        input(type="text", value=dueDate, class="input-due-date js-due-date", name="due-date")
+  |      div.field-time
+  |        label Time
+  |        input(type="text", value=dueTime, class="input-due-time js-due-time", name="due-time")
+  |    div.js-datepicker
+  |    div.js-timepicker
+  |footer.modal-footer
+  |  button.btn.btn-primary.js-save Save
+  |  button.btn.btn-danger.js-delete Remove
+  |  button.btn.js-close Cancel
