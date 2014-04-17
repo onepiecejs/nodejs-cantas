@@ -53,7 +53,6 @@
       }
 
       // Render each of the card views
-      var index = 1;
       this.childViews = [];
 
       this.collection.each(function(card) {

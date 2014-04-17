@@ -8,6 +8,7 @@
 
   var mongoose = require("mongoose");
   var util = require("util");
+  var _ = require("lodash");
   var async = require("async");
   var Activity = require("../../models/activity");
   var List = require("../../models/list");
@@ -388,6 +389,54 @@
     }
 
   };
+
+
+  /**
+   * Helper fucntion to parse a query which has been passes from the client
+   * 
+   *  - The client can provide an object type and value 
+   *    (useful for dates, regex, etc. which cannot be transfered via JSON)
+   *    
+   *  - For example:
+   *    dueDate: {
+   *      $gte: {
+   *        type: "date",
+   *        value: "2014-04-17T00:00:00.000Z"
+   *      }
+   *    }
+   *    
+   *  - This would be converted to:
+   *    dueDate: {
+   *      $gte: ISODate("2014-04-17T00:00:00.000Z")
+   *    }
+   *  
+   * 
+   * @param  {object}   query object
+   * @return {object}   parsed query
+   */
+  BaseCRUD.prototype._parseQuery = function(query) {
+
+    var mapQuery = function(item) {
+
+      if (_.has(item, 'type')) {
+
+        // Convert dates
+        if (item.type === 'date') {
+          item = new Date(item.value);
+        }
+
+      } else if (_.isArray(item)) {
+        item = _.map(item, mapQuery);
+      } else if (_.isObject(item)) {
+        item = _.mapValues(item, mapQuery);
+      }
+
+      return item;
+    };
+
+    return _.mapValues(query, mapQuery);
+  };
+
 
   module.exports = BaseCRUD;
 

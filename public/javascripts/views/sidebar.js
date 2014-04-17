@@ -340,7 +340,50 @@
         morphed.isArchived = false;
       }
 
+      // Get the due date range
+      if (this.filters.dueDate && this.filters.dueDate !== 'any') {
+        var range = this.getDateRange(this.filters.dueDate);
+        morphed.dueDate = {
+          $gte: {
+            type: 'date',
+            value: range.from
+          },
+          $lt: {
+            type: 'date',
+            value: range.to
+          }
+        };
+      }
+
       return morphed;
+    },
+
+
+    /**
+     * Get a datetime range for 'day', 'week' or 'month'
+     * 
+     * @return {object}
+     */
+    getDateRange: function(range) {
+      var from = moment(),
+        to = moment();
+
+      if (range === 'day') {
+        to.add('days', 1);
+      }
+
+      if (range === 'week') {
+        to.add('weeks', 1);
+      }
+
+      if (range === 'month') {
+        to.add('months', 1);
+      }
+
+      return {
+        from: from,
+        to: to
+      };
     },
 
 

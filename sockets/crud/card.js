@@ -94,6 +94,7 @@
   };
 
   CardCRUD.prototype._read = function(data, callback) {
+    data = this._parseQuery(data);
     if (data) {
       if (data._id) {
         this.modelClass.findOne(data).populate("assignees").exec(

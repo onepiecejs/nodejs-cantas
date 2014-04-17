@@ -29,6 +29,9 @@ script#template-card-filter-panel-view(type="text/template").
         input(type='radio', class='js-cardfilter-dueDate', name='dueDate', value='week', checked=(dueDate=='week' ? 'checked' : undefined))
         | Within the next week
       label(class='radio')
+        input(type='radio', class='js-cardfilter-dueDate', name='dueDate', value='month', checked=(dueDate=='month' ? 'checked' : undefined))
+        | Within the next month
+      label(class='radio')
         input(type='radio', class='js-cardfilter-dueDate', name='dueDate', value='any', checked=(dueDate=='any' ? 'checked' : undefined))
         | Anytime
     div(class='filter-group')
