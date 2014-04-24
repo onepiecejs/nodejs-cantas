@@ -15,7 +15,7 @@
     noResultsTemplate: jade.compile($("#template-card-list-view-no-results").text()),
 
     initialize: function() {
-      this.listenTo(this.collection, 'reset add remove change', this.renderCards.bind(this));
+      this.listenTo(this.collection, 'reset', this.renderCards.bind(this));
     },
 
     /**

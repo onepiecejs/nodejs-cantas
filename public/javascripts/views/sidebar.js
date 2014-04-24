@@ -239,6 +239,7 @@
       this.getFilters();
       this.collection.fetch({
         data: this.morphFilters(),
+        reset: true,
         success: function() {
           $("body div.process-loading").hide();
         },
