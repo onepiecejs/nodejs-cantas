@@ -16,7 +16,7 @@ $(function ($, _, Backbone) {
       "board/:boardId(/:slug)": "joinBoard",
       "card/:cardId(/:slug)": "renderCardDetail",
       "help": "help",
-      "settings": "settings",
+      "account": "accountSettings",
       "welcome": "welcome",
       "search/:query": "search"
     },
@@ -232,14 +232,14 @@ $(function ($, _, Backbone) {
       }
     },
 
-    settings: function() {
+    accountSettings: function() {
       if(cantas.utils.isBrowserVersionLow()) {
         return cantas.utils.renderBrowserVesionPrompt();
       }
 
       var dashboardView = new cantas.views.DashboardView().render();
       dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-account-settings'));
-      dashboardView.setContentView(new cantas.views.settingsView({
+      dashboardView.setContentView(new cantas.views.accountSettingsView({
         title: 'Account Settings'
       }).render());
 

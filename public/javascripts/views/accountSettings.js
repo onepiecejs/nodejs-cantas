@@ -6,11 +6,11 @@
 
   "use strict";
 
-  cantas.views.settingsView = cantas.views.BaseView.extend({
+  cantas.views.accountSettingsView = cantas.views.BaseView.extend({
     events: {
     },
 
-    template: jade.compile($("#template-settings-view").text()),
+    template: jade.compile($("#template-account-settings-view").text()),
 
     initialize: function () {
     },
@@ -37,6 +37,6 @@
       this.stopListening();
       return this;
     }
-  })
+  });
 
 }(jQuery, _, Backbone));

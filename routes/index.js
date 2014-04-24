@@ -469,7 +469,7 @@
     });
 
     // account settings page
-    app.get('/settings', ensureAuthenticated, function (req, res) {
+    app.get('/account', ensureAuthenticated, function (req, res) {
       res.render('application', {title: 'Cantas'});
     });
 
