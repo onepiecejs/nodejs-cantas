@@ -5,6 +5,7 @@
   exports.init = function (app, passport, sessionStore) {
 
     var boardHandler = require('../services/boardHandler');
+    var cardHandler = require('../services/cardHandler');
     var importTrello = require('../services/importTrello');
     var moment = require('moment');
     var utils = require('../services/utils');
@@ -111,6 +112,18 @@
       });
     });
 
+    // API - get my cards
+    app.get('/api/cards/mine', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
+      cardHandler.listMyCards(req.user, function(err, cards) {
+        if (err) {
+          res.json(400, {
+            success: false
+          });
+        }
+        res.json(cards);
+      });
+    });
+
     // API - get archived cards of board
     app.get('/api/archived/cards/:boardId', checkForSessionTimeout,
       ensureAuthenticated, function(req, res) {
@@ -154,6 +167,7 @@
     app.get('/auth/google', passport.authenticate('google', {failureRedirect: '/login'}));
 
     app.get('/auth/google/return', passport.authenticate('google', {failureRedirect: '/login'}),
+
       function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);
@@ -416,6 +430,21 @@
 
     // route to closed board
     app.get('/boards/closed', ensureAuthenticated, function (req, res) {
+      res.render('application', {title: 'Cantas'});
+    });
+
+    // route to my cards
+    app.get('/cards/mine', ensureAuthenticated, function (req, res) {
+      res.render('application', {title: 'Cantas'});
+    });
+
+    // route to my subscribed cards
+    app.get('/cards/subscribed', ensureAuthenticated, function (req, res) {
+      res.render('application', {title: 'Cantas'});
+    });
+
+    // route to my subscribed cards
+    app.get('/cards/assigned', ensureAuthenticated, function (req, res) {
       res.render('application', {title: 'Cantas'});
     });
 

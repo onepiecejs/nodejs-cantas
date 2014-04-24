@@ -80,14 +80,18 @@ module.exports = function (grunt) {
           'public/javascripts/views/attachment.js',
           'public/javascripts/models/vote.js',
           'public/javascripts/views/boardlist.js',
+          'public/javascripts/views/cardList.js',
           'public/javascripts/views/help.js',
           'public/javascripts/views/welcome.js',
+          'public/javascripts/views/dashboard.js',
+          'public/javascripts/views/dashboard-navigation.js',
           'public/javascripts/views/confirmDialog.js',
           'public/javascripts/models/visitor.js',
           'public/javascripts/views/boardActiveUsers.js',
           'public/javascripts/views/adminConfig.js',
           'public/javascripts/views/voteConfig.js',
           'public/javascripts/views/commentConfig.js',
+          'public/javascripts/views/sidebar.js',
           'public/javascripts/router.js',
         ],
         dest: 'public/javascripts/dist/cantas-app.js'
@@ -160,6 +164,7 @@ module.exports = function (grunt) {
           'public/javascripts/views/voteConfig.js',
           'public/javascripts/views/commentConfig.js',
           'public/javascripts/views/attachment.js',
+          'public/javascripts/views/sidebar.js',
           'public/javascripts/vendor/jquery.fileupload.js'
         ],
         options: {

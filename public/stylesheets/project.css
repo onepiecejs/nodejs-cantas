@@ -759,6 +759,75 @@ input:focus, textarea:focus{
     border-radius: 0;
     z-index: 99;
 }
+
+.sidebar-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-items li {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-items a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    line-height: 55px;
+    color: #fff;
+}
+
+.sidebar-items .badge {
+    position: absolute;
+    bottom: 10px;
+    left: 32px;
+    padding: 0;
+    background-color: transparent;
+}
+
+.panel-container {
+    position: absolute;
+    width: 270px;
+    height: 100%;
+    top: 0;
+    right: 50px;
+    background: url(../images/side-bar.png);
+    display: none;
+    overflow: hidden;
+    text-align: left;
+    padding: 15px;
+    color: #fff;
+}
+
+.panel-container .panel-title {
+    margin: 0 0 20px 0;
+    height: 35px;
+    line-height: 35px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-container .section-title {
+    font-weight: bold;
+}
+
+.panel-container label {
+    color: #fff;
+}
+
+.filter-group {
+    margin-bottom: 15px;
+
+}
+
+.sidebar-items i {
+    font-size: 22px;
+}
+
 .member-bar{
     display: block;   
 }
@@ -1388,13 +1457,14 @@ input:focus, textarea:focus  .list-panel>li{
     position: relative;
 }
 .card:hover{
+    background: #F9F9F9;
     /*-moz-transform: rotate(1deg);
     -webkit-transform: rotate(1deg);*/
    /* border-bottom-right-radius: 40px 4px;
     box-shadow: 1px 2px 2px #999;
     z-index: 99;*/
 }
-.card-container :hover{
+.card-container:hover{
     cursor: move;
 }
 .destroy:hover{
@@ -1543,6 +1613,28 @@ input:focus, textarea:focus  .list-panel>li{
     background: #ccc url("../images/cantas-due-date.png") no-repeat 3px 3px;
     background-size: 12px auto;
 }
+
+/* Closed Card */
+.card-closed .card-container {
+    opacity: 0.75;
+}
+.card-closed .card-container:hover {
+    cursor: not-allowed;
+}
+.card-closed .card {
+    border-color: #999;
+}
+.card-closed .card-index {
+    border-color: transparent transparent #999 #999;
+}
+
+/* Card Meta */
+.card-container .card-meta {
+    display: none;
+    padding: 0 15px;
+    margin-top: -2px;
+}
+
 .add-plugein, .add-list, .add-list-none{
     color: #888;
     padding: 9px;
@@ -1631,6 +1723,31 @@ input:focus, textarea:focus  .list-panel>li{
     margin: 0 9px;
     display: inline-block;
     opacity: 0.6;
+}
+
+
+/*=============Static card===============*/
+
+.card-archive-list {
+    position: absolute;
+    overflow: auto;
+    top: 56px;
+    left: 0;
+    right: 68px;
+    bottom: 0px;
+}
+.card-archive-list .list-card-static {
+    float: left;
+    width: 24.6%;
+}
+.list-card-static:nth-child(4n + 1) {
+    clear: left;
+}
+.list-card-static:not(.card-closed) .card-container:hover {
+    cursor: pointer;
+}
+.list-card-static .card-container .card-meta {
+    display: block;
 }
 
 
@@ -1929,46 +2046,51 @@ z-index: 10000
   cursor: auto;
 }
 
-.board-list .board-option{
+/*===================dashboard navigation=================*/
+.dashboard-layout {
+    margin: 0 auto;
+    height: 100%;
+}
+.dashboard-navigation {
     height: 100%;
     background: #6094D0;
 }
-.board-list .board-option ul{
+.dashboard-navigation ul {
     float: right;
     padding: 45px 0 0;
     width: 100%;
     height: 100%;
 }
-.board-list .board-option li{
+.dashboard-navigation li{
     text-align: right;
     border-bottom: 1px solid #4983BC;
     border-top: 1px solid #81B5EC;
 }
-.board-list .board-option li.active{
+.dashboard-navigation li.active{
     background: #3064A0;
     box-shadow: 1px 1px 4px #0E407C inset;
 }
-.board-list .board-option li:hover{
+.dashboard-navigation li:hover{
     background: #3064A0;
 }
-.board-list .board-option li:hover span{
+.dashboard-navigation li:hover span{
     display: inline-block;
 }
-.board-list .board-option li span{
+.dashboard-navigation li span{
     display: none;
     float: left;
     height: 100%;
     width: 6px;
 }
-.board-list .board-option li:first-child{
+.dashboard-navigation li:first-child{
     border-top: none;
     height: 0;
 }
-.board-list .board-option li:last-child{
+.dashboard-navigation li:last-child{
     border-bottom: none;
     height: 0;
 }
-.board-list .board-option li a{
+.dashboard-navigation li a{
     display: block;
     outline: none;
     padding: 18px 9px;
@@ -1977,16 +2099,25 @@ z-index: 10000
     text-shadow: 1px 3px 6px #6094D0, 0 0 0 #181818, 1px 3px 6px #6094D0;
     font-weight: bold;
 }
-.board-list .board-option li a:hover, .board-list .board-option li:hover a{
+.dashboard-navigation li a:hover, .dashboard-navigation li:hover a{
     color: #eee;
     text-decoration: underline;
     text-shadow: none;
 }
-.board-list .board-option li.active a{
+.dashboard-navigation li.active a{
     color: #eee;
     text-decoration: none;
     text-shadow: none;
 }
+
+/*===================dashboard content=================*/
+
+.dashboard-content {
+    position: relative;
+    padding-right: 40px;
+    height: 100%;
+}
+
 
 /*================Card Modal================*/
 #card-detail  .hidden{
@@ -2291,7 +2422,7 @@ z-index: 10000
     background: #f5f5f5;
     border-right: 2px solid #5ED2AB;
 }
-.checkbox{
+#card-detail .checkbox{
     float: left;
     padding: 0 5px;
     background: #fff;
@@ -2301,7 +2432,7 @@ z-index: 10000
     cursor: pointer;
     border-radius: 10px;
 }
-.checkbox span{
+#card-detail .checkbox span{
   display: none; 
   position: absolute;
   left: -2px;
@@ -2311,13 +2442,13 @@ z-index: 10000
   background: url(../images/cantas-check.png) no-repeat 0 0;
   background-size: 100%;
 }
-.checkbox:hover{
+#card-detail .checkbox:hover{
   border-color: #45B992;
 }
 #card-detail .modal-body .checklist ul li.checked .checkbox{
   border-color: #45B992;
 }
-.checkbox:hover span{
+#card-detail .checkbox:hover span{
   display: none;
 }
 #card-detail .modal-body .checklist ul li.checked .checkbox span{

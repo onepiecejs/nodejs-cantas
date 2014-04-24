@@ -303,8 +303,9 @@
           $.ajax({
             url: "/api/search_member",
             type: "GET",
-            data: req,
-            success: function (data) {
+            data: req
+          })
+            .success(function (data) {
               var re = $.ui.autocomplete.escapeRegex(req.term);
               var matcher = new RegExp("^" + re, "i");
               var beginningMatchedData = $.grep(data, function(element) {
@@ -332,8 +333,7 @@
                   value: el
                 };
               }));
-            }
-          });
+            });
         },
         minLength: 1,
         messages: {

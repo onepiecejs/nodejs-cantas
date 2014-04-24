@@ -94,6 +94,7 @@
   };
 
   CardCRUD.prototype._read = function(data, callback) {
+    data = this._parseQuery(data);
     if (data) {
       if (data._id) {
         this.modelClass.findOne(data).populate("assignees").exec(
@@ -109,16 +110,32 @@
               function(card, callback) {
                 var transformed = card.toJSON();
                 async.parallel([
+                  // Get badges
                   function(callback) {
                     card.getBadges(function(err, badges) {
                       transformed.badges = badges;
                       callback(null, transformed.badges);
                     });
                   },
+                  // Get cover
                   function(callback) {
                     card.getCover(function(err, cover) {
                       transformed.cover = cover;
                       callback(null, transformed.cover);
+                    });
+                  },
+                  // Get board meta
+                  function(callback) {
+                    card.getBoardMeta(function(err, board) {
+                      transformed.board = board;
+                      callback(null, transformed.board);
+                    });
+                  },
+                  // Get list meta
+                  function(callback) {
+                    card.getListMeta(function(err, list) {
+                      transformed.list = list;
+                      callback(null, transformed.list);
                     });
                   }
                 ], function(err, results) {

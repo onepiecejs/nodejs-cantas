@@ -18,14 +18,15 @@
         "socket.io": "*",
         "xmlrpc": "~1.1.0",
         "easyimage": "*",
-        "requestify": "*"
+        "requestify": "*",
+        "lodash": "*"
     },
     "devDependencies": {
         "expect.js": "*",
         "grunt": "~0.4.0",
         "grunt-contrib-concat": "*",
         "grunt-contrib-cssmin": "~0.6.1",
-        "grunt-contrib-jasmine": "*",
+        "grunt-contrib-jasmine": "0.5.x",
         "grunt-contrib-uglify": "*",
         "grunt-contrib-watch": "~0.4.3",
         "grunt-simple-mocha": "~0.4.0",

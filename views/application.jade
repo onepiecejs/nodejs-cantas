@@ -34,7 +34,10 @@ block append scripts
   //- templates for backbone view
   include backbone/help
   include backbone/welcome
+  include backbone/dashboard
+  include backbone/dashboard-navigation
   include backbone/board-list
+  include backbone/card-list
   include backbone/board
   include backbone/board-title
   include backbone/label-assign
@@ -70,6 +73,7 @@ block append scripts
   include backbone/admin-config
   include backbone/vote-config
   include backbone/comment-config
+  include backbone/sidebar
 
   - if (process.env.NODE_ENV == 'production')
     script(type="text/javascript", src="/javascripts/dist/cantas-app.min.js")
@@ -106,12 +110,16 @@ block append scripts
     script(type="text/javascript", src="/javascripts/views/attachment.js")
     script(type="text/javascript", src="/javascripts/models/vote.js")
     script(type="text/javascript", src="/javascripts/views/boardlist.js")
+    script(type="text/javascript", src="/javascripts/views/cardList.js")
     script(type="text/javascript", src="/javascripts/views/help.js")
     script(type="text/javascript", src="/javascripts/views/welcome.js")
+    script(type="text/javascript", src="/javascripts/views/dashboard.js")
+    script(type="text/javascript", src="/javascripts/views/dashboard-navigation.js")
     script(type="text/javascript", src="/javascripts/views/confirmDialog.js")
 
     script(type="text/javascript", src="/javascripts/models/visitor.js")
     script(type="text/javascript", src="/javascripts/views/boardActiveUsers.js")
+    script(type="text/javascript", src="/javascripts/views/sidebar.js")
 
     script(type="text/javascript", src="/javascripts/views/adminConfig.js")
 

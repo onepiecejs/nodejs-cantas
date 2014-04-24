@@ -215,8 +215,9 @@
           if (-1 === inListViewIndex) {
             var queryCards = '/api/archived/getorders/' + model.get("listId");
             $.ajax({
-              url: queryCards,
-              success: function(items) {
+              url: queryCards
+            })
+              .success(function(items) {
                 var sortArray = _.pluck(items, 'order');
                 sortArray.sort(function(a, b) {
                   return (a - b);
@@ -233,12 +234,11 @@
                   'order': newCardOrder,
                   original: {isArchived: true}
                 }, { silent: true });
-              },
-              error: function() {
+              })
+              .fail(function() {
                 cantas.utils.renderTimeoutBox();
                 return false;
-              }
-            });
+              });
           } else {
             // if the listView exist in this board
             var inListView = cantas.utils.getCurrentBoardView().listViewCollection[inListViewIndex];

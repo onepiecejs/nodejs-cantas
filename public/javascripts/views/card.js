@@ -379,6 +379,18 @@
       data.index = this.attributes.index;
       data.dueDateDisplay = this.getDueDateDisplay();
 
+      data.coverURL = this.getCoverUrl(data.cover);
+
+      if (data.badges) {
+        // Format checklist progress
+        if (data.badges.checkitems > 0) {
+          data.checkitemsProgress = data.badges.checkitemsChecked + '/' + data.badges.checkitems;
+        }
+
+        // Get votes tally
+        data.badgesVotes = data.badges.votesYes + '/' + data.badges.votesNo;
+      }
+
       this.$el.empty();
       this.$el.html(this.template(data));
       this.$el.attr("id", this.model.id);
@@ -434,6 +446,16 @@
         return firendly;
       }
       return false;
+    },
+
+    getCoverUrl: function(cover) {
+      if (!cover) {
+        return null;
+      }
+
+      var url = window.location.protocol + '//' + window.location.host;
+      url += cover.slice(cover.indexOf('/attachments'));
+      return 'url("' + url + '")';
     },
 
     updateOnEnter: function(e) {
@@ -1780,7 +1802,6 @@
   });
 
 
-
   cantas.views.CardDueDateView = cantas.views.BaseView.extend({
 
     template: jade.compile($("#template-card-due-date-view").text()),
@@ -1919,6 +1940,66 @@
         this,
         this.attributes.expandedViewChain
       );
+    }
+  });
+
+
+  /**
+   * Static Card View
+   *  - Looks the same a normal card but does not have any interaction
+   *  - Links to the card details view inside of the parent board
+   *  - Useful for displaying cards on "My Cards" page and in search results
+   */
+  cantas.views.StaticCardView = cantas.views.CardView.extend({
+
+    className: "list-card list-card-static js-list-card",
+
+    metaTemplate: jade.compile($('#template-card-meta-view').text()),
+
+    // The DOM events specific to an item.
+    events: {
+      "click div.card": "showCardDetails"
+    },
+
+    initialize: function() {
+      cantas.views.CardView.prototype.initialize.apply(this);
+      _.bindAll(this, "showCardDetails");
+    },
+
+    render: function() {
+      cantas.views.CardView.prototype.render.apply(this);
+
+      // If the board is closed add a class to the card
+      if (this.model.get('board').isClosed) {
+        this.$el.addClass('card-closed');
+      }
+
+      // Append the meta data
+      this.$('.card-container').append(this.metaTemplate({
+        meta: this.getMetaString()
+      }));
+
+      return this;
+    },
+
+    showCardDetails: function() {
+      // Can't link to closed boards
+      if (this.model.get('board').isClosed) {
+        return;
+      }
+
+      // Link to details page
+      var cardUrl = ["card", this.model.get('_id'), $.slug(this.model.get('title'))].join('/');
+      cantas.appRouter.navigate(cardUrl, {trigger: true});
+    },
+
+    getMetaString: function() {
+      if (!this.model.get("list") || !this.model.get("board")) {
+        return null;
+      }
+
+      return "Posted under " + this.model.get("list").title +
+             " in " + this.model.get("board").title;
     }
 
   });
