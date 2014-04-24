@@ -468,6 +468,11 @@
       res.render('application', {title: 'Cantas'});
     });
 
+    // account settings page
+    app.get('/account', ensureAuthenticated, function (req, res) {
+      res.render('application', {title: 'Cantas'});
+    });
+
     // standalone help page
     app.get('/standalonehelp', function (req, res) {
       res.render('standalone-help', {title: 'Cantas'});

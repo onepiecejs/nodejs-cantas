@@ -1,0 +1,10 @@
+script#template-account-settings-view(type="text/template")
+  |div.board-ul-title
+  |  h3= header
+  |div.settings-container
+  |  form(role="form")
+  |    div.form-group
+  |      label.control-label Username
+  |        input#userName(type="text", value=username)
+  |      label.control-label Password
+  |        input#userPassword(type="password", placeholder="Password")
