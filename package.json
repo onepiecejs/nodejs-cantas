@@ -47,6 +47,7 @@
         "lintcheck": "scripts/lintcheck",
         "start": "node app"
     },
+    "main": "app.js",
     "version": "1.0.0",
     "repository": {
         "type": "git",
