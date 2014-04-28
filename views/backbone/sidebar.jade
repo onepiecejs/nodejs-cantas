@@ -3,14 +3,15 @@ script#template-sidebar-view(type="text/template").
     ul(class='sidebar-items')
   div(class='panel-container')
 
+
 script#template-card-filter-panel-view(type="text/template").
   h3.panel-title Filter Cards
   form(class='filter-form js-filter-form')
-    div(class='filter-group')
-      h5(class='filter-title') Filter By Keyword
+    div(class='panel-group')
+      h5(class='panel-group-title') Filter By Keyword
       input(type='text', placeholder='Enter keyword...', class='js-cardfilter-keyword', name='keyword', value=keyword)
-    div(class='filter-group')
-      h5(class='filter-title') Show Cards
+    div(class='panel-group')
+      h5(class='panel-group-title') Show Cards
       label(class='checkbox')
         input(type='checkbox', class='js-cardfilter-created', name='created', checked=(created ? 'checked' : undefined))
         | Created By Me
@@ -20,8 +21,8 @@ script#template-card-filter-panel-view(type="text/template").
       label(class='checkbox')
         input(type='checkbox', class='js-cardfilter-assigned', name='assigned', checked=(assigned ? 'checked' : undefined))
         | Assigned to me
-    div(class='filter-group')
-      h5(class='filter-title') Due Date
+    div(class='panel-group')
+      h5(class='panel-group-title') Due Date
       label(class='radio')
         input(type='radio', class='js-cardfilter-dueDate', name='dueDate', value='day', checked=(dueDate=='day' ? 'checked' : undefined))
         | Within the next day
@@ -34,13 +35,13 @@ script#template-card-filter-panel-view(type="text/template").
       label(class='radio')
         input(type='radio', class='js-cardfilter-dueDate', name='dueDate', value='any', checked=(dueDate=='any' ? 'checked' : undefined))
         | Anytime
-    div(class='filter-group')
-      h5(class='filter-title') Hidden Cards
+    div(class='panel-group')
+      h5(class='panel-group-title') Hidden Cards
       label(class='checkbox')
         input(type='checkbox', class='js-cardfilter-archived', name='archived', checked=(archived ? 'checked' : undefined))
         | Show archived cards
     div(class='form-footer')
-      input(type='submit', class='btn btn-warning', value='filter')
+      input(type='submit', class='btn btn-warning', value='Filter Cards')
 
 
 script#template-card-filter-panel-link-view(type="text/template").
@@ -48,3 +49,35 @@ script#template-card-filter-panel-link-view(type="text/template").
     a(title='Filter Cards')
       i(class='icon icon-filter')
       span(class='badge badge-important')= total
+
+
+script#template-card-sort-panel-view(type="text/template").
+  h3.panel-title Sort Cards
+  form(class='sort-form js-sort-form')
+    div(class='panel-group')
+      h5(class='panel-group-title') Sort Cards By
+      label(class='radio')
+        input(type='radio', class='js-cardsort-field', name='sort-field', value='created', checked=(field=='created' ? 'checked' : undefined))
+        | Date Created
+      label(class='radio')
+        input(type='radio', class='js-cardsort-field', name='sort-field', value='board', checked=(field=='board' ? 'checked' : undefined))
+        | Board
+      label(class='radio')
+        input(type='radio', class='js-cardsort-field', name='sort-field', value='due', checked=(field=='due' ? 'checked' : undefined))
+        | Due Date
+    div(class='panel-group')
+      h5(class='panel-group-title') Order
+      label(class='radio')
+        input(type='radio', class='js-cardsort-order', name='sort-order', value='ASC', checked=(order=='ASC' ? 'checked' : undefined))
+        | Ascending
+      label(class='radio')
+        input(type='radio', class='js-cardsort-order', name='sort-order', value='DESC', checked=(order=='DESC' ? 'checked' : undefined))
+        | Descending
+    div(class='form-footer')
+      input(type='submit', class='btn btn-warning', value='Sort Cards')
+
+
+script#template-card-sort-panel-link-view(type="text/template").
+  li(data-panel=panel)
+    a(title='Sort Cards')
+      i(class='icon icon-sort')
