@@ -7,7 +7,7 @@
  * Module exports a settings object to client.
  */
 
- (function(module) {
+(function(module) {
 
   "use strict";
 
@@ -26,7 +26,7 @@
     "mailServices": {
       "Zimbra": {
         "domains": [
-        "redhat.com"
+          "redhat.com"
         ],
         "host": "mail.redhat.com",
         "port": 25,
