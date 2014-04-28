@@ -11,6 +11,7 @@ Thanks for [all Contributors](AUTHORS.md)
 
 ## Update news
 ### Current stable: v1.0
+### Demo Site: http://demo-cantas.rhcloud.com/
 
 ###new features:
 
