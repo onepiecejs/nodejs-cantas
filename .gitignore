@@ -10,4 +10,4 @@ public/javascripts/dist/*.js
 public/stylesheets/*.min.css
 .grunt
 redhat
-settings.json
+settings.js

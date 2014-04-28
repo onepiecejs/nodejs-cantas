@@ -1,0 +1,83 @@
+/*
+ * Settings module
+ *
+ * settings.js maintains all settings. All modules that require settings
+ * just need load this module by calling require.
+ *
+ * Module exports a settings object to client.
+ */
+
+ (function(module) {
+
+  "use strict";
+
+  module.exports = {
+    "app": {
+      "host": process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1",
+      "port": process.env.OPENSHIFT_NODEJS_PORT || 3000
+    },
+    "auth": {
+      "strategy": "remote_user"
+    },
+    "links": {
+      "bugzilla": "https://bugzilla.redhat.com/enter_bug.cgi?product=Cantas",
+      "hssPortal": ""
+    },
+    "mailServices": {
+      "Zimbra": {
+        "domains": [
+        "redhat.com"
+        ],
+        "host": "mail.redhat.com",
+        "port": 25,
+        "secureConnection": true
+      }
+    },
+    "management": {
+      "service": {
+        "username": "cantas"
+      }
+    },
+    "mongodb": {
+      "url": process.env.OPENSHIFT_MONGODB_DB_URL || null,
+      "host": process.env.OPENSHIFT_MONGODB_DB_HOST || "127.0.0.1",
+      "name": "cantas",
+      "pass": process.env.OPENSHIFT_MONGODB_DB_PASSWORD || "",
+      "port": process.env.OPENSHIFT_MONGODB_DB_PORT || 27017,
+      "user": process.env.OPENSHIFT_MONGODB_DB_USERNAME || "cantas"
+    },
+    "notification": {
+      "subjectPrefix": "[Cantas] - "
+    },
+    "piwikSiteId": {
+      "product": 1,
+      "stage": 1,
+      "productUrl": "analytics.redhat.com/piwik/",
+      "stageUrl": "analytics-stage.redhat.com/piwik/"
+    },
+    "realm": "REDHAT.COM",
+    "redis": {
+      "host": process.env.OPENSHIFT_REDIS_HOST || "127.0.0.1",
+      "port": process.env.OPENSHIFT_REDIS_PORT || 6379,
+      "password": process.env.REDIS_PASSWORD || null,
+      "ttl": 86400
+    },
+    "sites": {
+      "currentPhase": "local",
+      "phases": {
+        "devel": "",
+        "local": "http://localhost:3000",
+        "product": "",
+        "stage": "",
+        "test": "",
+      }
+    },
+    "bugzilla": {
+      "url": "https://bugzilla.redhat.com/jsonrpc.cgi",
+      "username": "",
+      "password": "",
+      "bugBaseUrl": "https://bugzilla.redhat.com/show_bug.cgi?id="
+    }
+  };
+
+}(module));
