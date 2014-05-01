@@ -14,3 +14,10 @@ source "$OPENSHIFT_REPO_DIR/.openshift/lib/utils"
 #  installed.
 ensure_node_is_installed
 
+
+# Setup the settings.json file
+node "$OPENSHIFT_REPO_DIR/.openshift/lib/init_settings"
+
+
+# Seed the label metadata
+node "$OPENSHIFT_REPO_DIR/scripts/db_init_label_metadata.js"

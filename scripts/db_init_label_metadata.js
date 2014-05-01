@@ -4,18 +4,23 @@
 
   var async = require('async');
   var mongoose = require('mongoose');
-  var settings = require('../settings');
-  var LabelMetadata = require('../models/metadata').LabelMetadata;
+  var settings = require(__dirname + '/../settings');
+  var LabelMetadata = require(__dirname + '/../models/metadata').LabelMetadata;
 
-  mongoose.connect(
-    settings.mongodb.host,
-    settings.mongodb.name,
-    settings.mongodb.port,
-    {
-      user: settings.mongodb.user,
-      pass: settings.mongodb.pass
-    }
-  );
+
+  if (settings.mongodb.url) {
+    mongoose.connect(settings.mongodb.url);
+  } else {
+    mongoose.connect(
+      settings.mongodb.host,
+      settings.mongodb.name,
+      settings.mongodb.port,
+      {
+        user: settings.mongodb.user,
+        pass: settings.mongodb.pass
+      }
+    );
+  }
 
   var init_data = [
     {order: 1, title: '', color: '#E7BAB6'},

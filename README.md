@@ -74,7 +74,7 @@ Thanks for [all Contributors](AUTHORS.md)
 
     ```bash
     # update settings values
-    cp settings.js.example settings.js
+    cp settings.json.example settings.json
 
     # setup initalize data
     node scripts/db_init_label_metadata.js
