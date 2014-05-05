@@ -14,12 +14,12 @@ describe('Comment configuration test', function() {
     commentConfig.template = jade.compile($('#template-comment-config-view').text());
     commentConfig.render();
 
-    spyOn(boardModel, 'patch').andCallFake(function() {});
+    spyOn(boardModel, 'patch').and.callFake(function() {});
   });
 
   afterEach(function() {
     commentConfig.close();
-  })
+  });
 
   it("default comment status should be enabled", function() {
     expect($('.js-enable-comment')).toHaveClass('checked');

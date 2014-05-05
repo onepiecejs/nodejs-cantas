@@ -14,7 +14,7 @@ describe('unselectLabel',function(){
         boardId: '51cb97495bffe9ba08000001'
       })
     });
-  
+
     loadFixtures('unselectLabel.html');
     labelAssignView.template = jade.compile($('#template-label-assign-view').text());
     template_data = {relations: [{
@@ -35,10 +35,10 @@ describe('unselectLabel',function(){
 
     labelAssignView.collection = new cantas.models.CardLabelRelationCollection([relation]);
 
-    spyOn(relation, "patch").andCallFake(function() {});
+    spyOn(relation, "patch").and.callFake(function() {});
   });
 
-  it('should unselect the label by click the lable with √', function(){ 
+  it('should unselect the label by click the lable with √', function(){
     labelAssignView.$('ul.label-items').children().eq(0).trigger('click');
     expect(relation.patch).toHaveBeenCalled();
   });

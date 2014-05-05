@@ -27,7 +27,7 @@ describe("DeleteChecklistItemTest", function() {
     checklistItemView.template = jade.compile($("#template-card-checkitem").text());
     checklistItemView.render().$el.appendTo('body');
 
-    spyOn(checklistItem, "destroy").andCallFake(function() {});
+    spyOn(checklistItem, "destroy").and.callFake(function() {});
 
     checklistItemView.$el.find("a.js-item-delete").trigger("click");
   });
@@ -36,7 +36,7 @@ describe("DeleteChecklistItemTest", function() {
     expect(checklistView.confirmDialogView.$el).toBeDefined();
   });
 
-  it("deleting checklistItem and then confirm should call destroy method", function() {  
+  it("deleting checklistItem and then confirm should call destroy method", function() {
     checklistView.confirmDialogView.$el.find(".js-btn-yes").trigger("click");
     expect(checklistItem.destroy).toHaveBeenCalled();
   });
@@ -81,7 +81,7 @@ describe("CheckoutChecklistItemTest", function() {
     checklistItemView.render().$el.appendTo("body");
 
     // check checkbox icon
-    spyOn(checklistItem, "patch").andCallFake(function() {});
+    spyOn(checklistItem, "patch").and.callFake(function() {});
 
   });
 
@@ -154,7 +154,7 @@ describe("EditChecklistItemTest",function() {
 
     checklistView.itemViews[checklistItem.id] = checklistItemView;
 
-    spyOn(checklistItem, "patch").andCallFake(function() {});
+    spyOn(checklistItem, "patch").and.callFake(function() {});
 
     });
 

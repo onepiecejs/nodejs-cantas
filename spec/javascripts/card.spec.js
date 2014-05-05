@@ -27,11 +27,11 @@ describe('CardViewTest', function() {
     cardView.template = jade.compile($('#template-card-view').text());
     cardView.render().$el.appendTo('body');
 
-    spyOn(cantas.appRouter, 'navigate').andReturn(true);
+    spyOn(cantas.appRouter, 'navigate').and.returnValue(true);
 
-    spyOn(cardView, 'showCardMenu').andCallFake(function() {});
-    spyOn(cardView, 'showCardSettingIcon').andCallFake(function() {});
-    spyOn(cardView, 'showCardDetail').andCallFake(function() {});
+    spyOn(cardView, 'showCardMenu').and.callFake(function() {});
+    spyOn(cardView, 'showCardSettingIcon').and.callFake(function() {});
+    spyOn(cardView, 'showCardDetail').and.callFake(function() {});
 
     //refresh the events of to call the new spyed method.
     cardView.delegateEvents();
@@ -91,16 +91,16 @@ describe('Card detail page test', function() {
     cardDetailView.template = jade.compile($('#template-card-detail-view').text());
 
     window.cantas.isBoardMember = false;
-    spyOn(cantas.utils, 'getCurrentCommentStatus').andReturn('opened');
-    spyOn(cantas.utils, 'getCurrentBoardView').andReturn(boardView);
+    spyOn(cantas.utils, 'getCurrentCommentStatus').and.returnValue('opened');
+    spyOn(cantas.utils, 'getCurrentBoardView').and.returnValue(boardView);
     cardDetailView.render();
 
-    spyOn(cardDetailView, 'addComment').andCallFake(function() {});
-    spyOn(cardDetailView, 'openEditTitleDialog').andCallFake(function() {});
-    spyOn(cardDetailView, 'toggleAssignWindow').andCallFake(function() {});
-    spyOn(cardDetailView, 'toggleLabelWindow').andCallFake(function() {});
-    spyOn(cardDetailView, 'onChecklistClick').andCallFake(function() {});
-    spyOn(cardDetailView, 'openEditDescDialog').andCallFake(function() {});
+    spyOn(cardDetailView, 'addComment').and.callFake(function() {});
+    spyOn(cardDetailView, 'openEditTitleDialog').and.callFake(function() {});
+    spyOn(cardDetailView, 'toggleAssignWindow').and.callFake(function() {});
+    spyOn(cardDetailView, 'toggleLabelWindow').and.callFake(function() {});
+    spyOn(cardDetailView, 'onChecklistClick').and.callFake(function() {});
+    spyOn(cardDetailView, 'openEditDescDialog').and.callFake(function() {});
 
     //refresh the events of to call the new spyed method.
     cardDetailView.delegateEvents();

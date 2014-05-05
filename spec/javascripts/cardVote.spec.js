@@ -46,7 +46,7 @@ describe("updateCardVoteTest", function() {
 
     loadFixtures('cardVote.html');
 
-    spyOn(cantas.utils, 'getCurrentUser').andCallFake(function() {
+    spyOn(cantas.utils, 'getCurrentUser').and.callFake(function() {
       var user = {};
       user.id = '51c2adf162c1edba14000070';
       return user;

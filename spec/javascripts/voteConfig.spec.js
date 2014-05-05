@@ -14,12 +14,12 @@ describe('Vote configuration Test', function() {
     voteConfig.template = jade.compile($('#template-vote-config-view').text());
     voteConfig.render();
 
-    spyOn(boardModel, 'patch').andCallFake(function() {});
+    spyOn(boardModel, 'patch').and.callFake(function() {});
   });
 
   afterEach(function() {
     voteConfig.close();
-  })
+  });
 
   it("default vote status should be enabled", function() {
     expect($('.js-enable-vote')).toHaveClass('checked');
