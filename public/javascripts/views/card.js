@@ -1998,8 +1998,9 @@
         return null;
       }
 
-      return "Posted under " + this.model.get("list").title +
-             " in " + this.model.get("board").title;
+      return 'Posted under ' + this.model.get('list').title +
+        ' in <a href="/board/' + this.model.get('board')._id + '">' +
+        this.model.get('board').title + '</a>';
     }
 
   });
