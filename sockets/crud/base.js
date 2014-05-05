@@ -438,6 +438,69 @@
   };
 
 
+
+  /**
+   * Build a mongoose query from an object
+   *
+   * For example; 
+   *   - Providing options { $limit: 100, $sort: { created: -1 }, $populate: 'assignees', etc... }
+   *   - Would return query.sort({ created: -1 },).populate('assignees').limit(100)...
+   *
+   * @param  {object}    query     mongoose query
+   * @param  {object}    options   extend query with...
+   * @return {object} mongoose query
+   */
+  BaseCRUD.prototype._buildQuery = function(query, options) {
+
+    var methods = {};
+
+    // Add the permitted methods here
+    _.forIn(options, function(value, key) {
+      switch (key) {
+      case "$sort":
+        methods.sort = value;
+        delete options.$sort;
+        break;
+
+      case "$limit":
+        methods.limit = value;
+        delete options.$limit;
+        break;
+
+      case "$skip":
+        methods.skip = value;
+        delete options.$skip;
+        break;
+
+      case "$populate":
+        methods.populate = value;
+        delete options.$populate;
+        break;
+
+      case "$query":
+        methods.find = value;
+        delete options.$query;
+        break;
+      }
+    });
+
+    if (!methods.find) {
+      methods.find = options;
+    }
+
+    // Find should always be run first
+    query = query.find(methods.find);
+    delete methods.find;
+
+    _.each(methods, function(value, key) {
+      query[key](value);
+    });
+
+    return query;
+  };
+
+
+
   module.exports = BaseCRUD;
 
 }(module));

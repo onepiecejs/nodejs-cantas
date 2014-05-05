@@ -12,6 +12,7 @@
   var notification = require("../../services/notification");
   var cantasUtils = require('../../services/utils');
   var signals = require("../signals");
+  var _ = require('lodash');
 
   function CardCRUD(options) {
     BaseCRUD.call(this, options);
@@ -94,7 +95,10 @@
   };
 
   CardCRUD.prototype._read = function(data, callback) {
+
+    // Parse special value types in the query
     data = this._parseQuery(data);
+
     if (data) {
       if (data._id) {
         this.modelClass.findOne(data).populate("assignees").exec(
@@ -103,7 +107,13 @@
           }
         );
       } else {
-        this.modelClass.find(data).populate("assignees").exec(
+
+        // Build a query from the request data (Allows for limit, skip, sorting, etc.)
+        var query = this._buildQuery(this.modelClass, _.extend({}, data, {
+          $populate: "assignees"
+        }));
+
+        query.exec(
           function (err, result) {
             async.map(
               result,

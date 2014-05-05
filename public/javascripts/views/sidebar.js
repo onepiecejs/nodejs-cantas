@@ -237,8 +237,8 @@
     filterCollection: function() {
       $("body div.process-loading").show();
       this.getFilters();
+      this.collection.setFilters(this.morphFilters());
       this.collection.fetch({
-        data: this.morphFilters(),
         reset: true,
         success: function() {
           $("body div.process-loading").hide();
@@ -387,6 +387,122 @@
       };
     },
 
+
+    remove: function() {
+      this.undelegateEvents();
+      this.$el.remove();
+      this.stopListening();
+    }
+
+  });
+
+
+
+  /**
+   * Panel for sorting cards
+   */
+  cantas.views.CardSortPanelView = cantas.views.BaseView.extend({
+
+    context: null,
+    isOpen: false,
+
+    defaultSort: {
+      field: 'created',
+      order: 'DESC'
+    },
+
+    className: "sidebar-panel panel-sort",
+    id: _.uniqueId('card-panel-'),
+
+    template: jade.compile($("#template-card-sort-panel-view").text()),
+    linkTemplate: jade.compile($("#template-card-sort-panel-link-view").text()),
+
+    events: {
+      'submit .js-sort-form': 'submitAction'
+    },
+
+    initialize: function() {
+      this.context = this.options.context;
+      this.sort = this.defaultSort;
+      return this;
+    },
+
+    /**
+     * Render the sidebar and panels
+     */
+    render: function(context) {
+      this.delegateEvents();
+      this.$el.html(this.template(this.sort));
+      return this;
+    },
+
+    /**
+     * Get the sidebar link markup (gets called by the sidebar)
+     */
+    renderLink: function() {
+      return $(this.linkTemplate({
+        panel: this.id
+      }));
+    },
+
+    submitAction: function(e) {
+      e.preventDefault();
+      this.sortCollection();
+      this.context.renderSidebar();
+    },
+
+    /**
+     * Read the currently set sort options and apply to collection
+     */
+    sortCollection: function() {
+      $("body div.process-loading").show();
+      this.getSortOptions();
+      this.collection.setSort(this.morphSort());
+      this.collection.fetch({
+        reset: true,
+        success: function() {
+          $("body div.process-loading").hide();
+        },
+        error: function() {
+          $("body div.process-loading").hide();
+        }
+      });
+    },
+
+    /**
+     * Get sort options from the form 
+     */
+    getSortOptions: function() {
+      this.sort = _.extend({}, this.defaultSort, {
+        field: this.$('.js-cardsort-field:checked').val(),
+        order: this.$('.js-cardsort-order:checked').val()
+      });
+      return this.sort;
+    },
+
+    /**
+     * Morph the sort into a query
+     */
+    morphSort: function() {
+      var morphed = {},
+        order = (this.sort.order === 'ASC') ? 1 : -1;
+
+      switch (this.sort.field) {
+      case "board":
+        morphed.boardId = order;
+        break;
+      case "due":
+        morphed.dueDate = order;
+        break;
+      default:
+        morphed.created = order;
+        break;
+      }
+
+      morphed.title = 1;
+
+      return morphed;
+    },
 
     remove: function() {
       this.undelegateEvents();
