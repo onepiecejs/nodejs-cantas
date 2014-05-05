@@ -14,25 +14,34 @@ var RedisSessionStore = require('connect-redis')(express);
 var sessionStore = new RedisSessionStore({
     port: settings.redis.port,
     host: settings.redis.host,
-    ttl: settings.redis.ttl
+    ttl: settings.redis.ttl,
+    pass: settings.redis.password,
   });
 var app = express.createServer();
 var sio;
 var passport = require('./services/auth');
+
 var redisClients = {
-    redisPub: redis.createClient(
-      settings.redis.port,
-      settings.redis.host
-    ),
-    redisSub: redis.createClient(
-      settings.redis.port,
-      settings.redis.host
-    ),
-    redisClient: redis.createClient(
-      settings.redis.port,
-      settings.redis.host
-    )
-  };
+  redisPub: redis.createClient(
+    settings.redis.port,
+    settings.redis.host
+  ),
+  redisSub: redis.createClient(
+    settings.redis.port,
+    settings.redis.host
+  ),
+  redisClient: redis.createClient(
+    settings.redis.port,
+    settings.redis.host
+  )
+};
+
+if (settings.redis.password) {
+  redisClients.redisPub.auth(settings.redis.password);
+  redisClients.redisSub.auth(settings.redis.password);
+  redisClients.redisClient.auth(settings.redis.password);
+}
+
 var siteUrl;
 var siteId = 0;
 
@@ -86,15 +95,20 @@ app.helpers({
 });
 
 routes.init(app, passport, sessionStore);
-mongoose.connect(
-  settings.mongodb.host,
-  settings.mongodb.name,
-  settings.mongodb.port,
-  {
-    user: settings.mongodb.user,
-    pass: settings.mongodb.pass
-  }
-);
+
+if (settings.mongodb.url) {
+  mongoose.connect(settings.mongodb.url);
+} else {
+  mongoose.connect(
+    settings.mongodb.host,
+    settings.mongodb.name,
+    settings.mongodb.port,
+    {
+      user: settings.mongodb.user,
+      pass: settings.mongodb.pass
+    }
+  );
+}
 
 // Ignore validate SSL CA at global scope
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;

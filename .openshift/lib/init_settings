@@ -1,0 +1,101 @@
+/**
+ * Create the settings.json for openshift
+ * 
+ *  - Takes settings from openshift env variables
+ *  
+ */
+
+'use strict';
+
+var fs = require('fs'),
+  async = require('async');
+
+async.waterfall([
+
+  /**
+   * Check if the settings.json file already exists
+   * (We don't want to override it if settings are being set manually)
+   */
+  function(callback) {
+    fs.readFile(process.env.OPENSHIFT_REPO_DIR + '/settings.json', function(err, data) {
+      if (data) {
+        console.log("Setting.json file already exists.");
+        return process.exit();
+      }
+      callback(null);
+    });
+  },
+
+  /**
+   * Read the settings.json.example file
+   */
+  function(callback) {
+    fs.readFile(process.env.OPENSHIFT_REPO_DIR + '/settings.json.example', function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+
+      callback(null, JSON.parse(data));
+    });
+  },
+
+
+  /**
+   * Populate the settings with config from openshift env variables
+   */
+  function(settings, callback) {
+    // App
+    settings.app = {
+      host: process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1",
+      port: process.env.OPENSHIFT_NODEJS_PORT || 3000
+    };
+
+    // Mongo DB
+    settings.mongodb = {
+      url: process.env.OPENSHIFT_MONGODB_DB_URL,
+      host: process.env.OPENSHIFT_MONGODB_DB_HOST || "127.0.0.1",
+      name: "cantas",
+      pass: process.env.OPENSHIFT_MONGODB_DB_PASSWORD,
+      port: process.env.OPENSHIFT_MONGODB_DB_PORT || 27017,
+      user: process.env.OPENSHIFT_MONGODB_DB_USERNAME || "cantas"
+    };
+
+    // Redis
+    settings.redis = {
+      host: process.env.OPENSHIFT_REDIS_HOST || "127.0.0.1",
+      port: process.env.OPENSHIFT_REDIS_PORT || 6379,
+      password: process.env.REDIS_PASSWORD,
+      ttl: 86400
+    };
+
+    // Sites
+    settings.sites.currentPhase = "product";
+    settings.sites.phases = {
+      product: "http://" + process.env.OPENSHIFT_APP_DNS + "/"
+    };
+
+    callback(null, settings);
+  },
+
+
+  /**
+   * Write the final setting.json file
+   */
+  function(settings, callback) {
+    var outputFile = process.env.OPENSHIFT_REPO_DIR + '/settings.json';
+
+    fs.writeFile(outputFile, JSON.stringify(settings, null, 4), function(err) {
+      return callback(err)
+    });
+  }
+
+], function(err) {
+  if (err) {
+    console.log("Error creating settings.json file: ");
+    console.log(err);
+    process.exit(1);
+  } else {
+    console.log("Successfully created settings.json file");
+    process.exit();
+  }
+});

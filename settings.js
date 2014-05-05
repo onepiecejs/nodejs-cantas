@@ -11,6 +11,6 @@
 
   "use strict";
 
-  module.exports = require("./settings.json");
+  module.exports = require(__dirname + "/settings.json");
 
 }(module));

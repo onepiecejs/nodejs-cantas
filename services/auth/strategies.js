@@ -25,6 +25,7 @@
   var settings = require('../../settings');
   var User = require('../../models/user');
   var utils = require('../utils');
+  var sites = require('../sites');
 
   var CantasKerberosStrategy = new LocalStrategy(function(username, password, done) {
     // asynchronous verification, for performance concern.
@@ -129,8 +130,8 @@
   }
 
   var CantasGoogleStrategy = new GoogleStrategy({
-      returnURL: settings.sites.phases.local + '/auth/google/return',
-      realm: settings.sites.phases.local
+      returnURL: sites.currentSite() + 'auth/google/return',
+      realm: sites.currentSite()
     },
       function(identifier, profile, done) {
         process.nextTick(function () {
