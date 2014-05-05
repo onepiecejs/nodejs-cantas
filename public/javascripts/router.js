@@ -101,9 +101,7 @@ $(function ($, _, Backbone) {
 
       // Get the user's cards and set the card list view
       new cantas.models.CardCollection()
-
-        // .setPage(1)
-
+        .setPage(1)
         .setFilters({
           $or: [
             { creatorId: cantas.user.id },
@@ -112,29 +110,27 @@ $(function ($, _, Backbone) {
           ],
           isArchived: false
         })
-
         .setSort({
           created: -1,
           title: 1
         })
-
         .fetch({
-        success: function(collection) {
-          $("body div.process-loading").hide();
+          success: function(collection) {
+            $("body div.process-loading").hide();
 
-          // Set the dashboard content section
-          dashboardView.setContentView(new cantas.views.CardListView({
-            collection: collection,
-            title: "My Cards"
-          }).render());
+            // Set the dashboard content section
+            dashboardView.setContentView(new cantas.views.CardListView({
+              collection: collection,
+              title: "My Cards"
+            }).render());
 
-          that.switchView(dashboardView);
-        },
-        error: function() {
-          cantas.utils.renderTimeoutBox();
-          return false;
-        }
-      });
+            that.switchView(dashboardView);
+          },
+          error: function() {
+            cantas.utils.renderTimeoutBox();
+            return false;
+          }
+        });
     },
 
 

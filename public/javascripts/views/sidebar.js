@@ -302,7 +302,7 @@
         };
       }
 
-      // The user must have either created, subscribed or archived
+      // The user must have either created, subscribed or assigned
       // Otherwise query cards they are assigned to
       // If they have one or more of these it will be an or query
       if (!this.filters.created && !this.filters.assigned && !this.filters.subscribed) {

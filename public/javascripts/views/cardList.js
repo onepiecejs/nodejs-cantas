@@ -14,8 +14,10 @@
     template: jade.compile($("#template-card-list-view").text()),
     noResultsTemplate: jade.compile($("#template-card-list-view-no-results").text()),
 
+    cardCounter: 0,
+
     initialize: function() {
-      this.listenTo(this.collection, 'reset', this.renderCards.bind(this));
+      this.listenTo(this.collection, 'sync', this.renderCards.bind(this));
     },
 
     /**
@@ -34,6 +36,14 @@
       this.renderCards();
       this.renderSidebar();
 
+      // Create the infinite scroll view
+      if (!this.scrollView) {
+        this.scrollView = new cantas.views.InfiniteScrollView({
+          collection: this.collection,
+          el: this.$('.card-scroll-view')
+        });
+      }
+
       return this;
     },
 
@@ -42,6 +52,10 @@
      * Render this list of cards
      */
     renderCards: function() {
+      if (this.cardCounter === this.collection.size()) {
+        return;
+      }
+
       var $cardContainer = this.$('.card-archive-list').empty();
 
       // If there are no cards, display a message
@@ -66,6 +80,8 @@
         this.childViews.push(cardView);
         cardView.render().$el.appendTo($cardContainer);
       }.bind(this));
+
+      this.cardCounter = this.collection.size();
     },
 
 
@@ -100,6 +116,7 @@
       _.each(this.childViews, function(child) {
         child.close();
       });
+      this.scrollView.remove();
       this.remove();
     },
 

@@ -44,7 +44,8 @@ module.exports = function (grunt) {
           'public/javascripts/vendor/jquery.fileupload-process.js',
           'public/javascripts/vendor/jquery.fileupload-image.js',
           'public/javascripts/vendor/jquery.fileupload-validate.js',
-          'public/javascripts/vendor/jquery-ui-timepicker-addon.js'
+          'public/javascripts/vendor/jquery-ui-timepicker-addon.js',
+          'public/javascripts/vendor/waypoints.js'
         ],
         dest: 'public/javascripts/dist/vendor.js'
       },
@@ -57,6 +58,7 @@ module.exports = function (grunt) {
           'public/javascripts/application.js',
           'public/javascripts/models/base.js',
           'public/javascripts/views/base.js',
+          'public/javascripts/views/infiniteScroll.js',
           'public/javascripts/models/activity.js',
           'public/javascripts/views/activity.js',
           'public/javascripts/models/notification.js',
