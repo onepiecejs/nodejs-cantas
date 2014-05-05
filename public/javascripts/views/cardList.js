@@ -84,6 +84,14 @@
         })
       );
 
+      // Add card sorting panel
+      sidebarView.addPanel(
+        new cantas.views.CardSortPanelView({
+          context: sidebarView,
+          collection: this.collection
+        })
+      );
+
       this.$el.append(sidebarView.$el);
     },
 

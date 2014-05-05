@@ -207,7 +207,19 @@
     // Note that url may also be defined as a function.
     url: "/card",
 
+    filters: null,
+
+    // Avoid naming conflict with backbone 'sort' and 'sortBy'
+    orderBy: null,
+
+    paginate: false,
+    pagination: {
+      limit: 20,
+      skip: 0
+    },
+
     initialize: function () {
+      _.bindAll(this, 'fetch');
 
       this.socket.removeAllListeners("/card:create");
       this.socket.removeAllListeners("/card:move");
@@ -218,6 +230,45 @@
         this.ioBind('move', this.socket, this.serverMove, this);
         this.ioBind('archiveAllCards', this.socket, this.serverArchiveCards, this);
       }
+    },
+
+    fetch: function(options) {
+      // Populate the query and ordering
+      options.data = options.data || {};
+
+      if (this.filters) {
+        options.data.$query = this.filters || {};
+      }
+
+      if (this.orderBy) {
+        options.data.$sort = this.orderBy || {};
+      }
+
+      if (this.paginate) {
+        options.data.$limit = this.pagination.limit;
+        options.data.$skip = this.pagination.skip;
+      }
+
+      return Backbone.Collection.prototype.fetch.call(this, options);
+    },
+
+    setFilters: function(filters) {
+      this.filters = filters;
+      return this;
+    },
+
+    setSort: function(sort) {
+      this.orderBy = sort;
+      return this;
+    },
+
+    setPage: function(page) {
+      if (!this.paginate) {
+        this.paginate = true;
+      }
+
+      this.pagination.skip = this.pagination.limit * (page - 1);
+      return this;
     },
 
     dispose: function() {
@@ -289,6 +340,10 @@
     },
 
     comparator: function (card) {
+      // Only order by display order if no other ordering has been set
+      if (this.orderBy) {
+        return;
+      }
       return card.get('order');
     }
   });

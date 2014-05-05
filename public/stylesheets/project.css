@@ -819,9 +819,12 @@ input:focus, textarea:focus{
     color: #fff;
 }
 
-.filter-group {
+.panel-group {
     margin-bottom: 15px;
+}
 
+.panel-group-title {
+    margin-bottom: 5px;
 }
 
 .sidebar-items i {
