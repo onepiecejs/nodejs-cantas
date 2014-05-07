@@ -1,0 +1,11 @@
+#  Uncomment one of the version lines to select the node version to use.
+#  The last "non-blank" version line is the one picked up by the code in
+#  .openshift/lib/utils
+#  Default: 0.10.25
+#
+#  0.8.24
+#  0.9.1
+#  0.10.25
+#  0.11.11
+0.10.28
+
