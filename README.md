@@ -11,15 +11,32 @@ Thanks for [all Contributors](AUTHORS.md)
 
 ## Update news
 ### Current stable: v1.0
-### Demo Site: http://demo-cantas.rhcloud.com/
+### Demo Site: http://cantas-onepiecejs.rhcloud.com/
 
 ###new features:
 
-1. Let cantas codebase follow jslint code style convention and pass unit
-   testing.
-2. Speed up the loading process of the board with a lot of lists
-3. Subscribe card activity
-4. support login with google account
+1. support login with google account.
+2. add mycards panels to home page.
+3. support cards filter.
+
+## deploy to openshift
+
+```bash
+rhc domain create <yournamespace>
+
+rhc app create cantas nodejs-0.10
+
+cd cantas/
+
+rhc cartridge add mongodb-2.4 -a cantas
+
+rhc cartridge add "http://cartreflect-claytondev.rhcloud.com/reflect?github=smarterclayton/openshift-redis-cart" -a cantas
+
+git remote add upstream -m master git@github.com:onepiecejs/nodejs-cantas.git
+
+git push
+
+```
 
 ## Setup development environment
 
