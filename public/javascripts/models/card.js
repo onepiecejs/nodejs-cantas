@@ -233,31 +233,35 @@
     },
 
     fetch: function(options) {
-      // Populate the query and ordering
-      options.data = options.data || {};
+      if (options) {
+        // Populate the query and ordering
+        options.data = options.data || {};
 
-      if (this.filters) {
-        options.data.$query = this.filters || {};
-      }
+        if (this.filters) {
+          options.data.$query = this.filters || {};
+        }
 
-      if (this.orderBy) {
-        options.data.$sort = this.orderBy || {};
-      }
+        if (this.orderBy) {
+          options.data.$sort = this.orderBy || {};
+        }
 
-      if (this.paginate) {
-        options.data.$limit = this.pagination.limit;
-        options.data.$skip = this.pagination.skip;
+        if (this.paginate) {
+          options.data.$limit = this.pagination.limit;
+          options.data.$skip = this.pagination.skip;
+        }
       }
 
       return Backbone.Collection.prototype.fetch.call(this, options);
     },
 
     setFilters: function(filters) {
+      this.setPage(1);
       this.filters = filters;
       return this;
     },
 
     setSort: function(sort) {
+      this.setPage(1);
       this.orderBy = sort;
       return this;
     },

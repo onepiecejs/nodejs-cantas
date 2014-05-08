@@ -360,6 +360,14 @@ a:link, a:visited {
     background-image: linear-gradient(to bottom, #62C462, #57A957);
     background-repeat: repeat-x;
 }
+
+.infinite-scroll-loading {
+    text-align: center;
+    font-size: 18px;
+    color: #999;
+    padding: 30px 0;
+}
+
 .modal.fade.in{
     top: 50%;
 }
@@ -1731,13 +1739,17 @@ input:focus, textarea:focus  .list-panel>li{
 
 /*=============Static card===============*/
 
-.card-archive-list {
+.card-scroll-view {
     position: absolute;
     overflow: auto;
     top: 56px;
     left: 0;
     right: 68px;
-    bottom: 0px;
+    bottom: 0;
+}
+.card-archive-list {
+    overflow: auto;
+    padding-bottom: 60px;
 }
 .card-archive-list .list-card-static {
     float: left;
@@ -1752,7 +1764,10 @@ input:focus, textarea:focus  .list-panel>li{
 .list-card-static .card-container .card-meta {
     display: block;
 }
-
+.infinite-waypoint {
+    clear: both;
+    visibility: hidden;
+}
 
 /*=============Scrollbar Style===============*/
 
