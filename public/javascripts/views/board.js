@@ -860,12 +860,6 @@
             .removeClass("list-panel-highlight");
         }, 10);
 
-        // board get scrolled for and only for the list creator.
-        // ref: https://bugzilla.redhat.com/show_bug.cgi?id=927501
-        // prerequisite: only *one* active session for a single user.
-        // note that if one user could get more than one active session, each
-        // active connection would also get scrolled; feel free to refine code
-        // below if anyone get better idea on distinguishing these clients.
         if (list.attributes.creatorId !== undefined &&
             list.attributes.creatorId === cantas.user.id) {
           var that = this;
