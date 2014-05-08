@@ -50,6 +50,11 @@ async.waterfall([
       port: process.env.OPENSHIFT_NODEJS_PORT || 3000
     };
 
+    // Socket IO
+    settings.socketIO = {
+      port: 8000
+    };
+
     // Mongo DB
     settings.mongodb = {
       url: process.env.OPENSHIFT_MONGODB_DB_URL,

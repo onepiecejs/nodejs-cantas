@@ -30,6 +30,7 @@ block append scripts
   script(type="text/javascript").
     window.cantas = window.cantas || {};
     cantas.user = {id: "#{user._id}", username: "#{user.username}"};
+    cantas.settings = !{settings}
 
   //- templates for backbone view
   include backbone/help
