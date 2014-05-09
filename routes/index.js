@@ -16,6 +16,19 @@
     var fs = require('fs');
     var easyimg = require('easyimage');
 
+    /**
+     * Return any setting that will be required clientside
+     * 
+     * @return {string}
+     */
+    var getClientSettings = function() {
+      return JSON.stringify({
+        socketIO: {
+          port: settings.socketIO.port || settings.app.port
+        }
+      });
+    };
+
     var checkForSessionTimeout = function (req, res, next) {
       var sessionID = req.cookies['express.sid'];
       sessionStore.load(sessionID, function(err, session) {
@@ -184,7 +197,7 @@
       ensureAuthenticated, function (req, res) {
         boardHandler.boardExists(req.params.boardId, function(err, board) {
           if (board) {
-            res.render('application', {title: 'Cantas'});
+            res.render('application', {title: 'Cantas', settings: getClientSettings()});
           } else {
             res.status(404).render('404', {title: 'Cantas | 404', url: req.url});
           }
@@ -196,7 +209,7 @@
       ensureAuthenticated, function (req, res) {
         boardHandler.cardExists(req.params.cardId, function(err, card) {
           if (card) {
-            res.render('application', {title: 'Cantas'});
+            res.render('application', {title: 'Cantas', settings: getClientSettings()});
           } else {
             res.status(404).render('404', {title: 'Cantas | 404', url: req.url});
           }
@@ -415,37 +428,37 @@
     // original url, this is not ajax, should be add this mapping.we can
     // implement a SPA design, it will reduce  this annoying url mapping.
     app.get('/boards/new', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to public board
     app.get('/boards/public', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to mine board
     app.get('/boards/mine', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to closed board
     app.get('/boards/closed', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to my cards
     app.get('/cards/mine', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to my subscribed cards
     app.get('/cards/subscribed', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to my subscribed cards
     app.get('/cards/assigned', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // route to query user email
@@ -465,12 +478,12 @@
 
     // help page
     app.get('/help', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // account settings page
     app.get('/account', ensureAuthenticated, function (req, res) {
-      res.render('application', {title: 'Cantas'});
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
     // standalone help page
@@ -481,7 +494,7 @@
     // welcome page
     app.get('/welcome', ensureAuthenticated, function (req, res) {
       if (req.user.isFirstLogin === true) {
-        res.render('application', {title: 'Cantas'});
+        res.render('application', {title: 'Cantas', settings: getClientSettings()});
       } else {
         res.redirect('/');
       }
@@ -490,7 +503,7 @@
     // route to home page
     app.get('/', ensureAuthenticated,
       function (req, res) {
-        res.render('application', {title: 'Cantas'});
+        res.render('application', {title: 'Cantas', settings: getClientSettings()});
       });
 
     // 404 - ALWAYS keep this route as the last one

@@ -3,6 +3,9 @@
         "host": "0.0.0.0",
         "port": 3000
     },
+    "socketIO": {
+        "port": 3000
+    },
     "auth": {
         "strategy": "remote_user"
     },
