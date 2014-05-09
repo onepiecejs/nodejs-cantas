@@ -38,6 +38,8 @@ block append scripts
   include backbone/welcome
   include backbone/dashboard
   include backbone/dashboard-navigation
+  include backbone/search
+  include backbone/quick-search
   include backbone/board-list
   include backbone/card-list
   include backbone/board
@@ -89,7 +91,9 @@ block append scripts
     //- models/views
     script(type="text/javascript", src="/javascripts/models/base.js")
     script(type="text/javascript", src="/javascripts/views/base.js")
-    script(type="text/javascript", src="/javascripts/views/infiniteScroll.js")
+    script(type="text/javascript", src="/javascripts/views/app.js")
+    script(type="text/javascript", src="/javascripts/views/search.js")
+    script(type="text/javascript", src="/javascripts/views/quickSearch.js")
     script(type="text/javascript", src="/javascripts/models/activity.js")
     script(type="text/javascript", src="/javascripts/views/activity.js")
     script(type="text/javascript", src="/javascripts/models/notification.js")

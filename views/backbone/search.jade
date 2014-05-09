@@ -1,0 +1,15 @@
+script#template-search-view(type="text/template")
+  |div.search-results-container
+  |  h4.boards-title Boards 
+  |  .board-archive
+  |  h4.cards-title Cards 
+  |  .card-archive
+
+script#template-search-board-list-view(type="text/template")
+  |ul.board-ul
+  |  each board in boards
+  |    if board.isClosed != true
+  |      li.board-close
+  |        a(href="/board/" + board._id).owner.board-name= board.title
+  |        span= cantas.utils.formatDate(board.created)
+  |        span= board.creatorId.username

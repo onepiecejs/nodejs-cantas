@@ -2,9 +2,16 @@ script#template-card-list-view(type="text/template")
   |div.board-ul-title
   |  h3= h3Header
   |div.card-scroll-view
-  |  div.card-archive-list
+  |  div.card-archive
 
 script#template-card-list-view-no-results(type="text/template")
   |p.alert.alert-info
   |  i.icon-info-sign 
   |  span= message
+
+script#template-card-list-load-more(type="text/template")
+  |div.load-more
+  |  button(type="button").btn.btn-warning.btn-load-more.js-load-more
+  |    i.icon-spin.icon-spinner
+  |    i.icon-chevron-down
+  |    span Load More

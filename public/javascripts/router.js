@@ -23,6 +23,10 @@ $(function ($, _, Backbone) {
 
     currentView: null,
 
+    initialize: function() {
+      this.appView = new cantas.views.AppView();
+    },
+
     switchView: function(view, context){
       if (this.currentView){
         this.currentView.close();
@@ -102,6 +106,7 @@ $(function ($, _, Backbone) {
       // Get the user's cards and set the card list view
       new cantas.models.CardCollection()
         .setPage(1)
+        .setPerPage(20)
         .setFilters({
           $or: [
             { creatorId: cantas.user.id },
@@ -214,7 +219,7 @@ $(function ($, _, Backbone) {
             success: function(model, response, options) {
               that.navigate("board/" + response.boardId, {trigger: true, replace: true});
               var interval = setInterval(function(){
-                var cardview = $("#" + cardId).find(".card-title");
+                var cardview = $("#" + cardId).last().find(".card-title");
                 if(cardview.length > 0){
                   cardview.trigger("click");
                   clearInterval(interval);
@@ -256,6 +261,9 @@ $(function ($, _, Backbone) {
     },
 
     search: function(query) {
+      var searchView = new cantas.views.SearchView();
+      this.switchView(searchView, {title: 'Search results for: "' + query + '"'});
+      searchView.search(query);
     },
 
     newBoard: function() {
@@ -281,12 +289,6 @@ $(function ($, _, Backbone) {
   cantas.navigateTo = function(url) {
     cantas.appRouter.navigate(url, {trigger: true});
   }
-
-  cantas.appRouter.notificationView = new cantas.views.NotificationView();
-  cantas.socket.on('/notification:create', function(data){
-    var obj = new cantas.models.Notification(data);
-    cantas.appRouter.notificationView.notificationCollection.add(data);
-  });
 
   cantas.socket.on("cover:update", function(data){
     var card = cantas.utils.getCardModelById(data.cardId);

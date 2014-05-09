@@ -1969,6 +1969,9 @@
     render: function() {
       cantas.views.CardView.prototype.render.apply(this);
 
+      // A static card can appear on the same page as a dynamic card
+      this.$el.removeAttr("id");
+
       // If the board is closed add a class to the card
       if (this.model.get('board').isClosed) {
         this.$el.addClass('card-closed');

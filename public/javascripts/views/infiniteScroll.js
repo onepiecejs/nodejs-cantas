@@ -126,7 +126,13 @@
 
     removeLoading: function() {
       this.$('.infinite-scroll-loading').remove();
+    },
+
+    close: function() {
+      this.collection.reset();
+      this.remove();
     }
+
   });
 
 

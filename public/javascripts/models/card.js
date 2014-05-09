@@ -207,19 +207,16 @@
     // Note that url may also be defined as a function.
     url: "/card",
 
-    filters: null,
-
-    // Avoid naming conflict with backbone 'sort' and 'sortBy'
-    orderBy: null,
-
-    paginate: false,
-    pagination: {
-      limit: 20,
-      skip: 0
-    },
-
-    initialize: function () {
+    initialize: function (models, options) {
       _.bindAll(this, 'fetch');
+
+      options = options || {};
+
+      this.filters = options.filters || {};
+      // Avoid naming conflict with backbone 'sort' and 'sortBy'
+      this.orderBy = options.orderBy;
+      this.paginate = options.paginate;
+      this.pagination = options.pagination || {};
 
       this.socket.removeAllListeners("/card:create");
       this.socket.removeAllListeners("/card:move");
@@ -233,23 +230,13 @@
     },
 
     fetch: function(options) {
-      if (options) {
-        // Populate the query and ordering
-        options.data = options.data || {};
-
-        if (this.filters) {
-          options.data.$query = this.filters || {};
-        }
-
-        if (this.orderBy) {
-          options.data.$sort = this.orderBy || {};
-        }
-
-        if (this.paginate) {
-          options.data.$limit = this.pagination.limit;
-          options.data.$skip = this.pagination.skip;
-        }
-      }
+      // Populate the query with any filters/pagination set on the collection
+      options.data = _.compactObject({
+        $query: _.extend({}, this.filters, options.data),
+        $sort: this.orderBy || null,
+        $limit: (this.paginate) ? this.pagination.limit : null,
+        $skip: (this.paginate) ? this.pagination.skip : null
+      });
 
       return Backbone.Collection.prototype.fetch.call(this, options);
     },
@@ -272,6 +259,15 @@
       }
 
       this.pagination.skip = this.pagination.limit * (page - 1);
+      return this;
+    },
+
+    setPerPage: function(perPage) {
+      if (!this.paginate) {
+        this.paginate = true;
+      }
+
+      this.pagination.limit = perPage;
       return this;
     },
 

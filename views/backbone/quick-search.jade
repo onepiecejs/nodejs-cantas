@@ -1,0 +1,20 @@
+script#template-quick-search-view(type="text/template")
+  |div.board-ul-title.clearfix
+  |  h3.pull-left Search Results
+  |  a.btn.btn-warning.pull-right.js-full-results View all results 
+  |    i.icon-arrow-right
+  |div.results-container
+  |  .row-fluid
+  |    .span4
+  |      h4.boards-title Boards 
+  |      .board-archive
+  |    .span8
+  |      h4.cards-title Cards 
+  |      .card-archive
+
+
+script#template-quick-search-board-list-view(type="text/template")
+  |ul.board-ul
+  |  each board in boards
+  |    li
+  |      a.board-name.js-view-board(href="/board/\#{board._id}")= board.title
