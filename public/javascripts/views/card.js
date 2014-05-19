@@ -342,12 +342,23 @@
       'movein': "moveIn"
     },
 
-    initialize: function() {
+    initialize: function(options) {
       _.bindAll(this, "render");
       this.model.on('change', this.onModelChange, this);
       this.model.on('change:isArchived', this.isArchivedChanged, this);
       this.model.on('change:order change:listId', this.refreshCardOrder, this);
       this.model.on('remove', this.remove, this);
+
+      if (options && options.boardModel) {
+        this.boardModel = options.boardModel;
+      } else {
+        this.boardModel = cantas.utils.getCurrentBoardModel();
+      }
+
+      // Rerender if the permission for managing cards changes
+      if (this.boardModel) {
+        this.listenTo(this.boardModel, 'change:cardStatus', this.permissionChange);
+      }
 
       this.cardLabelCollection = new cantas.models.CardLabelRelationCollection();
       this.voteCollection = new cantas.models.VoteCollection();
@@ -404,17 +415,34 @@
       this.cardNeonLightsView.turnOn();
 
       // disable edit/add function when user is not board member
-      if (!window.cantas.isBoardMember) {
-        this.disableEvents();
-      }
+      this.permissionChange();
 
       return this;
     },
 
-    disableEvents: function() {
-      this.$el.undelegate('.card-setting', 'click');
-      this.$el.undelegate('.card', 'mouseenter');
-      this.$el.undelegate('.card', 'mouseleave');
+    permissionChange: function() {
+      if (this.canManageCard()) {
+        this.delegateEvents();
+      } else {
+        this.$el.undelegate('.card-setting', 'click');
+        this.$el.undelegate('.card', 'mouseenter');
+        this.$el.undelegate('.card', 'mouseleave');
+      }
+    },
+
+    canManageCard: function() {
+      if (!this.boardModel) {
+        return;
+      }
+
+      var status = this.boardModel.get('cardStatus'),
+        allow = true;
+      if (status === 'disabled') {
+        allow = false;
+      } else if (status === 'enabled' && !window.cantas.isBoardMember) {
+        allow = false;
+      }
+      return allow;
     },
 
     close: function() {
@@ -788,6 +816,12 @@
       this.model.on('change:dueDate', this.dueDateChanged, this);
       this.commentTemplate = jade.compile($("#template-comment-item-view").text());
 
+      if (options && options.boardModel) {
+        this.boardModel = options.boardModel;
+      } else {
+        this.boardModel = cantas.utils.getCurrentBoardModel();
+      }
+
       this.cardLabelCollection = options.cardLabelCollection;
       this.voteCollection = options.voteCollection;
       this._expandedViewChain = [];
@@ -910,13 +944,10 @@
           }
         });
 
-        // disable add/update function when user is not board member.
-        if (!window.cantas.isBoardMember) {
-          _this.disableEvents();
-        }
-
         return _this;
       });
+
+      this.permissionChange();
     },
 
     reportUploadError: function(context, errorMessage) {
@@ -952,14 +983,30 @@
       }
     },
 
-    disableEvents: function() {
-      this.$el.undelegate('.js-edit-title', 'click');
-      this.$el.undelegate('.js-edit-assign', 'click');
-      this.$el.undelegate('.js-edit-label', 'click');
-      this.$el.undelegate('.js-add-checklist', 'click');
-      this.$el.undelegate('.js-add-attachment', 'click');
-      this.$el.undelegate('.js-edit-desc', 'click');
-      this.$el.find('a .js-edit-desc').hide();
+    permissionChange: function() {
+      if (this.canManageCards()) {
+        this.delegateEvents();
+      } else {
+        this.$el.undelegate('.js-edit-title', 'click');
+        this.$el.undelegate('.js-edit-assign', 'click');
+        this.$el.undelegate('.js-edit-label', 'click');
+        this.$el.undelegate('.js-add-checklist', 'click');
+        this.$el.undelegate('.js-add-attachment', 'click');
+        this.$el.undelegate('.js-edit-desc', 'click');
+        this.$el.undelegate('.js-edit-due-date', 'click');
+        this.$el.find('a .js-edit-desc').hide();
+      }
+    },
+
+    canManageCards: function() {
+      var status = this.boardModel.get('cardStatus'),
+        allow = true;
+      if (status === 'disabled') {
+        allow = false;
+      } else if (status === 'enabled' && !window.cantas.isBoardMember) {
+        allow = false;
+      }
+      return allow;
     },
 
     renderCommentView: function() {

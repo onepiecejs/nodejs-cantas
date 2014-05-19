@@ -15,8 +15,19 @@ describe('CardViewTest', function() {
       badges: badges
     });
 
+    var board = new cantas.models.Board({
+      listStatus: 'enabled',
+      cardStatus: 'enabled'
+    });
+    var boardView = new cantas.views.BoardView({
+      model: board,
+      isMember: true,
+      visitors: [],
+    });
+
     cardView = new cantas.views.CardView({
       model: card,
+      boardModel: board,
       attributes: {index: 0}
     });
 
@@ -28,6 +39,7 @@ describe('CardViewTest', function() {
     cardView.render().$el.appendTo('body');
 
     spyOn(cantas.appRouter, 'navigate').and.returnValue(true);
+    spyOn(cantas.utils, 'getCurrentBoardView').and.returnValue(boardView);
 
     spyOn(cardView, 'showCardMenu').and.callFake(function() {});
     spyOn(cardView, 'showCardSettingIcon').and.callFake(function() {});
@@ -35,7 +47,7 @@ describe('CardViewTest', function() {
 
     //refresh the events of to call the new spyed method.
     cardView.delegateEvents();
-    cardView.disableEvents();
+    cardView.permissionChange();
   });
 
   it('click card title should show card detail', function() {
@@ -71,7 +83,10 @@ describe('Card detail page test', function() {
       assignees: []
     });
 
-    var board = new cantas.models.Board({});
+    var board = new cantas.models.Board({
+      listStatus: 'enabled',
+      cardStatus: 'enabled'
+    });
     var boardView = new cantas.views.BoardView({
       model: board,
       isMember: true,
@@ -84,6 +99,7 @@ describe('Card detail page test', function() {
     cardDetailView = new cantas.views.CardDetailsView({
       el: $('#card-detail'),
       model: card,
+      boardModel: board,
       cardLabelCollection: cardLabelRelationCollection,
       voteCollection: voteCollection
     });
@@ -104,7 +120,7 @@ describe('Card detail page test', function() {
 
     //refresh the events of to call the new spyed method.
     cardDetailView.delegateEvents();
-    cardDetailView.disableEvents();
+    cardDetailView.permissionChange();
 
   });
 

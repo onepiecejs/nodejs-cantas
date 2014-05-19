@@ -95,7 +95,9 @@ describe("PublicBoardNonMemberTest", function () {
       title: "Public Board for testing",
       description: "Board description",
       isClosed: false,
-      isPublic: true
+      isPublic: true,
+      listStatus: 'enabled',
+      cardStatus: 'enabled'
     });
     visitors = [];
     boardView = new cantas.views.BoardView({
@@ -131,11 +133,7 @@ describe("PublicBoardNonMemberTest", function () {
   it("Non-board-member cannot do board settings", function () {
     expect(boardView.$el.find('.js-toggle-board-menu')).toHaveCss({display: 'none'});
   });
-  it("Non-board-member cannot new list", function () {
+  it("Non-board-member cannot create new list", function () {
     expect(boardView.$el.find('button.js-add-list')).toHaveCss({display: 'none'});
-  });
-  xit("Non-board-member cannot edit list name", function () {
-    //TODO(xchu): should tested in ListView.
-    expect(true).toBe(true);
   });
 });

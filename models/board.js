@@ -26,6 +26,8 @@
       isPublic: {type: Boolean, default: true},
       voteStatus: {type: String, default: 'enabled'},
       commentStatus: {type: String, default: 'enabled'},
+      listStatus: {type: String, default: 'enabled'},
+      cardStatus: {type: String, default: 'enabled'},
       perms: {
         delete: {
           users: [ ObjectId ],

@@ -5,6 +5,87 @@
 
   "use strict";
 
+
+  /**
+   * Permission control widget
+   */
+  cantas.views.PermissionWidgetView = cantas.views.BaseView.extend({
+
+    template: jade.compile($("#template-permission-widget-view").text()),
+
+    events: {
+      'click .js-option': 'selectOption'
+    },
+
+    initialize: function(options) {
+      if (!options.key) {
+        throw new Error("You must specify the key on the model which should be modified");
+      }
+
+      _.bindAll(this, 'selectOption');
+      this.model.on('change:' + options.key, this.render, this);
+      this.key = options.key;
+      this.selected = this.model.get(this.key);
+
+      this.render();
+      return this;
+    },
+
+    render: function() {
+      this.$el.html(this.template({
+        selected: this.selected
+      }));
+      this.renderLevel();
+      return this;
+    },
+
+    renderLevel: function() {
+      var $options = this.$('.js-option').removeClass('checked'),
+        $selected = this.$('[data-permission="' + this.selected + '"]'),
+        selectedIndex = $selected.index();
+
+      $selected.addClass('checked').children("span:eq(1)").addClass("checked");
+
+      $options.each(function(index, elem) {
+        if (index >= selectedIndex) {
+          $(elem).addClass('via').children("span:first").addClass("via");
+        }
+      });
+    },
+
+    /**
+     * Change the selected permission
+     */
+    selectOption: function(e) {
+      var patch = {},
+        $target = $(e.target),
+        $closest = $(e.target).closest('.js-option');
+
+      if ($closest.length > 0) {
+        $target = $closest;
+      }
+
+      var selected = $target.data('permission');
+      if (this.selected === selected) {
+        return;
+      }
+
+      this.selected = selected;
+      this.model.set(this.key, selected);
+      patch[this.key] = selected;
+      this.model.patch(patch);
+
+      this.renderLevel();
+    },
+
+    close: function() {
+      this.remove();
+    }
+
+  });
+
+
+
   /*
    * View for modificaiton of a board's information.
    */
@@ -18,15 +99,30 @@
 
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
-      this.voteConfig = new cantas.views.VoteConfig({
-        model: this.model
-      });
-      this.voteConfig.render();
 
-      this.commentConfig = new cantas.views.CommentConfig({
-        model: this.model
+      this.voteConfig = new cantas.views.PermissionWidgetView({
+        el: this.$('.js-vote'),
+        model: this.model,
+        key: 'voteStatus'
       });
-      this.commentConfig.render();
+
+      this.commentConfig = new cantas.views.PermissionWidgetView({
+        el: this.$('.js-comment'),
+        model: this.model,
+        key: 'commentStatus'
+      });
+
+      this.listConfig = new cantas.views.PermissionWidgetView({
+        el: this.$('.js-list'),
+        model: this.model,
+        key: 'listStatus'
+      });
+
+      this.cardConfig = new cantas.views.PermissionWidgetView({
+        el: this.$('.js-card'),
+        model: this.model,
+        key: 'cardStatus'
+      });
 
       return this;
     },
@@ -42,178 +138,13 @@
     closeConfigView: function() {
       this.voteConfig.close();
       this.commentConfig.close();
+      this.listConfig.close();
+      this.cardConfig.close();
 
       // clear configView
       this.$el.empty();
       this.undelegateEvents();
       this.stopListening();
-    }
-  });
-
-  cantas.views.VoteConfig = Backbone.View.extend({
-    el: "dl.js-vote",
-    template: jade.compile($("#template-vote-config-view").text()),
-
-    events: {
-      'click .js-disable-vote span:last': 'onDisableVoteClick',
-      'click .js-enable-vote span:last': 'onEnableVoteClick',
-      'click .js-open-vote span:last': 'onOpenVoteClick'
-    },
-
-    initialize: function() {
-      this.model.on('change:voteStatus', this.render, this);
-    },
-
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-      var voteStatus = this.model.toJSON().voteStatus;
-      var checkedVoteElement;
-
-      if (voteStatus === 'opened') {
-        checkedVoteElement = $('.js-open-vote')[0];
-      } else if (voteStatus === 'enabled') {
-        checkedVoteElement = $('.js-enable-vote')[0];
-      } else {
-        checkedVoteElement = $('.js-disable-vote')[0];
-      }
-
-      this.selectCheckedVoteStatus(checkedVoteElement);
-
-      return this;
-    },
-
-    close: function() {
-      this.remove();
-    },
-
-    selectCheckedVoteStatus: function(checkedVoteElement) {
-      var voteOptions = this.$el.find('dl.js-vote a');
-      var clickIndex = voteOptions.index($(checkedVoteElement));
-      var checkedIndex = voteOptions.index(voteOptions.filter('.checked'));
-
-      if (clickIndex > checkedIndex) {
-        voteOptions.slice(0, clickIndex).removeClass('via')
-          .children().removeClass('via');
-      }
-
-      voteOptions.removeClass('checked')
-        .children().removeClass('checked');
-
-      $(checkedVoteElement).addClass("via checked")
-        .nextAll().addClass("via")
-        .end().children("span:first").addClass("via")
-        .end().children("span:eq(1)").addClass("checked");
-    },
-
-    onDisableVoteClick: function(event) {
-      this.changeVoteStatus(event.target.parentNode, 'disabled');
-    },
-
-    onEnableVoteClick: function(event) {
-      this.changeVoteStatus(event.target.parentNode, 'enabled');
-    },
-
-    onOpenVoteClick: function(event) {
-      this.changeVoteStatus(event.target.parentNode, 'opened');
-    },
-
-    changeVoteStatus: function(sender, status) {
-      if ($(sender).hasClass('checked')) {
-        return;
-      }
-
-      var origin_voteStatus = this.model.get('voteStatus');
-      this.model.set('voteStatus', status);
-      this.model.patch({
-        voteStatus: status,
-        original: {voteStatus: origin_voteStatus}
-      });
-
-      this.selectCheckedVoteStatus(sender);
-    }
-
-  });
-
-  cantas.views.CommentConfig = Backbone.View.extend({
-    el: "dl.js-comment",
-    template: jade.compile($("#template-comment-config-view").text()),
-
-    events: {
-      'click .js-disable-comment span:last': 'onDisableCommentClick',
-      'click .js-enable-comment span:last': 'onEnableCommentClick',
-      'click .js-open-comment span:last': 'onOpenCommentClick'
-    },
-
-    initialize: function() {
-      this.model.on('change:commentStatus', this.render, this);
-    },
-
-    render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
-      var commentStatus = this.model.toJSON().commentStatus;
-      var checkedCommentElement;
-
-      if (commentStatus === 'opened') {
-        checkedCommentElement = $('.js-open-comment')[0];
-      } else if (commentStatus === 'enabled') {
-        checkedCommentElement = $('.js-enable-comment')[0];
-      } else {
-        checkedCommentElement = $('.js-disable-comment')[0];
-      }
-
-      this.selectCheckedCommentStatus(checkedCommentElement);
-
-      return this;
-    },
-
-    close: function() {
-      this.remove();
-    },
-
-    selectCheckedCommentStatus: function(checkedCommentElement) {
-      var commentOptions = this.$el.find('dl.js-comment a');
-      var clickIndex = commentOptions.index($(checkedCommentElement));
-      var checkedIndex = commentOptions.index(commentOptions.filter('.checked'));
-
-      if (clickIndex > checkedIndex) {
-        commentOptions.slice(0, clickIndex).removeClass('via')
-          .children().removeClass('via');
-      }
-
-      commentOptions.removeClass('checked')
-        .children().removeClass('checked');
-
-      $(checkedCommentElement).addClass("via checked")
-        .nextAll().addClass("via")
-        .end().children("span:first").addClass("via")
-        .end().children("span:eq(1)").addClass("checked");
-    },
-
-    onDisableCommentClick: function(event) {
-      this.changeCommentStatus(event.target.parentNode, 'disabled');
-    },
-
-    onEnableCommentClick: function(event) {
-      this.changeCommentStatus(event.target.parentNode, 'enabled');
-    },
-
-    onOpenCommentClick: function(event) {
-      this.changeCommentStatus(event.target.parentNode, 'opened');
-    },
-
-    changeCommentStatus: function(sender, status) {
-      if ($(sender).hasClass('checked')) {
-        return;
-      }
-
-      var origin_commentStatus = this.model.get('commentStatus');
-      this.model.set('commentStatus', status);
-      this.model.patch({
-        commentStatus: status,
-        original: {commentStatus: origin_commentStatus}
-      });
-
-      this.selectCheckedCommentStatus(sender);
     }
   });
 

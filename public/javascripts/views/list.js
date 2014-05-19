@@ -254,7 +254,8 @@
       "click header": "headerClicked"
     },
 
-    initialize: function () {
+    initialize: function (options) {
+      this.boardModel = options.boardModel;
       this._fetchCards();
       this.model.on('change:title', this.titleChanged, this);
       this.model.on('change:isArchived', this.isArchivedChanged, this);
@@ -268,6 +269,9 @@
       this.model.cardCollection.on('reset', this.updateCardQuantity, this);
       this.model.cardCollection.on('change:isArchived', this.updateCardQuantity, this);
       this.model.cardCollection.on('change:isArchived', this.addAll, this);
+
+      // Rerender if the permission for managing cards changes
+      this.listenTo(this.boardModel, 'change:cardStatus', this.permissionChange);
 
       this.cardViewCache = {};
     },
@@ -323,10 +327,7 @@
       // append all cards
       this.renderCards();
 
-      if (!window.cantas.isBoardMember) {
-        this.$el.find('.js-add-card').hide();
-        this.undelegateEvents();
-      }
+      this.permissionChange();
 
       return this;
     },
@@ -376,9 +377,7 @@
       });
       SORTABLE.refreshCardSortable();
       //disable sort function of cards when user is not board member.
-      if (!window.cantas.isBoardMember) {
-        $('.connectedSortable').sortable('disable');
-      }
+      this.permissionChange();
     },
 
     addOne: function(card, index, context) {
@@ -470,6 +469,29 @@
       if ($("#list-menu").is(":hidden") || this.el.id !== $("#list-menu").attr("data-listId")) {
         this.$el.find(".js-list-setting").hide();
       }
+    },
+
+    permissionChange: function() {
+      if (this.canManageCards()) {
+        this.delegateEvents();
+        $('.connectedSortable').sortable('enable');
+        this.$el.find('.js-add-card').show();
+      } else {
+        this.undelegateEvents();
+        $('.connectedSortable').sortable('disable');
+        this.$el.find('.js-add-card').hide();
+      }
+    },
+
+    canManageCards: function() {
+      var status = this.boardModel.get('cardStatus'),
+        allow = true;
+      if (status === 'disabled') {
+        allow = false;
+      } else if (status === 'enabled' && !window.cantas.isBoardMember) {
+        allow = false;
+      }
+      return allow;
     },
 
     isArchivedChanged: function(data) {
