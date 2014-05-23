@@ -200,11 +200,10 @@ module.exports = function (grunt) {
     }
   });
 
-  // concat&& uglify task
+  // concat&& uglify js/css task
   grunt.registerTask('default', ['concat:cantas', 'uglify:cantas', 'concat:cantas-app',
-                                 'uglify:cantas-app', 'jasmine:cantas', 'simplemocha', 'cssmin'
+                                 'uglify:cantas-app', 'cssmin'
                                  ]);
-  //frontend javascript test
-  grunt.registerTask('test', ['jasmine:cantas']);
-  grunt.registerTask('node', 'simplemocha');
+  //backend and frontend javascript test
+  grunt.registerTask('test', ['jasmine:cantas', 'simplemocha']);
 };
