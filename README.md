@@ -36,6 +36,8 @@ git remote add upstream -m master git@github.com:onepiecejs/nodejs-cantas.git
 
 git push
 
+rhc env set NODE_ENV=production
+
 ```
 
 ## Setup development environment

@@ -114,12 +114,13 @@ if (settings.mongodb.url) {
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 app.listen(settings.app.port, settings.app.host, function() {
-  if (app.settings.production) {
+  //FIXME keep it here,when i understand the concept, i can remove it totally
+  // if (app.settings.production) {
     // We have to limit node to run under non-privilege user account
     // to ensure security in production environment.
     // User with name ``username`` should exist at this time.
-    process.setuid(settings.management.service.username);
-  }
+    // process.setuid(settings.management.service.username);
+  // }
 });
 
 sio = require('socket.io').listen(app);
