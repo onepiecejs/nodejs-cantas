@@ -241,6 +241,32 @@
       return Backbone.Collection.prototype.fetch.call(this, options);
     },
 
+    fetchTotal: function(q, options) {
+      var io = this.socket || window.socket,
+        deferred = $.Deferred();
+
+      io.emit('card:read', _.extend({
+        $count: {
+          $or: [
+            { creatorId: cantas.user.id },
+            { assignees: cantas.user.id },
+            { subscribeUserIds: cantas.user.id }
+          ],
+          title: {
+            $regex: q,
+            $options: 'gi'
+          }
+        }
+      }, options || {}), function (err, data) {
+        if (err) {
+          return deferred.reject();
+        }
+        deferred.resolve(data || 0);
+      });
+
+      return deferred.promise();
+    },
+
     setFilters: function(filters) {
       this.setPage(1);
       this.filters = filters;

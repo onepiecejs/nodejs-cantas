@@ -12,14 +12,16 @@ script#template-board-list-view(type="text/template")
   |    if board.isClosed == true
   |      li.board-close
   |        div.owner.board-name= board.title
-  |        span= cantas.utils.formatDate(board.created)
-  |        span= board.creatorId.username
+  |        div.board-meta
+  |          span= cantas.utils.formatDate(board.created)
+  |          span= board.creatorId.username
   |        if isCreator(board)
   |          a.js-open-board.reopen.board-list-status(data-board= board._id, title="Open this board")
   |    else
   |      li
   |        a.owner.board-name.js-view-board(href="/board/\#{board._id}")= board.title
-  |        span= cantas.utils.formatDate(board.created)
-  |        span= board.creatorId.username
+  |        div.board-meta
+  |          span= cantas.utils.formatDate(board.created)
+  |          span= board.creatorId.username
   |        if isCreator(board)
   |          a.js-close-board.delete.board-list-status(data-board= board._id, title="Close this board")

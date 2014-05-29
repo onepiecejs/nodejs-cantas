@@ -1,16 +1,20 @@
 script#template-quick-search-view(type="text/template")
   |div.board-ul-title.clearfix
   |  h3.pull-left Search Results
-  |  a.btn.btn-warning.pull-right.js-full-results View all results 
-  |    i.icon-arrow-right
   |div.results-container
   |  .row-fluid
   |    .span4
   |      h4.boards-title Boards 
+  |        span.count 
   |      .board-archive
   |    .span8
   |      h4.cards-title Cards 
+  |        span.count 
   |      .card-archive
+  |  a.btn.btn-warning.js-full-results View all results 
+  |    i.icon-arrow-right
+  |div.no-results
+  |  span.message Please enter a search query
 
 
 script#template-quick-search-board-list-view(type="text/template")

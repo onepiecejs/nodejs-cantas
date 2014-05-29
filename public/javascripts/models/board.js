@@ -90,6 +90,31 @@
       socket.on('/board:create', this.serverCreate, this);
     },
 
+    fetchTotal: function(q, options) {
+      var io = this.socket || window.socket,
+        deferred = $.Deferred();
+
+      io.emit('board:read', _.extend({
+        $count: {
+          $or: [
+            { isPublic: true },
+            { creatorId: cantas.user.id }
+          ],
+          title: {
+            $regex: q,
+            $options: 'gi'
+          }
+        }
+      }, options || {}), function (err, data) {
+        if (err) {
+          return deferred.reject();
+        }
+        deferred.resolve(data || 0);
+      });
+
+      return deferred.promise();
+    },
+
     serverCreate: function (data) {
       if (data) {
         // make sure no duplicates, just in case

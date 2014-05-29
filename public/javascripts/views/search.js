@@ -35,7 +35,7 @@
         });
 
       this.boardCollection = new cantas.models.BoardCollection();
-      this.listenTo(this.boardCollection, 'sync reset', this.renderBoardResults);
+      this.listenTo(this.boardCollection, 'sync reset add remove', this.renderBoardResults);
 
       this.render();
     },
@@ -84,6 +84,8 @@
      * Fetch matching cards
      */
     getCards: _.debounce(function(q) {
+      var deferred = $.Deferred();
+
       this.cardCollection.setFilters({
         $or: [
           { creatorId: cantas.user.id },
@@ -96,8 +98,11 @@
         }
       }).fetch({
         add: true,
-        remove: true
+        remove: true,
+        success: deferred.resolve
       });
+
+      return deferred.promise();
     }, 50),
 
 
@@ -105,6 +110,8 @@
      * Fetch matching boards
      */
     getBoards: _.debounce(function(q) {
+      var deferred = $.Deferred();
+
       this.boardCollection.fetch({
         data: {
           $or: [
@@ -115,8 +122,11 @@
             $regex: q,
             $options: 'gi'
           }
-        }
+        },
+        success: deferred.resolve
       });
+
+      return deferred.promise();
     }, 50),
 
     close: function() {

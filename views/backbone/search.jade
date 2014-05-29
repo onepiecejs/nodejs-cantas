@@ -8,8 +8,9 @@ script#template-search-view(type="text/template")
 script#template-search-board-list-view(type="text/template")
   |ul.board-ul
   |  each board in boards
-  |    if board.isClosed != true
+  |    if board.isClosed === true
   |      li.board-close
-  |        a(href="/board/" + board._id).owner.board-name= board.title
-  |        span= cantas.utils.formatDate(board.created)
-  |        span= board.creatorId.username
+  |        div.board-name= board.title
+  |    else
+  |      li
+  |        a(href="/board/" + board._id).board-name= board.title

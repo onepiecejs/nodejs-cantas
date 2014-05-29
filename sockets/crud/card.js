@@ -1,4 +1,5 @@
 
+
 (function(module) {
 
   "use strict";
@@ -115,6 +116,12 @@
 
         query.exec(
           function (err, result) {
+
+            // If the result is not an array or object (a count) we don't need to ger any meta data
+            if (!_.isArray(result) || !_.isObject(result)) {
+              return callback(null, result);
+            }
+
             async.map(
               result,
               function(card, callback) {

@@ -94,21 +94,53 @@
 
 
     /**
+     * Display the total number of card results (e.g. 3/120)
+     */
+    renderCardCount: function(q) {
+      var self = this;
+      this.cardCollection.fetchTotal(q).then(function(count) {
+        var displayed = (count < self.maxCards) ? count : self.maxCards;
+        self.$('.cards-title .count').text(displayed + '/' + count);
+      });
+    },
+
+
+    /**
+     * Display the total number of matching boards
+     */
+    renderBoardCount: function(q) {
+      var self = this;
+      this.boardCollection.fetchTotal(q).then(function(count) {
+        var displayed = (count < self.maxBoards) ? count : self.maxBoards;
+        self.$('.boards-title .count').text(displayed + '/' + count);
+      });
+    },
+
+
+    /**
      * Fetch the search results for the query
      */
     search: function(q) {
       this.query = q;
+      var self = this;
+
       if (q && q.length) {
+        this.$('.no-results').hide();
+        this.$('.results-container').show();
         this.setTitle(q);
         this.openQuickSearch();
-        this.getCards(q);
-        this.getBoards(q);
+        this.getCards(q).then(function() {
+          self.renderCardCount(q);
+        });
+        this.getBoards(q).then(function() {
+          self.renderBoardCount(q);
+        });
         this.$('.js-full-results').show();
       } else {
-        this.setTitle();
-        this.getCards(q);
-        this.getBoards(q);
+        this.$('.no-results').show();
+        this.$('.results-container').hide();
         this.$('.js-full-results').hide();
+        this.setTitle();
       }
     }
 
