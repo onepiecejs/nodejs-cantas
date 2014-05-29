@@ -664,6 +664,7 @@ input:focus, textarea:focus{
 
 .quick-search-content .results-container {
     padding: 10px 2%;
+    min-height: 300px;
 }
 
 .quick-search-content .no-results {
