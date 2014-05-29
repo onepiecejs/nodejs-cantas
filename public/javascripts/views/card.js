@@ -1973,7 +1973,7 @@
       this.$el.removeAttr("id");
 
       // If the board is closed add a class to the card
-      if (this.model.get('board').isClosed) {
+      if (this.model.get('board').isClosed || this.model.get('isArchived') === true) {
         this.$el.addClass('card-closed');
       }
 
