@@ -83,7 +83,7 @@
     /**
      * Fetch matching cards
      */
-    getCards: _.debounce(function(q) {
+    getCards: function(q) {
       var deferred = $.Deferred();
 
       this.cardCollection.setFilters({
@@ -103,13 +103,13 @@
       });
 
       return deferred.promise();
-    }, 50),
+    },
 
 
     /**
      * Fetch matching boards
      */
-    getBoards: _.debounce(function(q) {
+    getBoards: function(q) {
       var deferred = $.Deferred();
 
       this.boardCollection.fetch({
@@ -127,7 +127,7 @@
       });
 
       return deferred.promise();
-    }, 50),
+    },
 
     close: function() {
       this.cardListView.close();

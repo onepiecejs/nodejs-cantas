@@ -120,7 +120,7 @@
     /**
      * Fetch the search results for the query
      */
-    search: function(q) {
+    search: _.debounce(function(q) {
       this.query = q;
       var self = this;
 
@@ -142,7 +142,7 @@
         this.$('.js-full-results').hide();
         this.setTitle();
       }
-    }
+    }, 50)
 
   });
 
