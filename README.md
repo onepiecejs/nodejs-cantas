@@ -32,12 +32,11 @@ rhc cartridge add mongodb-2.4 -a cantas
 
 rhc cartridge add "http://cartreflect-claytondev.rhcloud.com/reflect?github=smarterclayton/openshift-redis-cart" -a cantas
 
+rhc env set NODE_ENV=production -a cantas
+
 git remote add upstream -m master git@github.com:onepiecejs/nodejs-cantas.git
 
 git push
-
-rhc env set NODE_ENV=production
-
 ```
 
 ## Setup development environment
