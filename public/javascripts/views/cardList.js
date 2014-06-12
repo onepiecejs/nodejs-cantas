@@ -143,14 +143,7 @@
       this.$cardContainer = $cardContainer.find('.card-container');
       this.collection.forEach(this.renderCard, this);
 
-      // Append the load more button
-      if (this.paginate) {
-        this.$el.append(this.loadMoreTemplate());
-      }
-
-      if (this.paginate && this.collection.size() < this.perPage) {
-        this.lastPage();
-      }
+      this.renderPagination();
 
       return this;
     },
@@ -168,6 +161,8 @@
 
       this.childViews.push(cardView);
       cardView.render().$el.appendTo(this.$cardContainer);
+
+      this.renderPagination();
     },
 
     /**
@@ -179,6 +174,16 @@
           cardView.close();
         }
       });
+    },
+
+    renderPagination: function() {
+      if (this.paginate && !this.$('.load-more').length) {
+        this.$el.append(this.loadMoreTemplate());
+      }
+
+      if (this.paginate && this.collection.size() < this.perPage) {
+        this.lastPage();
+      }
     },
 
     /**
