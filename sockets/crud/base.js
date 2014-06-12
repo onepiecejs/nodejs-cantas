@@ -497,6 +497,11 @@
       }
     });
 
+    console.log("Query:");
+    console.log("++++++++");
+    console.log(JSON.stringify(methods, true, '    '));
+    console.log("++++++++");
+
     // If the user has defined the count directly
     if (!methods.find && !methods.count) {
       methods.find = options;

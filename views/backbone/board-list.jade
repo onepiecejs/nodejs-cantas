@@ -10,7 +10,7 @@ script#template-board-list-view(type="text/template")
   |ul.board-ul
   |  each board in boards
   |    if board.isClosed == true
-  |      li.board-close
+  |      li(class=(highlighted === board._id) ? 'board-close highlighted' : 'board-close')
   |        div.owner.board-name= board.title
   |        div.board-meta
   |          span= cantas.utils.formatDate(board.created)
@@ -18,7 +18,7 @@ script#template-board-list-view(type="text/template")
   |        if isCreator(board)
   |          a.js-open-board.reopen.board-list-status(data-board= board._id, title="Open this board")
   |    else
-  |      li
+  |      li(class=(highlighted === board._id) ? 'highlighted' : '')
   |        a.owner.board-name.js-view-board(href="/board/\#{board._id}")= board.title
   |        div.board-meta
   |          span= cantas.utils.formatDate(board.created)

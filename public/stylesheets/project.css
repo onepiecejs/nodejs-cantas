@@ -696,26 +696,26 @@ input:focus, textarea:focus{
     content: ")";
 }
 
-.quick-search-content .board-ul {
+.quick-search-content .board-ul, .search-results-container .board-ul {
     max-height: none;
     margin-top: 9px;
     border: none;
 }
 
-.quick-search-content .board-ul li {
+.quick-search-content .board-ul li, .search-results-container .board-ul li {
     background: #EAEAEA;
     border: 1px solid #5E9DD3 !important;
     margin-bottom: 10px;
 }
 
-.quick-search-content .board-ul li > span {
+.quick-search-content .board-ul li > span, .search-results-container .board-ul li > span {
     display: none;
 }
 
-.quick-search-content .board-close {
+.quick-search-content .board-close, .search-results-container .board-close {
     opacity: 0.6;
 }
-.quick-search-content .board-close:after {
+.quick-search-content .board-close:after, .search-results-container .board-close:after {
     content: "(Closed)";
     position: absolute;
     top: 3px;
@@ -2253,6 +2253,9 @@ z-index: 10000
 .board-ul li a.archive + span + span:hover{
     color:#ea0011;
 }
+.board-ul li.highlighted {
+    background: #FFFFD6;
+}
 .board-ul .board-meta {
     position: absolute;
     top: 3px;
@@ -3102,6 +3105,9 @@ card{
 .archive-list .card{
     margin: 0;
     width:150px;
+}
+.archive-list .card.highlighted{
+    background: #FFFFD6;
 }
 .archive-list .sent{
     background: url("../images/sent.png") no-repeat scroll 0 0 transparent;

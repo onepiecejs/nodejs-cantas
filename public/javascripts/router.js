@@ -64,6 +64,14 @@ $(function ($, _, Backbone) {
         return cantas.utils.renderBrowserVesionPrompt();
       }
 
+      // Check if we need to highlight a board
+      var highlighted = cantas.utils.getQueryStringParam("highlighted");
+
+      // Remove the querystring
+      if (query.indexOf('?') !== -1) {
+        query = query.split('?')[0];
+      }
+
       // Create the dashboard layout view
       var dashboardView = new cantas.views.DashboardView().render();
       dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-boards-' + query));
@@ -76,7 +84,11 @@ $(function ($, _, Backbone) {
       .done(function(boards) {
         $("body div.process-loading").hide();
 
-        var boardsView = new cantas.views.BoardsView().render({"title": query, "boards": boards});
+        var boardsView = new cantas.views.BoardsView().render({
+          "title": query,
+          "boards": boards,
+          "highlighted": highlighted
+        });
         
         // Set the dashboard content section
         dashboardView.setContentView(boardsView);
@@ -188,6 +200,16 @@ $(function ($, _, Backbone) {
     },
 
     renderBoard: function(boardId,visitors) {
+      // Check if the state has been set in the query string
+      if (window.location.href.indexOf('?') !== -1) {
+        var state = cantas.utils.getQueryStringParams();
+      }
+
+      // Backbone doesn't remove the querystring from the route params
+      if (boardId.indexOf('?') !== -1) {
+        boardId = boardId.split('?')[0];
+      }
+
       var that = this;
       var board = new cantas.models.Board({ _id: boardId });
       board.fetch({
@@ -197,7 +219,8 @@ $(function ($, _, Backbone) {
             response : response,
             options: options,
             isMember: isMember,
-            visitors: visitors
+            visitors: visitors,
+            state: state
           });
           // render board
           that.switchView(boardView);

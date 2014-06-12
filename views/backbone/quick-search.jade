@@ -15,10 +15,3 @@ script#template-quick-search-view(type="text/template")
   |    i.icon-arrow-right
   |div.no-results
   |  span.message Please enter a search query
-
-
-script#template-quick-search-board-list-view(type="text/template")
-  |ul.board-ul
-  |  each board in boards
-  |    li
-  |      a.board-name.js-view-board(href="/board/\#{board._id}")= board.title

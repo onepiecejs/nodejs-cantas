@@ -10,7 +10,7 @@ script#template-search-board-list-view(type="text/template")
   |  each board in boards
   |    if board.isClosed === true
   |      li.board-close
-  |        div.board-name= board.title
+  |        a(href="/boards/closed?highlighted=" + board._id, class="board-name js-view-board")= board.title
   |    else
   |      li
-  |        a(href="/board/" + board._id).board-name= board.title
+  |        a(href="/board/" + board._id, class="board-name js-view-board")= board.title

@@ -39,6 +39,13 @@
 
 
     searchAction: function(e) {
+      var code = e.keyCode || e.which;
+
+      // Don't search if the user pressed esc or enter
+      if (code === 27 || code === 13) {
+        return;
+      }
+
       e.preventDefault();
       var q = this.$('.js-search-form [name="query"]').val();
       this.quickSearchView.search(q);

@@ -62,7 +62,8 @@
       this.$el.html(this.template({
         boards: context.boards,
         h3Header: h3Header,
-        isCreator: this.isCreator
+        isCreator: this.isCreator,
+        highlighted: context.highlighted
       }));
 
       cantas.setTitle(context.title);
