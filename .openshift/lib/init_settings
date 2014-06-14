@@ -1,8 +1,8 @@
 /**
  * Create the settings.json for openshift
- * 
+ *
  *  - Takes settings from openshift env variables
- *  
+ *
  */
 
 'use strict';
@@ -52,7 +52,7 @@ async.waterfall([
 
     // Socket IO
     settings.socketIO = {
-      port: 8000
+      port: 80
     };
 
     // Mongo DB
@@ -67,9 +67,9 @@ async.waterfall([
 
     // Redis
     settings.redis = {
-      host: process.env.OPENSHIFT_REDIS_HOST || "127.0.0.1",
-      port: process.env.OPENSHIFT_REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD,
+      host: process.env.OPENSHIFT_REDIS_HOST || process.env.OPENSHIFT_REDIS_DB_HOST || "127.0.0.1",
+      port: process.env.OPENSHIFT_REDIS_PORT || process.env.S_REDIS_DB_PORT || 6379,
+      password: process.env.REDIS_PASSWORD || process.env.S_REDIS_DB_PASSWORD,
       ttl: 86400
     };
 
