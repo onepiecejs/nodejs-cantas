@@ -24,7 +24,7 @@ Thanks for [all Contributors](AUTHORS.md)
 ```bash
 rhc domain create <yournamespace>
 
-rhc app create cantas nodejs-0.10
+rhc app create cantas nodejs-0.10 -s
 
 cd cantas/
 
@@ -32,11 +32,15 @@ rhc cartridge add mongodb-2.4 -a cantas
 
 rhc cartridge add "http://cartreflect-claytondev.rhcloud.com/reflect?github=smarterclayton/openshift-redis-cart" -a cantas
 
-rhc env set NODE_ENV=production -a cantas
-
 git remote add upstream -m master git@github.com:onepiecejs/nodejs-cantas.git
 
+git pull -s recursive -X theirs upstream master
+
 git push
+
+rhc env set NODE_ENV=production -a cantas
+
+rhc app restart -a cantas
 ```
 
 ## Setup development environment
