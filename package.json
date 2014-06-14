@@ -15,7 +15,7 @@
         "passport-local": "*",
         "passport-google": "*",
         "redis": "*",
-        "socket.io": "*",
+        "socket.io": "~0.9.x",
         "xmlrpc": "~1.1.0",
         "easyimage": "*",
         "requestify": "*",
