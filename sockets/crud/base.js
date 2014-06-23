@@ -446,6 +446,10 @@
    *   - Providing options { $limit: 100, $sort: { created: -1 }, $populate: 'assignees', etc... }
    *   - Would return query.sort({ created: -1 },).populate('assignees').limit(100)...
    *
+   * Count queries:
+   *   - You count the number of results using a query like; { $count: { creatorId: "..." } }
+   *   - This would be equivalent to; query.count({ creatorId: "..." })
+   *
    * @param  {object}    query     mongoose query
    * @param  {object}    options   extend query with...
    * @return {object} mongoose query
@@ -481,16 +485,38 @@
         methods.find = value;
         delete options.$query;
         break;
+
+      case "$count":
+        methods.count = value;
+        // No paging on count queries
+        delete methods.sort;
+        delete methods.limit;
+        delete methods.skip;
+        delete options.$count;
+        break;
       }
     });
 
-    if (!methods.find) {
+    console.log("Query:");
+    console.log("++++++++");
+    console.log(JSON.stringify(methods, true, '    '));
+    console.log("++++++++");
+
+    // If the user has defined the count directly
+    if (!methods.find && !methods.count) {
       methods.find = options;
     }
 
-    // Find should always be run first
-    query = query.find(methods.find);
-    delete methods.find;
+    // Find / count should always be run first
+    if (methods.find) {
+      query = query.find(methods.find);
+      delete methods.find;
+    }
+
+    if (methods.count) {
+      query = query.count(methods.count);
+      delete methods.count;
+    }
 
     _.each(methods, function(value, key) {
       query[key](value);
@@ -498,7 +524,6 @@
 
     return query;
   };
-
 
 
   module.exports = BaseCRUD;

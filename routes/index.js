@@ -461,6 +461,11 @@
       res.render('application', {title: 'Cantas', settings: getClientSettings()});
     });
 
+    // route to search results
+    app.get('/search/:query', ensureAuthenticated, function (req, res) {
+      res.render('application', {title: 'Cantas', settings: getClientSettings()});
+    });
+
     // route to query user email
     app.get('/api/search_member', ensureAuthenticated, function (req, res) {
       var regex = new RegExp(req.query.term + '([a-z0-9]*[-_]?[a-z0-9]+)*@', 'i');

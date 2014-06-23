@@ -161,6 +161,7 @@
     initialize: function(data) {
       _.bindAll(this, "render");
       this.section = data.section;
+      this.highlighted = data.highlighted;
     },
 
     events: {
@@ -169,7 +170,11 @@
     },
 
     render: function() {
-      this.$el.html(this.template({item: this.model, section: this.section}));
+      this.$el.html(this.template({
+        item: this.model,
+        section: this.section,
+        highlighted: this.highlighted
+      }));
       return this;
     },
 
@@ -428,9 +433,10 @@
     template: jade.compile($("#template-archived-view").text()),
     archivedItemViews: [],
 
-    initialize: function() {
+    initialize: function(data) {
       _.bindAll(this, "render");
-      this.section = "lists";
+      this.section = (data && data.section) ? data.section : "lists";
+      this.highlighted = (data && data.highlighted) ? data.highlighted : null;
     },
 
     events: {
@@ -439,7 +445,9 @@
     },
 
     render: function() {
-      this.$el.html(this.template({section: this._toTitleCase(this.section)}));
+      this.$el.html(this.template({
+        section: this._toTitleCase(this.section)
+      }));
       this.$el.find("." + this.section + "-tab").addClass("active");
       this.$el.modal();
 
@@ -473,7 +481,11 @@
         success: function(items) {
           thatElem.parents("div.modal-body").find("p").hide();
           _.each(items, function(item) {
-            var archiveItemView = new ArchivedItemView({model: item, section: that.section});
+            var archiveItemView = new ArchivedItemView({
+              model: item,
+              section: that.section,
+              highlighted: that.highlighted
+            });
             thatElem.append(archiveItemView.render().el);
             archivedItemViews.push(archiveItemView);
           });
@@ -575,6 +587,7 @@
       this.listViewCollection = [];
 
       this.visitors = data.visitors;
+      this.state = data.state;
 
       this.model.listCollection.fetch({data: {boardId: this.model.id}, reset: true});
 
@@ -615,6 +628,26 @@
       this.timer_scrollBoard = 0;
       this.flag_continueScrollBoard = false;
       this.timer_continueScrollBoard = 0;
+    },
+
+    /**
+     * Load the state of the board view
+     * (Open modals, highlight cards, etc)
+     */
+    loadState: function() {
+      if (!this.state || !this.state.view) {
+        return;
+      }
+
+      var viewChain = this.state.view.split('.'),
+        subview = viewChain[0];
+
+      if (subview === 'archived') {
+        return new ArchivedView({
+          section: viewChain[1],
+          highlighted: this.state.highlighted
+        }).render();
+      }
     },
 
     onShowConfigurationClick: function(event) {
@@ -801,6 +834,10 @@
       if (currentUserRole !== 'admin') {
         this.$el.find('.js-show-configuration').hide();
       }
+
+      // Load the state of the board view
+      // this will open any models, etc.
+      this.loadState();
 
       return this;
     },

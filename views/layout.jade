@@ -6,17 +6,17 @@ html
         link(href="/images/favicon.ico",type="image/x-icon",rel="shortcut icon")
         - if (process.env.NODE_ENV == 'production')
             link(rel='stylesheet', href='/stylesheets/eso-theme.min.css')
-            link(rel='stylesheet', href='/stylesheets/project.min.css')
-            link(rel='stylesheet', href='/stylesheets/jquery-fileupload-ui.min.css')
             link(rel='stylesheet', href='/stylesheets/fonts/font-awesome/css/font-awesome.min.css')
+            link(rel='stylesheet', href='/stylesheets/jquery-fileupload-ui.min.css')
+            link(rel='stylesheet', href='/stylesheets/project.min.css')
             - if (user && user.isFirstLogin)
                 link(rel='stylesheet', href='/stylesheets/style.min.css')
                 link(rel='stylesheet', href='/stylesheets/custom.min.css')
         - else
             link(rel='stylesheet', href='/stylesheets/eso-theme.css')
-            link(rel='stylesheet', href='/stylesheets/project.css')
             link(rel='stylesheet', href='/stylesheets/fonts/font-awesome/css/font-awesome.min.css')
             link(rel='stylesheet', href='/stylesheets/jquery-fileupload-ui.css')
+            link(rel='stylesheet', href='/stylesheets/project.css')
         //    - if (user && user.isFirstLogin)
                 link(rel='stylesheet', href='/stylesheets/style.css')
                 link(rel='stylesheet', href='/stylesheets/custom.css')
@@ -43,8 +43,10 @@ html
                         li(class="dropdown header-user js-notification-menu")
                         li(class="dropdown header-user")
                             a(class="dropdown-toggle", onclick="cantas.navigateTo('help')") Help
-                    input(type="text",class="quick-search",placeholder="search")
+                    form(role="form", class="js-search-form")
+                        input(type="text",name="query",class="quick-search",placeholder="search")
 
+            .quick-search-content
             block content
 
             input(type="hidden", id="piwik-site-id", value="#{siteId}")
@@ -85,7 +87,6 @@ html
                 script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload-image.js')
                 script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload-validate.js')
                 script(type='text/javascript', src='/javascripts/vendor/jquery-ui-timepicker-addon.js')
-                script(type='text/javascript', src='/javascripts/vendor/waypoints.js')
 
         script(type="text/javascript", class="piwik-tracker").
             try {

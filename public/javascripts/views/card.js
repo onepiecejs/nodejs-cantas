@@ -1969,8 +1969,11 @@
     render: function() {
       cantas.views.CardView.prototype.render.apply(this);
 
+      // A static card can appear on the same page as a dynamic card
+      this.$el.removeAttr("id");
+
       // If the board is closed add a class to the card
-      if (this.model.get('board').isClosed) {
+      if (this.model.get('board').isClosed || this.model.get('isArchived') === true) {
         this.$el.addClass('card-closed');
       }
 
@@ -1983,13 +1986,27 @@
     },
 
     showCardDetails: function() {
+      var board = this.model.get('board');
+
       // Can't link to closed boards
-      if (this.model.get('board').isClosed) {
-        return;
+      // Redirect user to the closed boards page and highlight the parent board
+      if (board.isClosed) {
+        return cantas.appRouter.navigate("/boards/closed?highlighted=" + board._id, {
+          trigger: true
+        });
+      }
+
+      // If the card is arcived open the board view and show the archived cards modal
+      if (this.model.get('isArchived')) {
+        var boardUrl = "/board/" + board._id + "/" + $.slug(board.title) +
+          "?view=archived.cards&highlighted=" + this.model.get('_id');
+        return cantas.appRouter.navigate(boardUrl, {
+          trigger: true
+        });
       }
 
       // Link to details page
-      var cardUrl = ["card", this.model.get('_id'), $.slug(this.model.get('title'))].join('/');
+      var cardUrl = "/card/" + this.model.get('_id') + "/" + $.slug(this.model.get('title'));
       cantas.appRouter.navigate(cardUrl, {trigger: true});
     },
 

@@ -292,6 +292,25 @@
   };
 
   /**
+   * Get a param from the querystring by key
+   */
+  utils.getQueryStringParam = function(name) {
+    var match = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+  };
+
+  /**
+   * Get all params in the query
+   */
+  utils.getQueryStringParams = function() {
+    return document.location.search.replace(/(^\?)/, '').split("&").map(function(n) {
+      n = n.split("=");
+      this[n[0]] = n[1];
+      return this;
+    }.bind({}))[0];
+  };
+
+  /**
    *  global cantas.utils declare
    * */
   cantas.utils = utils;

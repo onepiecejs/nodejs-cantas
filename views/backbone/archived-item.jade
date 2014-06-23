@@ -4,6 +4,6 @@ script#template-archived-items-view(type="text/template")
     |    p.item-name= item.title
     |    a(href="#",class="js-reopen sent",data-listid="\#{item._id}",title="Send to board")
     |- else if (section == 'cards')
-    |  div.card
+    |  div(class=(highlighted === item._id) ? 'card highlighted' : 'card')
     |    p= item.title
     |    a(href="#",class="js-cards-reopen sent",data-cardid="\#{item._id}",title="Send to board")

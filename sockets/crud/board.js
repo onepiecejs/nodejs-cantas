@@ -13,6 +13,7 @@
   var configDescription = require("../../models/configStatus").configDescription;
   var LogActivity = require("../../services/activity").Activity;
   var Sites = require("../../services/sites");
+  var _ = require('lodash');
 
   function BoardCRUD(options) {
     BaseCRUD.call(this, options);
@@ -74,12 +75,15 @@
             callback(err, result);
           });
       } else {
-        this.modelClass
-          .find(data)
-          .populate("creatorId")
-          .exec(function (err, result) {
-            callback(err, result);
-          });
+
+        // Build a query from the request data (Allows for limit, skip, sorting, count, etc.)
+        var query = this._buildQuery(this.modelClass, _.extend({}, data, {
+          $populate: "creatorId"
+        }));
+
+        query.exec(function (err, result) {
+          callback(err, result);
+        });
       }
     } else {
       this.modelClass.find({}, callback);

@@ -23,6 +23,10 @@ $(function ($, _, Backbone) {
 
     currentView: null,
 
+    initialize: function() {
+      this.appView = new cantas.views.AppView();
+    },
+
     switchView: function(view, context){
       if (this.currentView){
         this.currentView.close();
@@ -60,6 +64,14 @@ $(function ($, _, Backbone) {
         return cantas.utils.renderBrowserVesionPrompt();
       }
 
+      // Check if we need to highlight a board
+      var highlighted = cantas.utils.getQueryStringParam("highlighted");
+
+      // Remove the querystring
+      if (query.indexOf('?') !== -1) {
+        query = query.split('?')[0];
+      }
+
       // Create the dashboard layout view
       var dashboardView = new cantas.views.DashboardView().render();
       dashboardView.setNavigationView(new cantas.views.DashboardNavigationView().render().setActive('nav-boards-' + query));
@@ -72,7 +84,11 @@ $(function ($, _, Backbone) {
       .done(function(boards) {
         $("body div.process-loading").hide();
 
-        var boardsView = new cantas.views.BoardsView().render({"title": query, "boards": boards});
+        var boardsView = new cantas.views.BoardsView().render({
+          "title": query,
+          "boards": boards,
+          "highlighted": highlighted
+        });
         
         // Set the dashboard content section
         dashboardView.setContentView(boardsView);
@@ -102,6 +118,7 @@ $(function ($, _, Backbone) {
       // Get the user's cards and set the card list view
       new cantas.models.CardCollection()
         .setPage(1)
+        .setPerPage(20)
         .setFilters({
           $or: [
             { creatorId: cantas.user.id },
@@ -183,6 +200,16 @@ $(function ($, _, Backbone) {
     },
 
     renderBoard: function(boardId,visitors) {
+      // Check if the state has been set in the query string
+      if (window.location.href.indexOf('?') !== -1) {
+        var state = cantas.utils.getQueryStringParams();
+      }
+
+      // Backbone doesn't remove the querystring from the route params
+      if (boardId.indexOf('?') !== -1) {
+        boardId = boardId.split('?')[0];
+      }
+
       var that = this;
       var board = new cantas.models.Board({ _id: boardId });
       board.fetch({
@@ -192,7 +219,8 @@ $(function ($, _, Backbone) {
             response : response,
             options: options,
             isMember: isMember,
-            visitors: visitors
+            visitors: visitors,
+            state: state
           });
           // render board
           that.switchView(boardView);
@@ -214,7 +242,7 @@ $(function ($, _, Backbone) {
             success: function(model, response, options) {
               that.navigate("board/" + response.boardId, {trigger: true, replace: true});
               var interval = setInterval(function(){
-                var cardview = $("#" + cardId).find(".card-title");
+                var cardview = $("#" + cardId).last().find(".card-title");
                 if(cardview.length > 0){
                   cardview.trigger("click");
                   clearInterval(interval);
@@ -256,6 +284,9 @@ $(function ($, _, Backbone) {
     },
 
     search: function(query) {
+      var searchView = new cantas.views.SearchView();
+      this.switchView(searchView, {title: 'Search results for: "' + query + '"'});
+      searchView.search(query);
     },
 
     newBoard: function() {
@@ -281,12 +312,6 @@ $(function ($, _, Backbone) {
   cantas.navigateTo = function(url) {
     cantas.appRouter.navigate(url, {trigger: true});
   }
-
-  cantas.appRouter.notificationView = new cantas.views.NotificationView();
-  cantas.socket.on('/notification:create', function(data){
-    var obj = new cantas.models.Notification(data);
-    cantas.appRouter.notificationView.notificationCollection.add(data);
-  });
 
   cantas.socket.on("cover:update", function(data){
     var card = cantas.utils.getCardModelById(data.cardId);
