@@ -344,6 +344,12 @@
                 socket: self.socket
               }, function(err, result) {});
             });
+
+            // findByIdAndUpdate skips mongoose middleware
+            // calling save again will updated the created date on the card/board
+            self.modelClass.findOne({ _id: _id }, function(err, model) {
+              model.save();
+            });
           }
         });
     }

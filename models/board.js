@@ -20,6 +20,7 @@
       title: { type: String, required: true },
       description: { type: String, default: '' },
       isClosed: { type: Boolean, default: false },
+      updated: { type: Date, default: Date.now },
       created: { type: Date, default: Date.now },
       creatorId: { type: ObjectId, required: true, ref: 'User', index: true },
       groupId: { type: ObjectId, index: true },
@@ -37,6 +38,11 @@
         }
       }
     });
+
+  BoardSchema.pre('save', function(next) {
+    this.updated = new Date();
+    next();
+  });
 
   BoardSchema.post('remove', function (board) {
     // Also remove its lists.
