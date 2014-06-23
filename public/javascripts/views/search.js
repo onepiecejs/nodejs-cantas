@@ -97,8 +97,7 @@
           $options: 'gi'
         }
       }).fetch({
-        add: true,
-        remove: true,
+        reset: true,
         success: deferred.resolve
       });
 
