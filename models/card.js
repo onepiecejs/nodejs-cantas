@@ -19,6 +19,7 @@
     title: { type: String, required: true },
     description: { type: String, default: 'Description'},
     isArchived: { type: Boolean, default: false },
+    updated: { type: Date, default: Date.now },
     created: { type: Date, default: Date.now },
     dueDate: { type: Date, required: false, default: null },
     order: { type: Number, default: -1},
@@ -37,6 +38,19 @@
         roles: [ ObjectId ]
       }
     }
+  });
+
+  CardSchema.pre('save', function(next) {
+    this.updated = new Date();
+
+    Board.findOne({ _id: this.boardId }, function(err, board) {
+      if (!err && board) {
+        board.updated = new Date();
+        board.save();
+      }
+    });
+
+    next();
   });
 
   // virtual attributes
