@@ -89,6 +89,7 @@ describe('Test cardMove', function(){
         });
       },
       function(callback) {
+        console.log("create list");
         listTwo = new List({
           title: 'Todo',
           boardId: boardOne.id,

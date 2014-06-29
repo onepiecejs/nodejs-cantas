@@ -66,7 +66,7 @@ rhc app restart -a cantas
     # redis
     sudo yum install redis
     ```
-> ***Note:***
+> ***Note:***  
 > If you got `g++: command not found` while you installing nodejs,
 > you can install it by `sudo yum install gcc-c++`.
 
@@ -105,8 +105,9 @@ rhc app restart -a cantas
     # start the app
     NODE_ENV=development node app.js
     ```
-> ***Note:***
-> make sure the `mongod` deamon is running before starting the app.
+> ***Note:***  
+> Make sure the `mongod` deamon is running before starting the app.  
+> To enable Google signin you will need to create a Client ID in the [Google Developer Console](https://console.developers.google.com).
 
 That's it.
 

@@ -21,7 +21,7 @@
   var krb5 = require('node-krb5');
   var LocalStrategy = require('passport-local').Strategy;
   var RemoteUserStrategy = require('./remoteUserStrategy');
-  var GoogleStrategy = require('passport-google').Strategy;
+  var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
   var settings = require('../../settings');
   var User = require('../../models/user');
   var utils = require('../utils');
@@ -130,27 +130,34 @@
   }
 
   var CantasGoogleStrategy = new GoogleStrategy({
-      returnURL: sites.currentSite() + 'auth/google/return',
-      realm: sites.currentSite()
-    },
-      function(identifier, profile, done) {
-        process.nextTick(function () {
-          User.findOne({'email': profile.emails[0].value}, function (err, user) {
-            if (err) { return done(err); }
-            if (user === null) {
-              var newUser = new User({
-                username: profile.emails[0].value,
-                email: profile.emails[0].value
-              });
-              newUser.save(function(err, userSaved) {
-                return done(null, newUser);
-              });
-            } else {
-              return done(null, user);
-            }
-          });
+      clientID: settings.auth.google.clientID,
+      clientSecret: settings.auth.google.clientSecret,
+      callbackURL: settings.auth.google.callbackURL || sites.currentSite() + 'auth/google/callback'
+    }, function(accessToken, refreshToken, profile, done) {
+      process.nextTick(function() {
+
+        User.findOne({
+          email: profile.emails[0].value
+        }, function (err, user) {
+          if (err) {
+            return done(err);
+          }
+
+          if (user === null) {
+            var newUser = new User({
+              username: profile.emails[0].value,
+              email: profile.emails[0].value
+            });
+
+            newUser.save(function(err, userSaved) {
+              return done(null, newUser);
+            });
+          } else {
+            return done(null, user);
+          }
         });
       });
+    });
 
   /*
    * To export predefine strategies.

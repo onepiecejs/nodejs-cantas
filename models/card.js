@@ -43,7 +43,7 @@
   CardSchema.pre('save', function(next) {
     this.updated = new Date();
 
-    Board.findOne({ _id: this.boardId }, function(err, board) {
+    require('./board').findOne({ _id: this.boardId }, function(err, board) {
       if (!err && board) {
         board.updated = new Date();
         board.save();
