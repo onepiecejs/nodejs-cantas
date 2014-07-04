@@ -3,8 +3,7 @@
 About Cantas
 ===============
 
-See key feature in https://cantas.engineering.redhat.com/help
-
+See https://github.com/onepiecejs/nodejs-cantas/
 
 Key features
 ------------
