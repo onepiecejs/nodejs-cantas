@@ -2,7 +2,8 @@
 
 Cantas is a real-time collaborative web application.This is a side project,
 used as internal productivity tool in [Red Hat](https://www.redhat.com/).
-We believed this is the best open source project for
+
+This we believe, is a great open source project for
 learning HTML5/Nodejs/socket.io/backbone.js technology.
 
 Thanks for [all Contributors](AUTHORS.md)
@@ -113,8 +114,6 @@ That's it.
 
 ## Resources
 
-- [trello](https://trello.com/)
-- [the trello tech talk](http://blog.fogcreek.com/the-trello-tech-stack/)
 - [HTML5 pushState](http://diveintohtml5.info/history.html)
 
 ## Integration && Test Environment
@@ -136,7 +135,7 @@ That's it.
 
 
 ## About
-cantas is a real-time collaborative application.
+cantas is a real-time collaborative application similar to Trello.
 
   [nodejs]:http://nodejs.org/    "Nodejs"
   [npm]:http://npmjs.org/    "npm"
