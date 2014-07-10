@@ -129,7 +129,11 @@
 
   }
 
-  var CantasGoogleStrategy = new GoogleStrategy({
+  var CantasGoogleStrategy;
+
+  if (settings.auth.google && settings.auth.google.clientID && settings.auth.google.clientSecret) {
+
+    CantasGoogleStrategy = new GoogleStrategy({
       clientID: settings.auth.google.clientID,
       clientSecret: settings.auth.google.clientSecret,
       callbackURL: settings.auth.google.callbackURL || sites.currentSite() + 'auth/google/callback'
@@ -159,19 +163,26 @@
       });
     });
 
+  }
+
+
   /*
    * To export predefine strategies.
    *
    * The key is as same as each strategy's name. But this is not a necessary
    * rule.
    */
+
   module.exports = {
     // defualt we need comments CantasDummyStrategy
     // 'dummy': CantasDummyStrategy,
     'kerberos': CantasKerberosStrategy,
-    'remote': CantasRemoteUserStrategy,
-    'google': CantasGoogleStrategy
+    'remote': CantasRemoteUserStrategy
   };
+
+  if (CantasGoogleStrategy) {
+    module.exports.google = CantasGoogleStrategy;
+  }
 
 }(module));
 

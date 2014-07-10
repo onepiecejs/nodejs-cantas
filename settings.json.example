@@ -10,8 +10,7 @@
         "strategy": "remote_user",
         "google": {
             "clientID": "",
-            "clientSecret": "",
-            "callbackURL": ""
+            "clientSecret": ""
         }
     },
     "links": {
