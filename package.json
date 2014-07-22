@@ -10,7 +10,7 @@
         "moment": "*",
         "mongoose": "*",
         "node-krb5": "*",
-        "nodemailer": "*",
+        "nodemailer": "~0.7.1",
         "passport": "*",
         "passport-local": "*",
         "passport-google": "*",
@@ -33,7 +33,6 @@
         "mongoose-fakery": "*",
         "nodelint": "*",
         "optimist": "~0.6.0",
-        "passport-dummy": "~0.0.1",
         "sinon": "*",
         "supertest": "*"
     },
