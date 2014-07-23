@@ -726,21 +726,21 @@
         }
       }
     },
-    "passport-google": {
-      "version": "0.3.0",
-      "from": "passport-google@*",
+    "passport-google-oauth": {
+      "version": "0.1.5",
+      "from": "passport-google-oauth@*",
       "dependencies": {
         "pkginfo": {
           "version": "0.2.3",
           "from": "pkginfo@0.2.x"
         },
-        "passport-openid": {
-          "version": "0.3.1",
-          "from": "passport-openid@0.3.x",
+        "passport-oauth": {
+          "version": "0.1.15",
+          "from": "passport-oauth@~0.1.4",
           "dependencies": {
             "passport": {
               "version": "0.1.18",
-              "from": "passport@~0.1.3",
+              "from": "passport@~0.1.1",
               "dependencies": {
                 "pause": {
                   "version": "0.0.1",
@@ -748,9 +748,9 @@
                 }
               }
             },
-            "openid": {
-              "version": "0.5.9",
-              "from": "openid@0.5.x"
+            "oauth": {
+              "version": "0.9.12",
+              "from": "oauth@0.9.x"
             }
           }
         }
