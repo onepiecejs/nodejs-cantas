@@ -6,6 +6,8 @@ used as internal productivity tool in [Red Hat](https://www.redhat.com/).
 This we believe, is a great open source project for
 learning HTML5/Nodejs/socket.io/backbone.js technology.
 
+[![Build Status](https://travis-ci.org/onepiecejs/nodejs-cantas.svg?branch=master)](http://travis-ci.org/onepiecejs/nodejs-cantas)
+
 Thanks for [all Contributors](AUTHORS.md)
 
 ![project screenshot](./public/images/cantas-help-list.gif)
