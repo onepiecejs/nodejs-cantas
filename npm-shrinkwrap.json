@@ -275,74 +275,49 @@
       "from": "moment@*"
     },
     "mongoose": {
-      "version": "3.8.13",
-      "from": "mongoose@*",
-      "resolved": "https://registry.npmjs.org/mongoose/-/mongoose-3.8.13.tgz",
+      "version": "3.6.13",
+      "from": "mongoose@3.6.13",
+      "resolved": "https://registry.npmjs.org/mongoose/-/mongoose-3.6.13.tgz",
       "dependencies": {
+        "hooks": {
+          "version": "0.2.1",
+          "from": "hooks@0.2.1"
+        },
         "mongodb": {
-          "version": "1.4.5",
-          "from": "mongodb@1.4.5",
+          "version": "1.3.10",
+          "from": "mongodb@1.3.10",
           "dependencies": {
             "bson": {
-              "version": "0.2.8",
-              "from": "bson@0.2.8",
-              "dependencies": {
-                "nan": {
-                  "version": "1.0.0",
-                  "from": "nan@~1.0.0"
-                }
-              }
+              "version": "0.1.9",
+              "from": "bson@0.1.9"
             },
             "kerberos": {
               "version": "0.0.3",
-              "from": "kerberos@0.0.3"
-            },
-            "readable-stream": {
-              "version": "1.0.27-1",
-              "from": "readable-stream@latest",
-              "dependencies": {
-                "core-util-is": {
-                  "version": "1.0.1",
-                  "from": "core-util-is@~1.0.0"
-                },
-                "isarray": {
-                  "version": "0.0.1",
-                  "from": "isarray@0.0.1"
-                },
-                "string_decoder": {
-                  "version": "0.10.25-1",
-                  "from": "string_decoder@~0.10.x"
-                },
-                "inherits": {
-                  "version": "2.0.1",
-                  "from": "inherits@~2.0.1",
-                  "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
-                }
-              }
+              "from": "kerberos@latest"
             }
           }
-        },
-        "hooks": {
-          "version": "0.2.1",
-          "from": "hooks@0.2.1",
-          "resolved": "https://registry.npmjs.org/hooks/-/hooks-0.2.1.tgz"
         },
         "ms": {
           "version": "0.1.0",
           "from": "ms@0.1.0"
         },
         "sliced": {
-          "version": "0.0.5",
-          "from": "sliced@0.0.5"
+          "version": "0.0.3",
+          "from": "sliced@0.0.3"
         },
         "muri": {
           "version": "0.3.1",
           "from": "muri@0.3.1"
         },
         "mpromise": {
-          "version": "0.4.3",
-          "from": "mpromise@0.4.3",
-          "resolved": "https://registry.npmjs.org/mpromise/-/mpromise-0.4.3.tgz"
+          "version": "0.2.1",
+          "from": "mpromise@0.2.1",
+          "dependencies": {
+            "sliced": {
+              "version": "0.0.4",
+              "from": "sliced@0.0.4"
+            }
+          }
         },
         "mpath": {
           "version": "0.1.1",
@@ -351,17 +326,6 @@
         "regexp-clone": {
           "version": "0.0.1",
           "from": "regexp-clone@0.0.1"
-        },
-        "mquery": {
-          "version": "0.8.0",
-          "from": "mquery@0.8.0",
-          "resolved": "https://registry.npmjs.org/mquery/-/mquery-0.8.0.tgz",
-          "dependencies": {
-            "debug": {
-              "version": "0.7.4",
-              "from": "debug@0.7.4"
-            }
-          }
         }
       }
     },

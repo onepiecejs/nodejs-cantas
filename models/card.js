@@ -42,15 +42,16 @@
 
   CardSchema.pre('save', function(next) {
     this.updated = new Date();
-
-    Board.findOne({ _id: this.boardId }, function(err, board) {
-      if (!err && board) {
-        board.updated = new Date();
-        board.save();
-      }
-    });
-
     next();
+  });
+
+  CardSchema.post('save', function(card) {
+    card.populate('boardId', function(err) {
+      if (err) return done(err);
+
+      card.boardId.updated = new Date();
+      card.boardId.save();
+    });
   });
 
   // virtual attributes
