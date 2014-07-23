@@ -98,37 +98,6 @@
     });
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    /*
-     * Dummy strategy for development only.
-     *
-     * This strategy would create a dummy user account in database. And this
-     * account should be appear in production database.
-     */
-    var DummyStrategy = require('passport-dummy').Strategy;
-    var CantasDummyStrategy = new DummyStrategy(function(done) {
-      User.findOne({username: 'dummy'}, function(err, user) {
-        if (err) {
-          done(err);
-          return;
-        }
-        if (user === null) {
-          var dummyUser = new User({username: 'dummy', email: 'dummy@example.com'});
-          dummyUser.save(function(err, user) {
-            if (err) {
-              done(err);
-            } else {
-              done(null, user);
-            }
-          });
-        } else {
-          done(null, user);
-        }
-      });
-    });
-
-  }
-
   var CantasGoogleStrategy = new GoogleStrategy({
       returnURL: sites.currentSite() + 'auth/google/return',
       realm: sites.currentSite()
@@ -159,8 +128,6 @@
    * rule.
    */
   module.exports = {
-    // defualt we need comments CantasDummyStrategy
-    // 'dummy': CantasDummyStrategy,
     'kerberos': CantasKerberosStrategy,
     'remote': CantasRemoteUserStrategy,
     'google': CantasGoogleStrategy

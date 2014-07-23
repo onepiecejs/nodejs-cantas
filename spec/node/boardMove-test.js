@@ -151,8 +151,6 @@ describe('Test cardMove', function(){
 
              socket.emit('move-card', moveData);
            });
-
-          
         });
       });
   });
