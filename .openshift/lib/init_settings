@@ -79,6 +79,13 @@ async.waterfall([
       product: "http://" + process.env.OPENSHIFT_APP_DNS + "/"
     };
 
+    //Google Auth
+    settings.auth.google = {
+      "clientID": "<your client id>",
+      "clientSecret": "<your client secret>",
+      "callbackURL": "http://cantas-onepiecejs.rhcloud.com/oauth2callback"
+    }
+
     callback(null, settings);
   },
 

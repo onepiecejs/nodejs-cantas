@@ -21,7 +21,7 @@
   var krb5 = require('node-krb5');
   var LocalStrategy = require('passport-local').Strategy;
   var RemoteUserStrategy = require('./remoteUserStrategy');
-  var GoogleStrategy = require('passport-google').Strategy;
+  var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
   var settings = require('../../settings');
   var User = require('../../models/user');
   var utils = require('../utils');
@@ -119,7 +119,8 @@
             }
           });
         });
-      });
+      }
+    );
 
   /*
    * To export predefine strategies.
@@ -127,11 +128,15 @@
    * The key is as same as each strategy's name. But this is not a necessary
    * rule.
    */
+
   module.exports = {
     'kerberos': CantasKerberosStrategy,
-    'remote': CantasRemoteUserStrategy,
-    'google': CantasGoogleStrategy
+    'remote': CantasRemoteUserStrategy
   };
+
+  if (CantasGoogleStrategy) {
+    module.exports.google = CantasGoogleStrategy;
+  }
 
 }(module));
 

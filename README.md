@@ -43,8 +43,13 @@ git push
 
 rhc env set NODE_ENV=production -a cantas
 
+# Caution: please input your variabes in .openshift/lib/init_settings
+
 rhc app restart -a cantas
 ```
+> ***Note:***
+> Please update your settings value in .openshift/lib/init_settings before push
+> to Openshift Online service.
 
 ## Setup development environment
 
@@ -109,7 +114,8 @@ rhc app restart -a cantas
     NODE_ENV=development node app.js
     ```
 > ***Note:***
-> make sure the `mongod` deamon is running before starting the app.
+> Make sure the `mongod` deamon is running before starting the app.
+> To enable Google signin you will need to create a Client ID in the [Google Developer Console](https://console.developers.google.com).
 
 That's it.
 
