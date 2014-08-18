@@ -3543,11 +3543,11 @@ card{
     -webkit-animation-delay: 0;
 }
 @keyframes processdot{
-    from {background-color; #eee;}
+    from {background-color: #eee;}
     to {background-color: #666;}
 }
 @-webkit-keyframes processdot{
-    from {background-color; #eee;}
+    from {background-color: #eee;}
     to {background-color: #666;}
 }
 
