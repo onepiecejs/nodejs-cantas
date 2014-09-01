@@ -17,7 +17,7 @@
         "redis": "*",
         "socket.io": "~0.9.x",
         "xmlrpc": "~1.1.0",
-        "easyimage": "*",
+        "easyimage": "^1.0.2",
         "requestify": "*",
         "lodash": "*"
     },

@@ -24,7 +24,7 @@ module.exports = function (grunt) {
       },
       'cantas': {
         src: [
-          'public/javascripts/vendor/jquery-2.0.0.js',
+          'public/javascripts/vendor/jquery-2.1.1.js',
           'public/javascripts/vendor/jquery.slug.js',
           'public/javascripts/vendor/async.js',
           'public/javascripts/vendor/markdown.js',

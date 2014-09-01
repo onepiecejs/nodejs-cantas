@@ -47,7 +47,10 @@
 
   CardSchema.post('save', function(card) {
     card.populate('boardId', function(err) {
-      if (err) return done(err);
+      if (err) {
+        console.log('The card %s, update boardId failed', card._id);
+        return false;
+      }
 
       card.boardId.updated = new Date();
       card.boardId.save();

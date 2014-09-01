@@ -18,7 +18,7 @@
 
     /**
      * Return any setting that will be required clientside
-     * 
+     *
      * @return {string}
      */
     var getClientSettings = function() {
@@ -237,13 +237,10 @@
             if (imageRegExp.test(filenameExt)) {
               var thumbPath_card = fullPath + '-thumb-card' + filenameExt;
               var thumbPath_cardDetail = fullPath + '-thumb-cardDetail' + filenameExt;
-              easyimg.info(fullPath, function(err, stdout, stderr) {
-                if (err) {
-                  renameParams.res.json({'user_error': 'Uploading attachment failed',
-                    'maintainer_error': 'Reading image info failed'});
-                } else {
-                  var originalWidth = stdout.width;
-                  var originalHeight = stdout.height;
+              easyimg.info(fullPath).then(
+                function(file) {
+                  var originalWidth = file.width;
+                  var originalHeight = file.height;
                   var ratio = 5 / 3;
                   var resizeWidth = 0;
                   var resizeHeight = 0;
@@ -261,65 +258,78 @@
                       height: resizeHeight || originalHeight,
                       cropwidth: 250,
                       cropheight: 150
-                    },
-                      function(err, image) {
-                        if (err) {
-                          renameParams.res.json({'user_error': 'Uploading attachment failed',
-                            'maintainer_error': 'Generating thumbnail for the card view failed'});
-                        } else {
-                          easyimg.resize({
-                            src: thumbPath_card,
-                            dst: thumbPath_cardDetail,
-                            width: 70,
-                            height: 42
+                    }).then(
+                      function(image) {
+                        easyimg.resize({
+                          src: thumbPath_card,
+                          dst: thumbPath_cardDetail,
+                          width: 70,
+                          height: 42
+                        }).then(
+                          function(image) {
+                            renameParams.res.json({'attachment': {
+                              'cardId': renameParams.cardId,
+                              'uploaderId': renameParams.uploaderId,
+                              'name': sanitizedFilename,
+                              'fileType': 'picture',
+                              'size': renameParams.size,
+                              'path': fullPath,
+                              'cardThumbPath': thumbPath_card,
+                              'cardDetailThumbPath': thumbPath_cardDetail
+                            }});
                           },
-                            function(err, image) {
-                              if (err) {
-                                renameParams.res.json({'user_error': 'Uploading attachment failed',
-                                  'maintainer_error': 'Generating thumbnail for the card' +
-                                    'details view failed'});
-                              } else {
-                                renameParams.res.json({'attachment': {
-                                  'cardId': renameParams.cardId,
-                                  'uploaderId': renameParams.uploaderId,
-                                  'name': sanitizedFilename,
-                                  'fileType': 'picture',
-                                  'size': renameParams.size,
-                                  'path': fullPath,
-                                  'cardThumbPath': thumbPath_card,
-                                  'cardDetailThumbPath': thumbPath_cardDetail
-                                }});
-                              }
+                          function(err) {
+                            renameParams.res.json({
+                              'user_error': 'Uploading attachment failed',
+                              'maintainer_error': 'Generating thumbnail ' +
+                                'for the card details view failed' + err
                             });
-                        }
-                      });
+                          }
+                        );
+                      },
+                      function (err) {
+                        renameParams.res.json({
+                          'user_error': 'Uploading attachment failed',
+                          'maintainer_error': 'Generating thumbnail failed:' +
+                            err
+                        });
+                      }
+                    );
                   } else {
                     easyimg.resize({
                       src: fullPath,
                       dst: thumbPath_cardDetail,
                       width: 70,
                       height: 42
-                    },
-                      function(err, image) {
-                        if (err) {
-                          renameParams.res.json({'user_error': 'Uploading attachment failed',
-                            'maintainer_error':
-                              'Generating thumbnail for the card details view failed'});
-                        } else {
-                          renameParams.res.json({'attachment': {
-                            'cardId': renameParams.cardId,
-                            'uploaderId': renameParams.uploaderId,
-                            'name': sanitizedFilename,
-                            'fileType': 'picture',
-                            'size': renameParams.size,
-                            'path': fullPath,
-                            'cardDetailThumbPath': thumbPath_cardDetail
-                          }});
-                        }
-                      });
+                    }).then(
+                      function(image) {
+                        renameParams.res.json({'attachment': {
+                          'cardId': renameParams.cardId,
+                          'uploaderId': renameParams.uploaderId,
+                          'name': sanitizedFilename,
+                          'fileType': 'picture',
+                          'size': renameParams.size,
+                          'path': fullPath,
+                          'cardDetailThumbPath': thumbPath_cardDetail
+                        }});
+                      },
+                      function(err) {
+                        renameParams.res.json({
+                          'user_error': 'Uploading attachment failed',
+                          'maintainer_error': 'Generating thumbnail err:' +
+                            err
+                        });
+                      }
+                    );
                   }
+                },
+                function (err) {
+                  renameParams.res.json({
+                    'user_error': 'Uploading attachment failed',
+                    'maintainer_error': 'Reading image info failed:' + err
+                  });
                 }
-              });
+              );
             } else {
               renameParams.res.json({'attachment': {
                 'cardId': renameParams.cardId,
@@ -409,7 +419,7 @@
                   importDatasource, function(err) {
                   if (err) {
                     errCount++;
-                    // once getting the first error, return failure response to the front view 
+                    // once getting the first error, return failure response to the front view
                     if (errCount === 1) {
                       res.json({'user_error': 'Importing the json file from Trello failed.',
                         'maintainer_error': err});

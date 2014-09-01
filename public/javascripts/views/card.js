@@ -1893,7 +1893,7 @@
     /**
      * Get the date and time selected by the user
      *  - Returns a moment.js object
-     * 
+     *
      * @return {Moment}
      */
     getUserInput: function() {
