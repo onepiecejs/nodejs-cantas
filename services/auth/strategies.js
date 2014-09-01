@@ -98,29 +98,34 @@
     });
   });
 
-  var CantasGoogleStrategy = new GoogleStrategy({
-      returnURL: sites.currentSite() + 'auth/google/return',
-      realm: sites.currentSite()
+  var CantasGoogleStrategy;
+  if (settings.auth.google && settings.auth.google.clientID && settings.auth.google.clientSecret) {
+    CantasGoogleStrategy = new GoogleStrategy({
+      clientID: settings.auth.google.clientID,
+      clientSecret: settings.auth.google.clientSecret,
+      callbackURL: settings.auth.google.callbackURL ||
+        sites.currentSite() + 'auth/google/callback'
     },
-      function(identifier, profile, done) {
-        process.nextTick(function () {
-          User.findOne({'email': profile.emails[0].value}, function (err, user) {
-            if (err) { return done(err); }
-            if (user === null) {
-              var newUser = new User({
-                username: profile.emails[0].value,
-                email: profile.emails[0].value
-              });
-              newUser.save(function(err, userSaved) {
-                return done(null, newUser);
-              });
-            } else {
-              return done(null, user);
-            }
-          });
+    function(identifier, profile, done) {
+      process.nextTick(function () {
+        User.findOne({'email': profile.emails[0].value}, function (err, user) {
+          if (err) { return done(err); }
+          if (user === null) {
+            var newUser = new User({
+              username: profile.emails[0].value,
+              email: profile.emails[0].value
+            });
+            newUser.save(function(err, userSaved) {
+              return done(null, newUser);
+            });
+          } else {
+            return done(null, user);
+          }
         });
-      }
-    );
+      });
+    });
+  }
+
 
   /*
    * To export predefine strategies.
