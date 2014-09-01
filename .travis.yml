@@ -13,3 +13,4 @@ before_script:
   - "cp settings.json.example settings.json"
 script:
   - "DISPLAY=:99.0 grunt test"
+  - "/bin/bash ./scripts/lintcheck"
