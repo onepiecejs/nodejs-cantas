@@ -239,86 +239,96 @@
               var thumbPath_cardDetail = fullPath + '-thumb-cardDetail' + filenameExt;
               easyimg.info(fullPath).then(
                 function(file) {
-                var originalWidth = file.width;
-                var originalHeight = file.height;
-                var ratio = 5 / 3;
-                var resizeWidth = 0;
-                var resizeHeight = 0;
+                  var originalWidth = file.width;
+                  var originalHeight = file.height;
+                  var ratio = 5 / 3;
+                  var resizeWidth = 0;
+                  var resizeHeight = 0;
 
-                if (originalWidth > 250 || originalHeight > 150) {
-                  if (originalWidth / originalHeight >= ratio) {
-                    resizeHeight = 150;
+                  if (originalWidth > 250 || originalHeight > 150) {
+                    if (originalWidth / originalHeight >= ratio) {
+                      resizeHeight = 150;
+                    } else {
+                      resizeWidth = 250;
+                    }
+                    easyimg.rescrop({
+                      src: fullPath,
+                      dst: thumbPath_card,
+                      width: resizeWidth || originalWidth,
+                      height: resizeHeight || originalHeight,
+                      cropwidth: 250,
+                      cropheight: 150
+                    }).then(
+                      function(image) {
+                        easyimg.resize({
+                          src: thumbPath_card,
+                          dst: thumbPath_cardDetail,
+                          width: 70,
+                          height: 42
+                        }).then(
+                          function(image) {
+                            renameParams.res.json({'attachment': {
+                              'cardId': renameParams.cardId,
+                              'uploaderId': renameParams.uploaderId,
+                              'name': sanitizedFilename,
+                              'fileType': 'picture',
+                              'size': renameParams.size,
+                              'path': fullPath,
+                              'cardThumbPath': thumbPath_card,
+                              'cardDetailThumbPath': thumbPath_cardDetail
+                            }});
+                          },
+                          function(err) {
+                            renameParams.res.json({
+                              'user_error': 'Uploading attachment failed',
+                              'maintainer_error': 'Generating thumbnail ' +
+                                'for the card details view failed' + err
+                            });
+                          }
+                        );
+                      },
+                      function (err) {
+                        renameParams.res.json({
+                          'user_error': 'Uploading attachment failed',
+                          'maintainer_error': 'Generating thumbnail failed:' +
+                            err
+                        });
+                      }
+                    );
                   } else {
-                    resizeWidth = 250;
-                  }
-                  easyimg.rescrop({
-                    src: fullPath,
-                    dst: thumbPath_card,
-                    width: resizeWidth || originalWidth,
-                    height: resizeHeight || originalHeight,
-                    cropwidth: 250,
-                    cropheight: 150
-                  }).then(
-                  function(image) {
                     easyimg.resize({
-                      src: thumbPath_card,
+                      src: fullPath,
                       dst: thumbPath_cardDetail,
                       width: 70,
                       height: 42
                     }).then(
-                    function(image) {
-                      renameParams.res.json({'attachment': {
-                        'cardId': renameParams.cardId,
-                        'uploaderId': renameParams.uploaderId,
-                        'name': sanitizedFilename,
-                        'fileType': 'picture',
-                        'size': renameParams.size,
-                        'path': fullPath,
-                        'cardThumbPath': thumbPath_card,
-                        'cardDetailThumbPath': thumbPath_cardDetail
-                      }});
-                    }, function(err) {
-                      renameParams.res.json({
-                        'user_error': 'Uploading attachment failed',
-                        'maintainer_error': 'Generating thumbnail for the card details view failed'});
-                    }
+                      function(image) {
+                        renameParams.res.json({'attachment': {
+                          'cardId': renameParams.cardId,
+                          'uploaderId': renameParams.uploaderId,
+                          'name': sanitizedFilename,
+                          'fileType': 'picture',
+                          'size': renameParams.size,
+                          'path': fullPath,
+                          'cardDetailThumbPath': thumbPath_cardDetail
+                        }});
+                      },
+                      function(err) {
+                        renameParams.res.json({
+                          'user_error': 'Uploading attachment failed',
+                          'maintainer_error': 'Generating thumbnail err:' +
+                            err
+                        });
+                      }
                     );
-                  }, function (err) {
-                    renameParams.res.json({
-                      'user_error': 'Uploading attachment failed',
-                      'maintainer_error': 'Generating thumbnail for the card view failed'});
                   }
-                  );
-
-                } else {
-                  easyimg.resize({
-                    src: fullPath,
-                    dst: thumbPath_cardDetail,
-                    width: 70,
-                    height: 42
-                  }).then(
-                  function(image) {
-                    renameParams.res.json({'attachment': {
-                      'cardId': renameParams.cardId,
-                      'uploaderId': renameParams.uploaderId,
-                      'name': sanitizedFilename,
-                      'fileType': 'picture',
-                      'size': renameParams.size,
-                      'path': fullPath,
-                      'cardDetailThumbPath': thumbPath_cardDetail
-                    }});
-                  }, function(err) {
-                    renameParams.res.json({
-                      'user_error': 'Uploading attachment failed',
-                      'maintainer_error': 'Generating thumbnail for the card details view failed'});
-                  }
-                  );
+                },
+                function (err) {
+                  renameParams.res.json({
+                    'user_error': 'Uploading attachment failed',
+                    'maintainer_error': 'Reading image info failed:' + err
+                  });
                 }
-
-              }, function (err) {
-                renameParams.res.json({'user_error': 'Uploading attachment failed',
-                                      'maintainer_error': 'Reading image info failed'});
-              }
               );
             } else {
               renameParams.res.json({'attachment': {

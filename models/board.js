@@ -3,41 +3,41 @@
   "use strict";
 
   var mongoose = require('mongoose'),
-  Mailer = require('../services/mail'),
-  List = require('./list'),
-  Activity = require("./activity"),
-  User = require("./user"),
-  BoardMemberRelation = require('./boardMemberRelation'),
-  Notification = require("../services/notification"),
-  BoardMemberStatus = require("./boardMemberStatus"),
-  Schema = mongoose.Schema,
-  ObjectId = Schema.ObjectId,
-  async = require('async'),
-  Sites = require("../services/sites"),
-  LogActivity = require("../services/activity").Activity,
+    Mailer = require('../services/mail'),
+    List = require('./list'),
+    Activity = require("./activity"),
+    User = require("./user"),
+    BoardMemberRelation = require('./boardMemberRelation'),
+    Notification = require("../services/notification"),
+    BoardMemberStatus = require("./boardMemberStatus"),
+    Schema = mongoose.Schema,
+    ObjectId = Schema.ObjectId,
+    async = require('async'),
+    Sites = require("../services/sites"),
+    LogActivity = require("../services/activity").Activity,
 
-  BoardSchema = new Schema({
-    title: { type: String, required: true },
-    description: { type: String, default: '' },
-    isClosed: { type: Boolean, default: false },
-    updated: { type: Date, default: Date.now },
-    created: { type: Date, default: Date.now },
-    creatorId: { type: ObjectId, required: true, ref: 'User', index: true },
-    groupId: { type: ObjectId, index: true },
-    isPublic: {type: Boolean, default: true},
-    voteStatus: {type: String, default: 'enabled'},
-    commentStatus: {type: String, default: 'enabled'},
-    perms: {
-      delete: {
-        users: [ ObjectId ],
-        roles: [ ObjectId ]
-      },
-      update: {
-        users: [ ObjectId ],
-        roles: [ ObjectId ]
+    BoardSchema = new Schema({
+      title: { type: String, required: true },
+      description: { type: String, default: '' },
+      isClosed: { type: Boolean, default: false },
+      updated: { type: Date, default: Date.now },
+      created: { type: Date, default: Date.now },
+      creatorId: { type: ObjectId, required: true, ref: 'User', index: true },
+      groupId: { type: ObjectId, index: true },
+      isPublic: {type: Boolean, default: true},
+      voteStatus: {type: String, default: 'enabled'},
+      commentStatus: {type: String, default: 'enabled'},
+      perms: {
+        delete: {
+          users: [ ObjectId ],
+          roles: [ ObjectId ]
+        },
+        update: {
+          users: [ ObjectId ],
+          roles: [ ObjectId ]
+        }
       }
-    }
-  });
+    });
 
   BoardSchema.pre('save', function(next) {
     this.updated = new Date();
@@ -67,81 +67,81 @@
    */
   BoardSchema.statics.joinBoard = function (user, boardId, socket, callback) {
     var that = this,
-    result = null;
+      result = null;
 
     async.waterfall([
       function (callback) {
-      that.findById(boardId,
+        that.findById(boardId,
                     "_id isPublic creatorId isClosed",
                     function (err, board) {
-                      if (err || board === null) {
-                        result = {ok: 1, message: 'no valid board'};
-                        return callback(result, null);
-                      }
-                      callback(null, board);
-                    });
-    },
-    function (board, callback) {
-      if (user === null) {
-        result = {ok: 1, message: 'no user defined'};
-        return callback(result, null);
-      }
-      if (board.isClosed) {
-        result = {ok: 1, message: 'closed', board: board};
-        return callback(result, null);
-      }
-      board.getMemberStatus(user._id, function (err, status) {
-        if (err) {
-          result = {ok: 1, message: 'getMemberStatus failed'};
-          return callback(result, null);
-        }
-
-        if (status === BoardMemberStatus.inviting) {
-          //update user status
-          board.confirmInvitation(user._id, function (err, obj) {
-            if (err) {
-              result = {ok: 1, message: 'confirmInvitation failed'};
+            if (err || board === null) {
+              result = {ok: 1, message: 'no valid board'};
               return callback(result, null);
             }
-            var content = user.username + ' has accepted invitation and joined the board.';
-            var activity = new LogActivity({socket: socket, exceptMe: false});
-            activity.log({
-              content: content,
-              creatorId: user._id,
-              boardId: board._id
-            });
-
             callback(null, board);
           });
-        } else {
-          //redirect to next callback
-          callback(null, board);
-        }
-      });
-    },
-    function (board, callback) {
-      BoardMemberRelation.isBoardMember(user._id, boardId, function (err, memberStatus) {
-        if (err) {
-          result = {ok: 1, message: 'isBoardMember failed'};
+      },
+      function (board, callback) {
+        if (user === null) {
+          result = {ok: 1, message: 'no user defined'};
           return callback(result, null);
         }
-        callback(null, board, memberStatus);
-      });
-    },
-    function (board, memberStatus, callback) {
-      if (board.creatorId.equals(user._id) ||
-          memberStatus === true) {
-        result = {ok: 0, message: 'isMember', board: board};
-      callback(null, result);
-      } else if (board.isPublic === true && memberStatus === false) {
-        result = {ok: 0, message: 'normal', board: board};
-        callback(null, result);
-      } else {
+        if (board.isClosed) {
+          result = {ok: 1, message: 'closed', board: board};
+          return callback(result, null);
+        }
+        board.getMemberStatus(user._id, function (err, status) {
+          if (err) {
+            result = {ok: 1, message: 'getMemberStatus failed'};
+            return callback(result, null);
+          }
+
+          if (status === BoardMemberStatus.inviting) {
+            //update user status
+            board.confirmInvitation(user._id, function (err, obj) {
+              if (err) {
+                result = {ok: 1, message: 'confirmInvitation failed'};
+                return callback(result, null);
+              }
+              var content = user.username + ' has accepted invitation and joined the board.';
+              var activity = new LogActivity({socket: socket, exceptMe: false});
+              activity.log({
+                content: content,
+                creatorId: user._id,
+                boardId: board._id
+              });
+
+              callback(null, board);
+            });
+          } else {
+          //redirect to next callback
+            callback(null, board);
+          }
+        });
+      },
+      function (board, callback) {
+        BoardMemberRelation.isBoardMember(user._id, boardId, function (err, memberStatus) {
+          if (err) {
+            result = {ok: 1, message: 'isBoardMember failed'};
+            return callback(result, null);
+          }
+          callback(null, board, memberStatus);
+        });
+      },
+      function (board, memberStatus, callback) {
+        if (board.creatorId.equals(user._id) ||
+            memberStatus === true) {
+          result = {ok: 0, message: 'isMember', board: board};
+          callback(null, result);
+        } else if (board.isPublic === true && memberStatus === false) {
+          result = {ok: 0, message: 'normal', board: board};
+          callback(null, result);
+        } else {
         //private board without member relation, you can't login
-        result = {ok: 1, message: 'nologin', board: board};
-        return callback(result, null);
+          result = {ok: 1, message: 'nologin', board: board};
+          return callback(result, null);
+        }
       }
-    }
     ], function (err, result) {
       if (err) {
         result = err;
@@ -164,10 +164,10 @@
   BoardSchema.statics.getById = function (boardId, fields, callback) {
     var _callback = typeof fields === 'function' ? fields : callback;
     this
-    .findById(boardId)
-    .select(fields)
-    .populate([{ path: 'creatorId' }, { path: 'members' }])
-    .exec(_callback);
+      .findById(boardId)
+      .select(fields)
+      .populate([{ path: 'creatorId' }, { path: 'members' }])
+      .exec(_callback);
   };
 
   /*
