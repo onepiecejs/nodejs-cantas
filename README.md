@@ -12,15 +12,10 @@ Thanks for [all Contributors](AUTHORS.md)
 
 ![project screenshot](./public/images/cantas-help-list.gif)
 
-## Update news
-### Current stable: v1.0
-### Demo Site: http://cantas-onepiecejs.rhcloud.com/
+## Getting started
+## Demo Site
 
-###new features:
-
-1. support login with google account.
-2. add mycards panels to home page.
-3. support cards filter.
+http://cantas-onepiecejs.rhcloud.com/
 
 ## deploy to openshift
 
