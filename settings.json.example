@@ -42,11 +42,10 @@
     "notification": {
         "subjectPrefix": "[Cantas] - "
     },
-    "piwikSiteId": {
-        "product": 1,
-        "stage": 1,
-        "productUrl": "analytics.xxx.com/piwik/",
-        "stageUrl": "analytics-stage.xxx.com/piwik/"
+    "piwik": {
+      "enable": false,
+      "siteId": 0,
+      "siteUrl": "analytics.xxx.com"
     },
     "realm": "XXX.COM",
     "redis": {

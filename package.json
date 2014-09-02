@@ -1,55 +1,56 @@
 {
-    "author": "HSS-IED-BJ",
-    "description": "cantas is a real-time collaborative application.",
-    "dependencies": {
-        "async": "*",
-        "connect-redis": "~1.4.x",
-        "express": "~2.5.x",
-        "jade": "*",
-        "markdown": "*",
-        "moment": "*",
-        "mongoose": "3.6.13",
-        "node-krb5": "*",
-        "nodemailer": "~0.7.1",
-        "passport": "*",
-        "passport-local": "*",
-        "passport-google-oauth": "~0.1.5",
-        "redis": "*",
-        "socket.io": "~0.9.x",
-        "xmlrpc": "~1.1.0",
-        "easyimage": "^1.0.2",
-        "requestify": "*",
-        "lodash": "*"
-    },
-    "devDependencies": {
-        "expect.js": "*",
-        "grunt": "~0.4.5",
-        "grunt-contrib-concat": "*",
-        "grunt-contrib-cssmin": "~0.6.1",
-        "grunt-contrib-jasmine": "0.6.x",
-        "grunt-contrib-uglify": "*",
-        "grunt-contrib-watch": "~0.4.3",
-        "grunt-simple-mocha": "~0.4.0",
-        "mongoose-fakery": "*",
-        "nodelint": "*",
-        "optimist": "~0.6.0",
-        "sinon": "*",
-        "supertest": "*"
-    },
-    "engines": {
-        "node": "0.10.26",
-        "npm": "1.4.7"
-    },
-    "name": "cantas",
-    "private": true,
-    "scripts": {
-        "lintcheck": "scripts/lintcheck",
-        "start": "node app"
-    },
-    "main": "app.js",
-    "version": "1.0.0",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/onepiecejs/nodejs-cantas.git"
-    }
+  "author": "HSS-IED-BJ",
+  "description": "cantas is a real-time collaborative application.",
+  "dependencies": {
+    "async": "*",
+    "connect-redis": "~1.4.x",
+    "express": "~2.5.x",
+    "jade": "*",
+    "markdown": "*",
+    "moment": "*",
+    "mongoose": "3.6.13",
+    "node-krb5": "*",
+    "nodemailer": "~0.7.1",
+    "passport": "*",
+    "passport-local": "*",
+    "passport-google-oauth": "~0.1.5",
+    "redis": "*",
+    "socket.io": "~0.9.x",
+    "xmlrpc": "~1.1.0",
+    "easyimage": "^1.0.2",
+    "requestify": "*",
+    "lodash": "*",
+    "piwik-tracker": "^0.1.1"
+  },
+  "devDependencies": {
+    "expect.js": "*",
+    "grunt": "~0.4.5",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-cssmin": "~0.6.1",
+    "grunt-contrib-jasmine": "0.6.x",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-watch": "~0.4.3",
+    "grunt-simple-mocha": "~0.4.0",
+    "mongoose-fakery": "*",
+    "nodelint": "*",
+    "optimist": "~0.6.0",
+    "sinon": "*",
+    "supertest": "*"
+  },
+  "engines": {
+    "node": "0.10.26",
+    "npm": "1.4.7"
+  },
+  "name": "cantas",
+  "private": true,
+  "scripts": {
+    "lintcheck": "scripts/lintcheck",
+    "start": "node app"
+  },
+  "main": "app.js",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onepiecejs/nodejs-cantas.git"
+  }
 }
