@@ -17,9 +17,8 @@ html
             link(rel='stylesheet', href='/stylesheets/fonts/font-awesome/css/font-awesome.min.css')
             link(rel='stylesheet', href='/stylesheets/jquery-fileupload-ui.css')
             link(rel='stylesheet', href='/stylesheets/project.css')
-        //    - if (user && user.isFirstLogin)
-                link(rel='stylesheet', href='/stylesheets/style.css')
-                link(rel='stylesheet', href='/stylesheets/custom.css')
+            link(rel='stylesheet', href='/stylesheets/style.css')
+            link(rel='stylesheet', href='/stylesheets/custom.css')
 
     body
         div#wrapper
@@ -49,8 +48,9 @@ html
             .quick-search-content
             block content
 
-            input(type="hidden", id="piwik-site-id", value="#{siteId}")
-            input(type="hidden", id="piwik-site-url", value="#{siteUrl}")
+            - if (piwikEnable)
+                input(type="hidden", id="piwik-site-id", value="#{siteId}")
+                input(type="hidden", id="piwik-site-url", value="#{siteUrl}")
 
             block footer
                 footer(class="footer")
@@ -88,20 +88,28 @@ html
                 script(type='text/javascript', src='/javascripts/vendor/jquery.fileupload-validate.js')
                 script(type='text/javascript', src='/javascripts/vendor/jquery-ui-timepicker-addon.js')
 
-        script(type="text/javascript", class="piwik-tracker").
+        - if (piwikEnable)
+          script(type="text/javascript", class="piwik-tracker").
             try {
-                var siteId = parseInt($("#piwik-site-id").val());
-                var siteUrl = $("#piwik-site-url").val();
-                var _paq = _paq || [];
-                _paq.push(["trackPageView"]);
-                _paq.push(["enableLinkTracking"]);
-                (function() {
-                  var u=(("https:" == document.location.protocol) ? "https" : "http") + "://"+ siteUrl;
-                  _paq.push(["setTrackerUrl", u+"piwik.php"]);
-                  _paq.push(["setSiteId", siteId]);
-                  var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
-                  g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
-                })();
+              var siteId = parseInt($("#piwik-site-id").val());
+              var siteUrl = $("#piwik-site-url").val();
+              var _paq = _paq || [];
+              _paq.push(["trackPageView"]);
+              _paq.push(["enableLinkTracking"]);
+              _paq.push(['setCustomVariable', 1, "User",
+                "#{user.username}", "visit"
+              ]);
+              (function() {
+              var u=(("https:" == document.location.protocol) ?
+              "https" : "http") + "://"+ siteUrl;
+              _paq.push(["setTrackerUrl", u+"/piwik/piwik.php"]);
+              _paq.push(["setSiteId", siteId]);
+              var d=document, g=d.createElement("script"),
+              s=d.getElementsByTagName("script")[0];
+              g.type="text/javascript";
+              g.defer=true; g.async=true;
+              g.src=u+"/piwik/piwik.js"; s.parentNode.insertBefore(g,s);
+              })();
             } catch( err ) {
-                throw new Error('Piwik track error, detail:'+err);
+              throw new Error('Piwik track error, detail:'+err);
             }

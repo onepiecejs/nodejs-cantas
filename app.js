@@ -79,19 +79,17 @@ app.configure('production', function() {
   app.set("production", true);
 });
 
-if (app.settings.production) {
-  siteId = settings.piwikSiteId.product;
-  siteUrl = settings.piwikSiteId.productUrl;
-} else {
-  siteId = settings.piwikSiteId.stage;
-  siteUrl = settings.piwikSiteId.stageUrl;
+if (settings.piwik.enable) {
+  siteId = settings.piwik.siteId;
+  siteUrl = settings.piwik.siteUrl;
 }
 
 app.helpers({
   links: settings.links,
   version: utils.get_version(),
   siteId: siteId,
-  siteUrl: siteUrl
+  siteUrl: siteUrl,
+  piwikEnable: settings.piwik.enable
 });
 
 routes.init(app, passport, sessionStore);
