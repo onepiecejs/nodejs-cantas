@@ -823,6 +823,11 @@
         }
       }
     },
+    "piwik-tracker": {
+      "version": "0.1.1",
+      "from": "piwik-tracker@0.1.1",
+      "resolved": "https://registry.npmjs.org/piwik-tracker/-/piwik-tracker-0.1.1.tgz"
+    },
     "redis": {
       "version": "0.12.1",
       "from": "redis@0.12.1",
