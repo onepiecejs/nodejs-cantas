@@ -52,7 +52,7 @@ start()
 
         # Launch the application
         daemon \
-            $forever start -p $forever_dir --pidFile $pidfile -l $logfile -e $errlogfile -a --sourceDir $INSTANCE_DIR -c $COMMAND $SOURCE_NAME
+            $forever start --minUptime 1000 --spinSleepTime 1000 -p $forever_dir --pidFile $pidfile -l $logfile -e $errlogfile -a --sourceDir $INSTANCE_DIR -c $COMMAND $SOURCE_NAME
         RETVAL=$?
     else
         echo "Instance already running"
@@ -87,7 +87,7 @@ getForeverId() {
   chown $user $pidfile
 
   local pid=$(cat $pidfile)
-  $forever list |$sed -e '1,2d' | $sed -e 's/\x1b\[[0-9; ]*m//g' | $awk "\$7 && \$7 == \"$pid\" { gsub(/[\[\]]/, \"\", \$2); print \$2; }";
+  $forever list |$sed -e '1,2d' | $awk '{print $3}';
 }
 id=$(getForeverId)
 
