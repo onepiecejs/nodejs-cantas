@@ -4,6 +4,7 @@
   "use strict";
 
   cantas.views.BoardsView = cantas.views.BaseView.extend({
+    el: ".dashboard-content",
 
     events: {
       "click .js-close-board": "closeBoard",
