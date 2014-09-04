@@ -85,6 +85,7 @@ module.exports = function (grunt) {
           'public/javascripts/views/boardlist.js',
           'public/javascripts/views/cardList.js',
           'public/javascripts/views/help.js',
+          'public/javascripts/views/accountSettings.js',
           'public/javascripts/views/welcome.js',
           'public/javascripts/views/dashboard.js',
           'public/javascripts/views/dashboard-navigation.js',
