@@ -25,7 +25,6 @@ html
             block header
                 header#eso-topbar.clearfix
                     a(onclick="cantas.navigateTo('')",title="go back home",class="logo")
-                    a(href="#{links.hssPortal}", target="_blank", class="eso-logo") Developed by HSS
                     ul(class="quick-menu unstyled clearfix")
                         li(class="dropdown header-user")
                             a(class="dropdown-toggle",data-toggle="dropdown") #{user.username}
@@ -57,8 +56,6 @@ html
                     div(class="hss-logo")
                     div(class="copyright")
                         | <p>Version #{version} <a href="#{links.bugzilla}" target="_blank">Report an Issue</a></p>
-                        | <p>INTERNAL USE ONLY</p>
-                        | <p>Copyright &copy; 2013 Red Hat, Inc. All rights reserved.</p>
 
         block scripts
             script(type="text/javascript", src="/socket.io/socket.io.js")
