@@ -106,7 +106,7 @@
       callbackURL: settings.auth.google.callbackURL ||
         sites.currentSite() + 'auth/google/callback'
     },
-      function(identifier, profile, done) {
+      function(accessToken, refreshToken, profile, done) {
         process.nextTick(function () {
           User.findOne({'email': profile.emails[0].value}, function (err, user) {
             if (err) { return done(err); }
