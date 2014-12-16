@@ -185,7 +185,7 @@
       ]
     }));
 
-    app.get('/auth/google/callback', passport.authenticate('google', {failureRedirect: '/login'}),
+    app.get('/oauth2callback', passport.authenticate('google', {failureRedirect: '/login'}),
       function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);
