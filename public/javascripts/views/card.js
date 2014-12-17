@@ -761,7 +761,6 @@
     events: {
       "click .js-edit-title": "openEditTitleDialog",
       "click .js-edit-desc": "openEditDescDialog",
-      "click .js-edit-desc a": "openNewTab",
       "click .js-save-title": "onTitleSaveClick",
       "click .js-cancel-title": "onTitleCancelClick",
       "click .js-save-desc": "onDescriptionSaveClick",
@@ -1028,12 +1027,6 @@
       this.$el.find(".js-edit-desc").hide();
       this.$el.find(".js-edit-desc-area").show();
       this.$el.find(".js-desc-input").val(this.model.get("description")).select();
-    },
-
-    openNewTab: function(event) {
-      event.stopPropagation();
-      event.preventDefault();
-      window.open($(event.target).attr('href'));
     },
 
     onDescriptionSaveClick: function(event) {

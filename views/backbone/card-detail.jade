@@ -43,7 +43,6 @@ script#template-card-detail-view(type="text/template")
   |          span Comment
   |    section.card-option.card-description
   |      h4.desc.card-detail-desc.js-edit-desc.js-desc(title="Click to edit...")!= card.description
-  |        a.new-item(href="http://daringfireball.net/projects/markdown/syntax") Markdown Syntax
   |      a: span.new-item.js-edit-desc Edit Card Description
   |      div.card-option-edit.js-edit-desc-area
   |        textarea.js-desc-input(placeholder="Add description")
@@ -53,4 +52,6 @@ script#template-card-detail-view(type="text/template")
   |    section.card-option.attachment
   |    section.card-option.comment
   |  div.modal-footer
+  |    a.new-item.markdown-help.footer-left(href="http://daringfireball.net/projects/markdown/syntax", target="_blank") Markdown Syntax Help 
+  |      i.fa.icon-external-link
   |    a.btn.js-close-card-detail(data-dismiss="modal", href="javascript: void(0)") Close
