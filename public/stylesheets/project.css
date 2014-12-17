@@ -2856,6 +2856,11 @@ card{
   display: none;
 }
 
+.footer-left {
+  float: left;
+  padding: 4px;
+}
+
 /*=================Checklist=====================*/
 .checklist{
   margin-bottom: 18px;
