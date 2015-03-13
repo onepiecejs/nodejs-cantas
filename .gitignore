@@ -11,3 +11,5 @@ public/stylesheets/*.min.css
 .grunt
 redhat
 settings.json
+.tags
+tags
