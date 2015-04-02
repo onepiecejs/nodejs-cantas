@@ -169,7 +169,7 @@
       });
 
     app.post('/login',
-      passport.authenticate('kerberos',
+      passport.authenticate(settings.auth.default,
         {failureRedirect: '/login', failureFlash: true}),
       function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
