@@ -177,7 +177,7 @@
       });
 
     // log in with google account
-    app.get('/auth/google', passport.authenticate('google', {
+    app.get('/auth/google', passport.authenticate('googleOAuth', {
       failureRedirect: '/login',
       scope: [
         'https://www.googleapis.com/auth/userinfo.profile',
@@ -185,7 +185,7 @@
       ]
     }));
 
-    app.get('/oauth2callback', passport.authenticate('google', {failureRedirect: '/login'}),
+    app.get('/oauth2callback', passport.authenticate('googleOAuth', {failureRedirect: '/login'}),
       function (req, res) {
         var redirectUrl = req.session.redirectUrl || "/welcome";
         res.redirect(redirectUrl);

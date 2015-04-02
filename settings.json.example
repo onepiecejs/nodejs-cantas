@@ -9,7 +9,7 @@
     "auth": {
         "default": "kerberos",
         "strategy": "remote_user",
-        "google": {
+        "googleOAuth": {
             "clientID": "",
             "clientSecret": ""
         }
