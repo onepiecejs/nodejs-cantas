@@ -27,6 +27,29 @@
   var utils = require('../utils');
   var sites = require('../sites');
 
+  /*
+   * Local strategy by authenticating user credential username and password from database.
+   */
+  var CantasLocalUserStrategy = new LocalStrategy(function(username, password, done) {
+    process.nextTick(function() {
+      User.findOne({username: username}, "password", function(err, user) {
+        if (err) {
+          done(null, false, {message: "Cannot authentication user " + username});
+        } else if (user === null) {
+          done(null, false, {message: "Invalid username or password"});
+        } else {
+          if (user.password === password) {
+            User.findOne({_id: user._id}, function(err, user) {
+              done(null, user);
+            });
+          } else {
+            done(null, false, {message: "Invalid username or password."});
+          }
+        }
+      });
+    });
+  });
+
   var CantasKerberosStrategy = new LocalStrategy(function(username, password, done) {
     // asynchronous verification, for performance concern.
     process.nextTick(function() {
@@ -136,6 +159,7 @@
 
   module.exports = {
     'kerberos': CantasKerberosStrategy,
+    'local': CantasLocalUserStrategy,
     'remoteUser': CantasRemoteUserStrategy
   };
 
