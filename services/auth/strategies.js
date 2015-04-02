@@ -136,11 +136,11 @@
 
   module.exports = {
     'kerberos': CantasKerberosStrategy,
-    'remote': CantasRemoteUserStrategy
+    'remoteUser': CantasRemoteUserStrategy
   };
 
   if (CantasGoogleStrategy) {
-    module.exports.google = CantasGoogleStrategy;
+    module.exports.googleOAuth = CantasGoogleStrategy;
   }
 
 }(module));
