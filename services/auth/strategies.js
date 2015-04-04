@@ -57,7 +57,7 @@
       var principal = utils.build_krb5_user_principal(username, settings.realm);
       krb5.authenticate(principal, password, function (err) {
         if (err) {
-          done(null, false, {message: 'Kerberos auth failed: ' + username});
+          done(null, false, {message: 'Invalid Kerberos username or password.'});
         } else {
           User.findOne({username: username}, function (err, user) {
             if (user === null) {
