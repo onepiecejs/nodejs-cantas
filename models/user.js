@@ -39,10 +39,10 @@
 
   UserSchema.methods.verifyUserPassword = function(password) {
     if (password === undefined || password === null || password.length === 0) {
-      throw Error('No password to set.');
+      throw new Error('No password to set.');
     }
     if (password.length > MAX_PASSWORD_LENGTH) {
-      throw Error('Password is too long.');
+      throw new Error('Password is too long.');
     }
   };
 
@@ -52,7 +52,8 @@
   UserSchema.methods.setPassword = function(rawPassword, callback) {
     this.verifyUserPassword(rawPassword);
     var password = authUtils.makePassword(rawPassword);
-    this.model('User').findByIdAndUpdate(this._id, {$set: {password: password}}, function(err, user) {
+    var model = this.model('User');
+    model.findByIdAndUpdate(this._id, {$set: {password: password}}, function(err, user) {
       callback(err === null);
     });
   };
