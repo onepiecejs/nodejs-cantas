@@ -38,13 +38,15 @@
         } else if (user === null) {
           done(null, false, {message: "Invalid username or password"});
         } else {
-          if (user.password === password) {
-            User.findOne({_id: user._id}, function(err, user) {
-              done(null, user);
-            });
-          } else {
-            done(null, false, {message: "Invalid username or password."});
-          }
+          user.checkPassword(password, function(isValid) {
+            if (isValid) {
+              User.findById(user._id, function(err, user) {
+                done(null, user);
+              });
+            } else {
+              done(null, false, {message: "Invalid username or password."});
+            }
+          });
         }
       });
     });
@@ -66,8 +68,10 @@
                 username: username,
                 email: username + '@' + settings.realm.toLowerCase()
               });
-              newUser.save(function(err, userSaved) {
-                done(null, newUser);
+              newUser.save(function(err, savedUser) {
+                savedUser.setUnusablePassword(function(result) {
+                  done(null, savedUser);
+                });
               });
             } else {
               done(null, user);
@@ -95,8 +99,10 @@
           username: username,
           email: username + '@' + settings.realm.toLowerCase()
         });
-        newUser.save(function (err) {
-          fn(null, newUser);
+        newUser.save(function (err, savedUser) {
+          savedUser.setUnusablePassword(function(result) {
+            fn(null, newUser);
+          });
         });
       } else {
         fn(null, user);
