@@ -4,16 +4,30 @@
 
   var async = require('async');
   var mongoose = require('mongoose');
+  var Schema = mongoose.Schema;
+  var ObjectId = Schema.ObjectId;
   var Comment = require('./comment');
   var ChecklistItem = require('./checklistItem');
   var Vote = require('./vote');
   var Attachment = require('./attachment');
   var User = require('./user');
-  var Board = require('./board');
-  var List = require('./list');
-  var Schema = mongoose.Schema;
-  var ObjectId = Schema.ObjectId;
+  // Both Board and List are loaded lazily to avoid circular dependency.
+  var Board, List;
   var CardSchema;
+
+  var requireBoard = function() {
+    if (Board === undefined) {
+      Board = require('./board');
+    }
+    return Board;
+  };
+
+  var requireList = function() {
+    if (List === undefined) {
+      List = require('./list');
+    }
+    return List;
+  };
 
   CardSchema = new Schema({
     title: { type: String, required: true },
@@ -157,7 +171,7 @@
       return null;
     }
 
-    Board.findOne({
+    requireBoard().findOne({
       _id: this.boardId
     }, 'title isPublic isClosed', callback);
   });
@@ -171,7 +185,7 @@
       return null;
     }
 
-    List.findOne({
+    requireList().findOne({
       _id: this.listId
     }, 'title', callback);
   });

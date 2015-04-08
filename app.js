@@ -1,49 +1,20 @@
+'use strict';
+
+var RedisStore = require('socket.io/lib/stores/redis');
 var express = require('express');
 var mongoose = require('mongoose');
-var card = require('./models/card');
-var list = require('./models/list');
-var board = require('./models/board');
-var routes = require('./routes');
-var sockets = require('./sockets');
+var passport = require('./services/auth');
+var app = express.createServer();
+var infra = require('./services/infra');
 var settings = require('./settings');
 var utils = require('./services/utils');
-var connect = require('express/node_modules/connect');
-var redis = require('socket.io/node_modules/redis');
-var RedisStore = require('socket.io/lib/stores/redis');
-var RedisSessionStore = require('connect-redis')(express);
-var sessionStore = new RedisSessionStore({
-    port: settings.redis.port,
-    host: settings.redis.host,
-    ttl: settings.redis.ttl,
-    pass: settings.redis.password,
-  });
-var app = express.createServer();
-var sio;
-var passport = require('./services/auth');
 
-var redisClients = {
-  redisPub: redis.createClient(
-    settings.redis.port,
-    settings.redis.host
-  ),
-  redisSub: redis.createClient(
-    settings.redis.port,
-    settings.redis.host
-  ),
-  redisClient: redis.createClient(
-    settings.redis.port,
-    settings.redis.host
-  )
-};
+// Ignore validate SSL CA at global scope
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
-if (settings.redis.password) {
-  redisClients.redisPub.auth(settings.redis.password);
-  redisClients.redisSub.auth(settings.redis.password);
-  redisClients.redisClient.auth(settings.redis.password);
-}
-
-var siteUrl;
-var siteId = 0;
+infra.connectDB(settings.mongodb);
+var redisClients = infra.connectRedis(settings.redis);
+var sessionStore = infra.createRedisSessionStore(express, settings.redis);
 
 app.configure(function () {
   app.set('views', __dirname + '/views');
@@ -69,8 +40,7 @@ app.configure('development', function() {
   app.use(express.errorHandler({
     dumpExceptions: true,
     showStack: true
-  }
-    ));
+  }));
   app.set("production", false);
 });
 
@@ -79,37 +49,13 @@ app.configure('production', function() {
   app.set("production", true);
 });
 
-if (settings.piwik.enable) {
-  siteId = settings.piwik.siteId;
-  siteUrl = settings.piwik.siteUrl;
-}
-
 app.helpers({
   links: settings.links,
   version: utils.get_version(),
-  siteId: siteId,
-  siteUrl: siteUrl,
+  siteId: (settings.piwik.enable && settings.piwik.siteId) || 0,
+  siteUrl: (settings.piwik.enable && settings.piwik.siteUrl) || '',
   piwikEnable: settings.piwik.enable
 });
-
-routes.init(app, passport, sessionStore);
-
-if (settings.mongodb.url) {
-  mongoose.connect(settings.mongodb.url);
-} else {
-  mongoose.connect(
-    settings.mongodb.host,
-    settings.mongodb.name,
-    settings.mongodb.port,
-    {
-      user: settings.mongodb.user,
-      pass: settings.mongodb.pass
-    }
-  );
-}
-
-// Ignore validate SSL CA at global scope
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 app.listen(settings.app.port, settings.app.host, function() {
   //FIXME keep it here,when i understand the concept, i can remove it totally
@@ -121,9 +67,9 @@ app.listen(settings.app.port, settings.app.host, function() {
   // }
 });
 
-sio = require('socket.io').listen(app);
-sockets.init(sio, sessionStore);
+require('./routes').init(app, passport, sessionStore);
 
+var sio = require('socket.io').listen(app);
 sio.configure(function () {
   // Set store for socket.io to use RedisStore instead of MemoryStore
   sio.set('store', new RedisStore(redisClients));
@@ -143,5 +89,7 @@ sio.configure(function () {
     'xhr-polling'
   ]);
 });
+
+require('./sockets').init(sio, sessionStore);
 
 console.log("Express server listening on port %s", settings.app.port);
