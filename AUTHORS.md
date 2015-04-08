@@ -1,9 +1,9 @@
-Product Owner
--------------
+# Product Owner
+
 * Ren Yang <ryang@redhat.com>
 
-Developer
----------
+# Developer
+
 * Deshi Xiao <xiaods@gmail.com> (Project Lead)
 * Chenxiong Qi <qcxhome@gmail.com>
 * Chaobin Tang <cbtchn@gmail.com>
@@ -13,11 +13,11 @@ Developer
 * Haibo Lin
 * Jian Chen
 
-Designer
---------
+# Designer
+
 * Xiaoxue Zhang
 
-QA
--------
+# QA
+
 * Chen Chen
-* Qi Yang
+* Qiu Yang
