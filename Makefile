@@ -7,15 +7,25 @@ help:
 	@echo "    check: run tests and check code style"
 	@echo "    run: run server"
 
-.PHONY: check
-check:
+.PHONY: test
+test:
 	@echo "Running tests"
 	@echo
 	@grunt test
-	@echo
+
+.PHONY: lint
+lint:
+	@if [ "`which nodelint &> /dev/null && echo 0 || echo 1`" != "0" ]; then \
+		echo "Cannot find command: nodeline"; \
+		echo ; \
+		exit 1; \
+	fi
 	@echo "Checking code styles"
 	@echo
 	@sh ./scripts/lintcheck
+
+.PHONY: check
+check: test lint
 
 .PHONY: run
 run:
