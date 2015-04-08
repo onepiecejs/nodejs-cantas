@@ -1,10 +1,6 @@
 # Cantas
 
-Cantas is a real-time collaborative web application.This is a side project,
-used as internal productivity tool in [Red Hat](https://www.redhat.com/).
-
-This we believe, is a great open source project for
-learning HTML5/Nodejs/socket.io/backbone.js technology.
+Cantas is a real-time collaborative Web application built upon [Node.js][nodejs] and [Socket.IO][socketio].
 
 [![Build Status](https://travis-ci.org/onepiecejs/nodejs-cantas.svg?branch=master)](http://travis-ci.org/onepiecejs/nodejs-cantas)
 
@@ -12,50 +8,43 @@ Thanks for [all Contributors](AUTHORS.md)
 
 ![project screenshot](./public/images/cantas-help-list.gif)
 
-## Getting started
+# Getting started
+
 ## Demo Site
 
 http://cantas-onepiecejs.rhcloud.com/
 
-## deploy to openshift
+Login with your Google account.
+
+## Deploy to OpenShift
 
 ```bash
 rhc domain create <yournamespace>
-
 rhc app create cantas nodejs-0.10 -s
-
 cd cantas/
-
 rhc cartridge add mongodb-2.4 -a cantas
-
 rhc cartridge add "http://cartreflect-claytondev.rhcloud.com/reflect?github=smarterclayton/openshift-redis-cart" -a cantas
-
 git remote add upstream -m master git@github.com:onepiecejs/nodejs-cantas.git
-
 git pull -s recursive -X theirs upstream master
-
 git push
-
 rhc env set NODE_ENV=production -a cantas
-
 # Caution: please input your variabes in .openshift/lib/init_settings
-
 rhc app restart -a cantas
 ```
+
 > ***Note:***
 > Please update your settings value in .openshift/lib/init_settings before push
 > to Openshift Online service.
 
 ## Setup development environment
 
-- rpm requirements:
+- RPM requirements:
 
     ```bash
     sudo yum install -y krb5-devel krb5-libs krb5-workstation
     ```
 
-- install [Nodejs][nodejs], [npm][npm],
-  [MongoDB][MongoDB], [Redis][Redis].
+- install [Nodejs][nodejs], [npm][npm], [MongoDB][MongoDB], [Redis][Redis].
 
     ```bash
     # nodejs & npm
@@ -69,8 +58,9 @@ rhc app restart -a cantas
     # redis
     sudo yum install redis
     ```
+
 > ***Note:***
-> If you got `g++: command not found` while you installing nodejs,
+> If you got `g++: command not found` while installing nodejs,
 > you can install it by `sudo yum install gcc-c++`.
 
 - checkout source code and update node packages via npm
@@ -80,6 +70,7 @@ rhc app restart -a cantas
     cd nodejs-cantas
     npm install
     ```
+
 - start redis server and mongodb server
 
     ```bash
@@ -108,6 +99,7 @@ rhc app restart -a cantas
     # start the app
     NODE_ENV=development node app.js
     ```
+
 > ***Note:***
 > Make sure the `mongod` deamon is running before starting the app.
 > To enable Google signin you will need to create a Client ID in the [Google Developer Console](https://console.developers.google.com).
@@ -128,7 +120,7 @@ That's it.
 - [Node.js][nodejs]
 - [npm][npm]
 - [Backbone.js](http://backbonejs.org/)
-- [SOCKET.IO](http://socket.io/)
+- [Socket.IO][socketio]
 - [Redis][Redis]
 - [Mongo][MongoDB]
 
@@ -136,12 +128,8 @@ That's it.
 
 - [Jade](https://github.com/visionmedia/jade)
 
-
-## About
-cantas is a real-time collaborative application similar to Trello.
-
   [nodejs]:http://nodejs.org/    "Nodejs"
   [npm]:http://npmjs.org/    "npm"
   [Redis]:http://redis.io/ "Redis"
   [MongoDB]:http://www.mongodb.org/ "MongoDB"
-
+  [socketio]:http://socket.io/
