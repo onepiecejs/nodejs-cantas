@@ -12,6 +12,7 @@
   var fs = require("fs");
   var path = require("path");
   var packageInfo = require("../package.json");
+  var crypto = require('crypto');
 
   /*
    * Return service principal name according to Kerberos v5 specification
@@ -107,6 +108,20 @@
   module.exports.getExtension = function(filename) {
     var i = filename.lastIndexOf('.');
     return (i < 0) ? '' : filename.substr(i);
+  };
+
+  module.exports.randomString = function(options) {
+    var opts = options || {};
+    var size = opts.size || 64;
+    var stringbuf = opts.stringbuf || 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+                                      '0123456789';
+    var outbuf = [];
+    var len = stringbuf.length, floor = Math.floor, random = Math.random;
+    var i;
+    for (i = 0; i < size; i++) {
+      outbuf.push(stringbuf[floor(random() * len)]);
+    }
+    return outbuf.join('');
   };
 
 }(module));
