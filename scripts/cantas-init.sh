@@ -4,7 +4,6 @@
 # Now initial collection of label
 
 NODE=`which node`
-NODE_MODULES_PATH=/usr/lib/node_modules/cantas/scripts
+NODE_MODULES_PATH=/usr/lib/node_modules/cantas/scripts/migrations
 
-${NODE}  ${NODE_MODULES_PATH}/db_init_label_metadata.js
-
+${NODE} ${NODE_MODULES_PATH}/initLabelMetadata.js

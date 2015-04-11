@@ -4,8 +4,8 @@
 
   var async = require('async');
   var mongoose = require('mongoose');
-  var settings = require(__dirname + '/../settings');
-  var LabelMetadata = require(__dirname + '/../models/metadata').LabelMetadata;
+  var settings = require(__dirname + '/../../settings');
+  var LabelMetadata = require(__dirname + '/../../models/metadata').LabelMetadata;
 
 
   if (settings.mongodb.url) {

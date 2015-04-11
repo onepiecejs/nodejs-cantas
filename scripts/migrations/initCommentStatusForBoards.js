@@ -17,9 +17,9 @@
 
   var async = require('async');
   var mongoose = require('mongoose');
-  var Board = require('../models/board');
-  var configStatus = require('../models/configStatus');
-  var settings = require('../settings');
+  var Board = require('../../models/board');
+  var configStatus = require('../../models/configStatus');
+  var settings = require('../../settings');
 
   var beforeMigration = function beforeMigration() {
     mongoose.connect(

@@ -3,9 +3,9 @@
 var async = require('async');
 var util = require('util');
 var mongoose = require('mongoose');
-var settings = require('../settings');
-var List = require('../models/list');
-var Card = require('../models/card');
+var settings = require('../../settings');
+var List = require('../../models/list');
+var Card = require('../../models/card');
 
 mongoose.connect(
   settings.mongodb.host,

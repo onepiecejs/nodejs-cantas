@@ -4,17 +4,11 @@
 # Focus on integration with all cantas migrate scripts
 
 NODE=`which node`
-NODE_MODULES_PATH=/usr/lib/node_modules/cantas/scripts
+NODE_MODULES_PATH=/usr/lib/node_modules/cantas/scripts/migrations
 
-
-${NODE}  ${NODE_MODULES_PATH}/db_migration_card_add_boardId.js
-
-${NODE}  ${NODE_MODULES_PATH}/db_migration_card_assignees_changed.js
-
-${NODE}  ${NODE_MODULES_PATH}/db_migration_checklistItem_add_cardId.js
-
-${NODE}  ${NODE_MODULES_PATH}/db_init_label_metadata.js
-
-echo "Y" | ${NODE}  ${NODE_MODULES_PATH}/migrateAddLabelsToBoards.js
-
-echo "Y" | ${NODE}  ${NODE_MODULES_PATH}/migrateAddLabelsToCards.js
+${NODE} ${NODE_MODULES_PATH}/migrationCardAddBoardId.js
+${NODE} ${NODE_MODULES_PATH}/migrationCardAssigneesChanged.js
+${NODE} ${NODE_MODULES_PATH}/migrationChecklistItemAddCardId.js
+${NODE} ${NODE_MODULES_PATH}/initLabelMetadata.js
+echo "Y" | ${NODE} ${NODE_MODULES_PATH}/migrateAddLabelsToBoards.js
+echo "Y" | ${NODE} ${NODE_MODULES_PATH}/migrateAddLabelsToCards.js

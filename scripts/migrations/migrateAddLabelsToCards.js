@@ -1,10 +1,10 @@
 /*
- * Migration: add labels to all existing boards.
+ * Migration: add labels to all existing cards.
  *
  * *RULES*:
  * - Only ADD labels, not update.
- * - Add all existing labels to all boards that has no label. This is because
- *   every boards has a fixed number of labels from current requirement.
+ * - Add all existing labels to all cards that has no label. This is because
+ *   every card has a fixed number of labels from current requirement.
  *
  * Author: Chenxiong Qi
  * Date: 2013-06-26
@@ -16,10 +16,12 @@
 
   var async = require('async');
   var mongoose = require('mongoose');
-  var Board = require('../models/board');
-  var Label = require('../models/label');
-  var LabelMetadata = require('../models/metadata').LabelMetadata;
-  var settings = require('../settings');
+  var Card = require('../../models/card');
+  var CardLabelRelation = require('../../models/cardLabelRelation');
+  var Label = require('../../models/label');
+  var settings = require('../../settings');
+
+  //require('./requiredb');
 
   var beforeMigration = function beforeMigration() {
     mongoose.connect(
@@ -39,51 +41,51 @@
     });
   };
 
-  /*
-   * Get boards that has no label.
-   */
-  var taskGetBoardsHasNoLabels = function getBoards(asyncCallback) {
-    Label.find({}).select('boardId').distinct('boardId', function(err, labels) {
-      if (err) {
-        asyncCallback(err, null);
-      } else {
-        var boardIds = [];
-        labels.forEach(function(label) {
-          boardIds.push(label);
-        });
-
-        var condition = {_id: {$nin: boardIds}};
-        Board.find(condition, '_id', asyncCallback);
-      }
-    });
-  };
-
-  /*
-   * Get labels' metadata.
-   */
-  var taskGetLabelMetadata = function getLabelMetadata(boards, asyncCallback) {
-    LabelMetadata.find(function(err, labelsMetadata) {
-      if (err) {
-        asyncCallback(err, null);
-      } else {
-        asyncCallback(null, boards, labelsMetadata);
-      }
-    });
-  };
-
-  var taskPrepareData = function prepareData(boards, labelsMetadata, asyncCallback) {
+  var taskPrepareData = function prepareData(cards, labels, asyncCallback) {
     var migrationData = [];
-    boards.forEach(function(board) {
-      labelsMetadata.forEach(function(metadata) {
-        migrationData.push({
-          boardId: board._id,
-          order: metadata.order,
-          color: metadata.color,
-          title: metadata.title
-        });
+    cards.forEach(function(card) {
+      labels.forEach(function(label) {
+        if (label.boardId.toString() === card.boardId.toString()) {
+          migrationData.push({
+            boardId: card.boardId,
+            cardId: card._id,
+            labelId: label._id
+          });
+        }
       });
     });
     asyncCallback(null, migrationData);
+  };
+
+  /*
+   * Get cards that has no label.
+   */
+  var taskGetCardsHasNoLabels = function getCard(asyncCallback) {
+    CardLabelRelation.find({}).select('cardId').distinct('cardId', function(err, cardIds) {
+      if (err) {
+        asyncCallback(err, null);
+      } else {
+        var condition = {_id: {$nin: cardIds}};
+        Card.find(condition, '_id boardId', asyncCallback);
+      }
+    });
+  };
+
+  /*
+   * Get all labels.
+   */
+  var taskGetBoardsLabels = function getBoardsLabels(cards, asyncCallback) {
+    var boardIds = [];
+    cards.forEach(function(card) {
+      boardIds.push(card.boardId);
+    });
+    Label.find({boardId: {$in: boardIds}}, '_id boardId', function(err, labels) {
+      if (err) {
+        asyncCallback(err, null);
+      } else {
+        asyncCallback(null, cards, labels);
+      }
+    });
   };
 
   /*
@@ -100,12 +102,11 @@
    */
   var prepareData = function prepareData(callback) {
     async.waterfall([
-      taskGetBoardsHasNoLabels,
-      taskGetLabelMetadata,
+      taskGetCardsHasNoLabels,
+      taskGetBoardsLabels,
       taskPrepareData
     ], callback);
   };
-
 
   /*
    * TODO: support rollback when error occurs.
@@ -114,15 +115,14 @@
    *
    * @param data: the migration data, which contains the relations between
    * label and card.
-   *
    * @param callback: a function called by passing possible error object and
    * the result whether process succeeds.
    */
   var migration = function migration(migrateData, callback) {
     async.map(migrateData,
       function(data, asyncCallback) {
-        var label = new Label(data);
-        label.save(function(err, savedObject) {
+        var relation = new CardLabelRelation(data);
+        relation.save(function(err, savedObject) {
           if (err) {
             asyncCallback(err, null);
           } else {
@@ -177,8 +177,7 @@ if (require.main === module) {
     var letsgo = answer === 'y' || answer === 'Y';
     if (letsgo) {
       module.exports.migrate(function(result) {
-        var exitCode = result ? 0 : 1;
-        process.exit(exitCode);
+        process.exit(result ? 0 : 1);
       });
     }
   });

@@ -3,9 +3,9 @@
 var async = require('async');
 var util = require('util');
 var mongoose = require('mongoose');
-var settings = require('../settings');
-var ChecklistItem = require('../models/checklistItem');
-var Checklist = require('../models/checklist');
+var settings = require('../../settings');
+var ChecklistItem = require('../../models/checklistItem');
+var Checklist = require('../../models/checklist');
 
 mongoose.connect(
   settings.mongodb.host,

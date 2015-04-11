@@ -32,7 +32,6 @@ Requires: nodejs-nodemailer >= 0.4.1
 Requires: nodejs-forever >= 0.10.9
 Requires: nodejs-markdown >= 0.4.0
 Requires: nodejs-xmlrpc >= 1.1.0
-Requires: nodejs-gss >= 0.0.0
 Requires: nodejs-easyimage >= 0.1.3
 Requires: nodejs-requestify >= 0.1.16
 Provides: nodejs-%{npmname} = %{version}
