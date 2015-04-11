@@ -111,12 +111,15 @@
   };
 
   module.exports.randomString = function(options) {
-    var options = options || {};
-    var size = options.size || 64;
-    var stringbuf = options.stringbuf || 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var opts = options || {};
+    var size = opts.size || 64;
+    var stringbuf = opts.stringbuf || 'abcdefghijklmnopqrstuvwxyz' +
+                                      'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+                                      '0123456789';
     var outbuf = [];
     var len = stringbuf.length, floor = Math.floor, random = Math.random;
-    for (var i = 0; i < size; i++) {
+    var i;
+    for (i = 0; i < size; i++) {
       outbuf.push(stringbuf[floor(random() * len)]);
     }
     return outbuf.join('');
