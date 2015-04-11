@@ -24,7 +24,7 @@
 
   module.exports.checkPassword = function(rawPassword, password) {
     var parts = password.split(PASSWORD_SEPARATOR);
-    var iterations = parseInt(parts[1]);
+    var iterations = parseInt(parts[1], 10);
     var salt = parts[2];
     var originalHash = parts[3];
     var hash = crypto.pbkdf2Sync(rawPassword, salt, iterations, MAXLEN);
