@@ -1,5 +1,5 @@
 %global npmname cantas
-%global npminstdir /usr/lib/node_modules/%{npmname}
+%global npminstdir %{_libdir}/node_modules/%{npmname}
 %global deplist express jade mongoose socket.io redis connect-redis passport passport-local async moment node-krb5 nodemailer forever
 
 Summary: Cantas is a task management tool
@@ -8,8 +8,8 @@ Version: 1.0.0
 Release: 1%{?dist}
 Group: Development/Languages
 License: MIT
-URL: https://github.com/xiaods/cantas
-Source0: %{name}-%{version}.tar.gz
+URL: https://github.com/onepiecejs/nodejs-cantas
+Source0: https://github.com/onepiecejs/%{name}/archive/v%{version}.tar.gz
 BuildArch: noarch
 Requires(pre): /usr/sbin/useradd
 Requires(post): chkconfig
@@ -73,7 +73,7 @@ cd %{buildroot}/%{npminstdir}
 mkdir node_modules
 for depend in %{deplist}
 do
-  ln -s /usr/lib/node_modules/$depend node_modules/$depend
+  ln -s %{_libdir}/node_modules/$depend node_modules/$depend
 done
 # Back to previous directory
 cd -
@@ -129,7 +129,7 @@ fi
 %config(noreplace) %{_sysconfdir}/sysconfig/cantas-settings.json
 
 %changelog
-* Fri Feb 07 2013 Xiao Deshi <dxiao@redhat.com> 1.0.0-1
+* Fri Feb 07 2014 Xiao Deshi <dxiao@redhat.com> 1.0.0-1
 - bumped verion to 1.0.0
 
 * Wed Dec 04 2013 Xiao Deshi <dxiao@redhat.com> 0.7.0-5
