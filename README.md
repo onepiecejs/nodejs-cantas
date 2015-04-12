@@ -94,11 +94,20 @@ rhc app restart -a cantas
     cp settings.json.example settings.json
 
     # setup initalize data
-    node scripts/db_init_label_metadata.js
+    node scripts/initLabelMetadata.js
 
     # start the app
     NODE_ENV=development node app.js
     ```
+
+- for your convenience, following steps will make login easily while you are
+  developing
+
+    ```bash
+    # Open settings.json with your favorite editor, and change auth.default to local
+    # then, add an user
+    node scripts/addUser.js cantas cantas
+	```
 
 > ***Note:***
 > Make sure the `mongod` deamon is running before starting the app.
