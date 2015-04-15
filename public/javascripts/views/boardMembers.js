@@ -116,7 +116,8 @@
           if (resp.isEmailAddr) {
             that.showValidationMessage(resp.username + " is not Cantas user, invite to Cantas?");
           } else if (resp.username.indexOf('@') !== -1) {
-            that.showValidationMessage(resp.username + " is not a REDHAT account.");
+            that.showValidationMessage("Cannot invite this person. " +
+                                       resp.username + " does not have a trusted domain.");
           }
           that.markMemberCandidateError(resp.username);
         }

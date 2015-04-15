@@ -13,12 +13,21 @@
   var signals = require("./signals");
   var notification = require("../services/notification");
   var LogActivity = require("../services/activity").Activity;
+  var settings = require("../settings");
 
-  var isEmailAddr = function(username) {
-    //var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    // FIXME: only accept email of redhat.com
-    var re = new RegExp('^\\w+([\\.-]?\\w+)*@redhat.com$');
-    return re.test(username);
+  var emailRegExps = settings.trusted_domains.map(function(trustedDomain) {
+    var domain = trustedDomain;
+    if (domain === '*') {
+      domain = '.+';
+    }
+    return new RegExp('^\\w+([\\.-]?\\w+)*@' + domain + '$');
+  });
+
+  var isValidEmailAddress = function(username) {
+    var results = emailRegExps.map(function(regexp) {
+      return regexp.test(username);
+    });
+    return results.indexOf(true) > -1;
   };
 
   /*
@@ -171,8 +180,12 @@
     socket.on("user-exists", function(data) {
       var username = data.username;
       User.exists(username, function(exists) {
-        var data = { username: username, exists: exists, isEmailAddr: isEmailAddr(username) };
-        socket.emit("user-exists-resp", { ok: stdlib.RESP_SUCCESS, data: data});
+        var data = {
+          username: username,
+          exists: exists,
+          isEmailAddr: isValidEmailAddress(username)
+        };
+        socket.emit("user-exists-resp", {ok: stdlib.RESP_SUCCESS, data: data});
       });
     });
 

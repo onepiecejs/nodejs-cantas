@@ -42,7 +42,7 @@ mailer.prototype.sendmail = function(options, callback) {
 };
 
 mailer.prototype.sendmailFromNoReply = function(options, callback) {
-  options.from = "noreply@redhat.com";
+  options.from = settings.mailServices.noreply_address;
   this.sendmail(options, callback);
 };
 
