@@ -63,7 +63,7 @@ describe("Test Mailer interface", function() {
       body: "Hello world."
     };
     mailer.sendmailFromNoReply(mailOptions, function(error, response) {
-      assert.equal(comingEmailMessage._message.from, "noreply@redhat.com");
+      assert.equal(comingEmailMessage._message.from, "noreply@example.com");
       assert.equal(comingEmailMessage._message.to, "cqi@redhat.com");
     })
     done();
