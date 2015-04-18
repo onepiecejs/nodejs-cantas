@@ -15,7 +15,7 @@
   var LogActivity = require("../services/activity").Activity;
   var settings = require("../settings");
 
-  var emailRegExps = settings.trusted_domains.map(function(trustedDomain) {
+  var emailRegExps = settings.trustedDomains.map(function(trustedDomain) {
     var domain = trustedDomain;
     if (domain === '*') {
       domain = '.+';

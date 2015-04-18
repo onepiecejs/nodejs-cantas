@@ -42,7 +42,7 @@ mailer.prototype.sendmail = function(options, callback) {
 };
 
 mailer.prototype.sendmailFromNoReply = function(options, callback) {
-  options.from = settings.mailServices.noreply_address;
+  options.from = settings.mailServices.noreplyAddress;
   this.sendmail(options, callback);
 };
 
