@@ -14,7 +14,7 @@
             "clientSecret": ""
         }
     },
-    "trusted_domains": ["*"],
+    "trustedDomains": ["*"],
     "links": {
         "bugzilla": "",
         "hssPortal": ""
@@ -28,7 +28,7 @@
             "port": 25,
             "secureConnection": true
         },
-        "noreply_address": "noreply@example.com"
+        "noreplyAddress": "noreply@example.com"
     },
     "management": {
         "service": {
