@@ -71,5 +71,6 @@
         "username": "",
         "password": "",
         "bugBaseUrl": "https://bugzilla.xxx.com/show_bug.cgi?id="
-    }
+    },
+    "newBoardTitle": "Untitled board"
 }

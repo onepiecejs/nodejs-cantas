@@ -15,12 +15,13 @@
   var Schema = mongoose.Schema;
   var ObjectId =  Schema.ObjectId;
   var signals = require('../sockets/signals');
+  var settings = require('../settings')
 
   exports.createBoard = function(user, callback) {
 
     async.waterfall([
       function(callback) {
-        var newBoard = new Board({title: 'Untitled Board', creatorId: user.id});
+        var newBoard = new Board({title: settings.newBoardTitle, creatorId: user.id});
         newBoard.save(function(err, board) {
           callback(err, board, user);
         });
