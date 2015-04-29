@@ -16,25 +16,13 @@
   var ObjectId =  Schema.ObjectId;
   var signals = require('../sockets/signals');
 
-  exports.createBoard = function(username, callback) {
+  exports.createBoard = function(user, callback) {
 
     async.waterfall([
       function(callback) {
-        // query member id by username
-        User.findOne({'username': username }, function(err, member) {
-          if (!member) {
-            return callback('error: not member', null);
-          }
-          callback(err, member);
-        });
-      },
-      function(member, callback) {
-        var newBoard = new Board({
-          title: 'Untitled Board',
-          creatorId: member.id
-        });
+        var newBoard = new Board({title: 'Untitled Board', creatorId: user.id});
         newBoard.save(function(err, board) {
-          callback(err, board, member);
+          callback(err, board, user);
         });
       },
       function(board, member, callback) {
@@ -80,17 +68,12 @@
    *
    */
 
-  exports.listMyBoards = function(username, callback) {
+  exports.listMyBoards = function(user, callback) {
 
     async.waterfall([
       function(callback) {
-        User.findOne({'username': username }, function(err, member) {
-          callback(err, member);
-        });
-      },
-      function(member, callback) {
-        BoardMemberRelation.getInvitedBoardsByMember(member.id, function(err, invitedBoardIds) {
-          callback(err, invitedBoardIds, member);
+        BoardMemberRelation.getInvitedBoardsByMember(user.id, function(err, invitedBoardIds) {
+          callback(err, invitedBoardIds, user);
         });
       },
       function(invitedBoardIds, member, callback) {
@@ -114,18 +97,10 @@
   };
 
   //Deprecated api
-  exports.listInvitedBoards = function(username, callback) {
+  exports.listInvitedBoards = function(user, callback) {
     async.waterfall([
       function(callback) {
-        User.findOne({'username': username }, function(err, member) {
-          if (!member) {
-            return callback('error: not member', null);
-          }
-          callback(err, member);
-        });
-      },
-      function(member, callback) {
-        BoardMemberRelation.getInvitedBoardsByMember(member.id, function(err, invitedBoardIds) {
+        BoardMemberRelation.getInvitedBoardsByMember(user.id, function(err, invitedBoardIds) {
           callback(err, invitedBoardIds);
         });
       },
@@ -145,7 +120,7 @@
     });
   };
 
-  exports.listPublicBoards = function(username, callback) {
+  exports.listPublicBoards = function(user, callback) {
     async.waterfall([
       function(callback) {
         //query public boards
@@ -162,18 +137,12 @@
     });
   };
 
-  exports.listClosedBoards = function(username, callback) {
+  exports.listClosedBoards = function(user, callback) {
     async.waterfall([
       function(callback) {
-        // query member object by username
-        User.findOne({'username': username }, function(err, member) {
-          callback(null, member);
-        });
-      },
-      function(member, callback) {
         // query board list whose board member is user
-        BoardMemberRelation.getInvitedBoardsByMember(member.id, function(err, boardIds) {
-          callback(err, member, boardIds);
+        BoardMemberRelation.getInvitedBoardsByMember(user.id, function(err, boardIds) {
+          callback(err, user, boardIds);
         });
       },
       function(member, boardIds, callback) {

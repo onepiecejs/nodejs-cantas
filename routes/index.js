@@ -80,7 +80,7 @@
 
     // API - create board
     app.get('/api/new', checkForSessionTimeout, ensureAuthenticated, function(req, res) {
-      var boardId = boardHandler.createBoard(req.user.username, function(err, boardId) {
+      var boardId = boardHandler.createBoard(req.user, function(err, boardId) {
         var activitData = {
           'content': "This board is created by " + req.user.username,
           'creatorId': req.user.id,
@@ -99,28 +99,28 @@
 
     // API - get mine boards
     app.get('/api/mine', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
-      boardHandler.listMyBoards(req.user.username, function(err, boards) {
+      boardHandler.listMyBoards(req.user, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get invited boards
     app.get('/api/invited', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
-      boardHandler.listInvitedBoards(req.user.username, function(err, boards) {
+      boardHandler.listInvitedBoards(req.user, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get public boards
     app.get('/api/public', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
-      boardHandler.listPublicBoards(req.user.username, function(err, boards) {
+      boardHandler.listPublicBoards(req.user, function(err, boards) {
         res.json(boards);
       });
     });
 
     // API - get closed boards
     app.get('/api/closed', checkForSessionTimeout, ensureAuthenticated, function (req, res) {
-      boardHandler.listClosedBoards(req.user.username, function(err, boards) {
+      boardHandler.listClosedBoards(req.user, function(err, boards) {
         res.json(boards);
       });
     });

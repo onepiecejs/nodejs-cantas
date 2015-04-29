@@ -36,7 +36,6 @@ describe('BoardHandler', function() {
     });
   });
 
-
   it('#createBoard with nonexistent username, it should return a invalid boardId', function(done) {
     boardHandler.createBoard('test', function(err, board) {
       expect(null).to.be(board)
@@ -45,7 +44,7 @@ describe('BoardHandler', function() {
   });
 
   it('#createBoard with valid username, it should return a valid boardId', function(done) {
-    boardHandler.createBoard(member.username, function(err, idBoard) {
+    boardHandler.createBoard(member, function(err, idBoard) {
       var isValid = utils.checkForHexRegExp.test(idBoard);
       expect(isValid).to.be(true);
       done();
@@ -154,7 +153,7 @@ describe("BoardHandler API", function() {
 
 
   it('#listMyBoards should return my boards list', function(done) {
-    boardHandler.listMyBoards(member.username, function(err, boards) {
+    boardHandler.listMyBoards(member, function(err, boards) {
       var targets = [];
       targets.push(myBoard);
       targets.push(invitedBoard);
@@ -164,7 +163,7 @@ describe("BoardHandler API", function() {
   });
 
   it('#listInvitedBoards should return invited boards list', function(done) {
-    boardHandler.listInvitedBoards(member.username, function(err, boards) {
+    boardHandler.listInvitedBoards(member, function(err, boards) {
       var targets = [];
       targets.push(invitedBoard);
       expect(boards.length).to.eql(1);
@@ -173,7 +172,7 @@ describe("BoardHandler API", function() {
   });
 
   it('#listPublicBoards should return public boards list', function(done) {
-    boardHandler.listPublicBoards(member.username, function(err, boards) {
+    boardHandler.listPublicBoards(member, function(err, boards) {
       var targets = [];
       targets.push(publicBoard);
       expect(boards.length).to.eql(1);
@@ -182,7 +181,7 @@ describe("BoardHandler API", function() {
   });
 
   it('#listClosedBoards should return closed boards list', function(done) {
-    boardHandler.listClosedBoards(member.username, function(err, boards) {
+    boardHandler.listClosedBoards(member, function(err, boards) {
       var targets = [];
       targets.push(closedBoard);
       expect(boards.length).to.eql(1);
