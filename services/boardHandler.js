@@ -15,7 +15,7 @@
   var Schema = mongoose.Schema;
   var ObjectId =  Schema.ObjectId;
   var signals = require('../sockets/signals');
-  var settings = require('../settings')
+  var settings = require('../settings');
 
   exports.createBoard = function(user, callback) {
 
