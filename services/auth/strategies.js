@@ -28,25 +28,31 @@
   var sites = require('../sites');
 
   /*
-   * Local strategy by authenticating user credential username and password from database.
+   * Convenient dummy local strategy only for local development
+   *
+   * Whatever credential input from login page, this strategy will always treat
+   * the user valid and pass the login. If this is the first time to login, a
+   * dummy user is created automatically on behalf of developer.
    */
-  var CantasLocalUserStrategy = new LocalStrategy(function(username, password, done) {
+  var CantasDummyStrategy = new LocalStrategy(function(email, password, done) {
+    // As the description, argument email and password are not used.
+    var _username = 'admin';
+    var _email = 'admin@example.com';
+
     process.nextTick(function() {
-      User.findOne({username: username}, "password", function(err, user) {
-        if (err) {
-          done(null, false, {message: "Cannot authentication user " + username});
-        } else if (user === null) {
-          done(null, false, {message: "Invalid username or password"});
-        } else {
-          user.checkPassword(password, function(isValid) {
-            if (isValid) {
-              User.findById(user._id, function(err, user) {
-                done(null, user);
-              });
-            } else {
-              done(null, false, {message: "Invalid username or password."});
-            }
+      User.findOne({email: _email}, function(err, user) {
+        if (err) throw err;
+
+        var dummyUser = user;
+        console.log(dummyUser);
+        if (dummyUser === null) {
+          dummyUser = new User({username: _username, email: _email});
+          dummyUser.save(function(err, savedUser) {
+            if (err) throw err;
+            done(null, dummyUser);
           });
+        } else {
+          done(null, dummyUser);
         }
       });
     });
@@ -164,8 +170,8 @@
    */
 
   module.exports = {
+    'dummy': CantasDummyStrategy,
     'kerberos': CantasKerberosStrategy,
-    'local': CantasLocalUserStrategy,
     'remoteUser': CantasRemoteUserStrategy
   };
 
