@@ -34,7 +34,6 @@ beforeEach(function (done) {
       }
       return clearDB();
     });
-    mongoose.set('debug', true);
   } else {
     return clearDB();
   }
