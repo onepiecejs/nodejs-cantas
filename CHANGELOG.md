@@ -2,6 +2,9 @@
 
 ## Devel
 
+- Authentication is refactored and email is used as the identify of user.
+- Local authentication strategy is removed and Cantas will rely on third party
+  authentication services.
 - Make noreply email address and the email domain of invitation configurable
 - Fix SPEC errors
 - Add help script to add an user
