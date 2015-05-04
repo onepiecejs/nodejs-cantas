@@ -86,7 +86,7 @@
             '_id': {$in: invitedBoardIds}
           }
         ]).
-          populate('creatorId', 'username').
+          populate('creatorId', 'displayName').
           sort('-updated -created').
           exec(function(err, myBoards) {
             callback(err, myBoards);
@@ -107,7 +107,7 @@
       },
       function(invitedBoardIds, callback) {
         Board.find({ _id : {$in: invitedBoardIds}, 'isClosed': false}).
-          populate('creatorId', 'username').
+          populate('creatorId', 'displayName').
           sort('-updated -created').
           exec(function(err, invitedBoards) {
             callback(err, invitedBoards);
@@ -126,7 +126,7 @@
       function(callback) {
         //query public boards
         Board.find({ 'isPublic': true, 'isClosed': false}).
-          populate('creatorId', 'username').
+          populate('creatorId', 'displayName').
           sort('-updated -created').
           exec(function(err, publicBoards) {
             callback(null, publicBoards);
@@ -149,7 +149,7 @@
       function(member, boardIds, callback) {
         //query closed boards
         Board.find({_id: {$in: boardIds}, 'isClosed': true}).
-          populate('creatorId', 'username').
+          populate('creatorId', 'displayName').
           sort('-updated -created').
           exec(function(err, closedBoards) {
             callback(null, closedBoards);

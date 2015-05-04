@@ -160,7 +160,7 @@
     };
 
     var _generateCardContentInBoard = function(socket, origCard, updateCard, callback) {
-      var username = socket.handshake.user.username;
+      var displayName = socket.handshake.user.displayName;
       async.waterfall([
         function(callback) {
           List.findOne({_id: origCard.listId}, 'title', function(err, origList) {
@@ -181,7 +181,8 @@
         },
         function(origList, updateList, callback) {
           var content = util.format('%s moved card "%s" from list "%s" to list "%s"',
-                        username, updateCard.title, origList.title, updateList.title);
+                                    displayName, updateCard.title,
+                                    origList.title, updateList.title);
           callback(null, content);
         }
       ], function(err, content) {
@@ -194,7 +195,7 @@
     };
 
     var _generateCardContentInBoards = function(socket, origCard, updateCard, callback) {
-      var username = socket.handshake.user.username;
+      var displayName = socket.handshake.user.displayName;
       async.waterfall([
         function(callback) {
           Board.findOne({_id: origCard.boardId}, 'title', function(err, origBoard) {
@@ -217,12 +218,14 @@
           });
         },
         function(origBoard, origList, updateBoard, updateList, callback) {
-          var contentOnOrigBoard = util.format('%s moved card "%s" from list "%s" ' +
-            'to board "%s" list "%s"', username, updateCard.title, origList.title,
-            updateBoard.title, updateList.title);
-          var contentOnUpdateBoard = util.format('%s moved card "%s" to list "%s" ' +
-            'from board "%s" list "%s"', username, updateCard.title, updateList.title,
-            origBoard.title, origList.title);
+          var msg = '%s moved card "%s" from list "%s" to board "%s" list "%s"';
+          var contentOnOrigBoard = util.format(msg,
+                                               displayName, updateCard.title, origList.title,
+                                               updateBoard.title, updateList.title);
+          msg = '%s moved card "%s" to list "%s" from board "%s" list "%s"';
+          var contentOnUpdateBoard = util.format(msg,
+                                                 displayName, updateCard.title, updateList.title,
+                                                 origBoard.title, origList.title);
           callback(null, contentOnOrigBoard, contentOnUpdateBoard);
         }
       ], function(err, contentOnOrigBoard, contentOnUpdateBoard) {
@@ -480,7 +483,7 @@
     };
 
     var _generateListActivityContent = function(socket, origList, updateList, callback) {
-      var username = socket.handshake.user.username;
+      var displayName = socket.handshake.user.displayName;
       async.waterfall([
         function (callback) {
           Board.findOne({_id: origList.boardId}, 'title', function(err, origBoard) {
@@ -502,10 +505,10 @@
         },
         function (origBoard, updateBoard, callback) {
           var contentOnOrigBoard = util.format('%s moved list "%s" from this board to board "%s"',
-                            username, updateList.title, updateBoard.title);
+                                               displayName, updateList.title, updateBoard.title);
 
           var contentOnUpdateBoard = util.format('%s moved list "%s" from board "%s" to this board',
-                               username, updateList.title, origBoard.title);
+                                                 displayName, updateList.title, origBoard.title);
           callback(null, contentOnOrigBoard, contentOnUpdateBoard);
         }
       ], function(err, contentOnOrigBoard, contentOnUpdateBoard) {

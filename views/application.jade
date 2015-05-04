@@ -29,7 +29,7 @@ block content
 block append scripts
   script(type="text/javascript").
     window.cantas = window.cantas || {};
-    cantas.user = {id: "#{user._id}", username: "#{user.username}"};
+    cantas.user = {id: "#{user._id}", displayName: "#{user.displayName}", email: "#{user.email}"};
     cantas.settings = !{settings}
 
   //- templates for backbone view

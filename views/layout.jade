@@ -27,7 +27,7 @@ html
                     a(onclick="cantas.navigateTo('')",title="go back home",class="logo")
                     ul(class="quick-menu unstyled clearfix")
                         li(class="dropdown header-user")
-                            a(class="dropdown-toggle",data-toggle="dropdown") #{user.username}
+                            a(class="dropdown-toggle",data-toggle="dropdown") #{user.displayName}
                             ul(class="dropdown-menu dropdown-board")
                                 li: a(href="/account") Settings
                                 li: a(href="/logout") Log Out
@@ -94,7 +94,7 @@ html
               _paq.push(["trackPageView"]);
               _paq.push(["enableLinkTracking"]);
               _paq.push(['setCustomVariable', 1, "User",
-                "#{user.username}", "visit"
+                "#{user.displayName}", "visit"
               ]);
               (function() {
               var u=(("https:" == document.location.protocol) ?

@@ -41,7 +41,7 @@
     this.exceptMe = false;
 
     /*
-     * FIXME: Is this necessary for CRUD? 
+     * FIXME: Is this necessary for CRUD?
      * In the original crud.js, this variable is used never.
      */
     // The user's session id is found in the handshake
@@ -67,19 +67,19 @@
 
   BaseCRUD.prototype.generateActivityContent = function(model, action, data, callback) {
     var content = null;
-    var username = this.handshake.user.username;
+    var displayName = this.handshake.user.displayName;
     var self = this;
     if (action === 'create') {
       var createdObject = data.createdObject;
       var sourceObject = data.sourceObject;
-      content = util.format('%s added %s "%s"', username, model, createdObject.title);
+      content = util.format('%s added %s "%s"', displayName, model, createdObject.title);
       if (sourceObject) {
-        content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
+        content = util.format('%s converted %s "%s" to %s "%s"', displayName, sourceObject.model,
                   sourceObject.title, model, createdObject.title);
       }
     }
     if (action === 'update') {
-      content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
+      content = util.format('%s changed %s %s from "%s" to "%s"', displayName, model,
                 data.field, data.originData[data.field], data.changedData[data.field]);
     }
     callback(null, content);
@@ -87,7 +87,6 @@
 
   BaseCRUD.prototype.logActivity = function(content) {
     var self = this;
-    var username = self.handshake.user.username;
     var boardId = self.socket.getCurrentBoardId();
     var creatorId = this.socket.handshake.user._id;
     var data = {
@@ -393,10 +392,10 @@
 
   /**
    * Helper fucntion to parse a query which has been passes from the client
-   * 
-   *  - The client can provide an object type and value 
+   *
+   *  - The client can provide an object type and value
    *    (useful for dates, regex, etc. which cannot be transfered via JSON)
-   *    
+   *
    *  - For example:
    *    dueDate: {
    *      $gte: {
@@ -404,13 +403,13 @@
    *        value: "2014-04-17T00:00:00.000Z"
    *      }
    *    }
-   *    
+   *
    *  - This would be converted to:
    *    dueDate: {
    *      $gte: ISODate("2014-04-17T00:00:00.000Z")
    *    }
-   *  
-   * 
+   *
+   *
    * @param  {object}   query object
    * @return {object}   parsed query
    */
@@ -442,7 +441,7 @@
   /**
    * Build a mongoose query from an object
    *
-   * For example; 
+   * For example;
    *   - Providing options { $limit: 100, $sort: { created: -1 }, $populate: 'assignees', etc... }
    *   - Would return query.sort({ created: -1 },).populate('assignees').limit(100)...
    *

@@ -14,16 +14,15 @@ describe("Test Activity Model", function() {
   var activity = null;
 
   //stub data;
-  user = new User({ username: "test_user",
-                  email: "test_user@example.com" });
+  user = new User({displayName: "test_user", email: "test_user@example.com"});
 
   board = new Board({ title: "Test board", creatorId: user.id });
 
-  activity = new Activity({ content: "User creates an activity for test",
-      creatorId: user.id,
-        boardId: board.id
+  activity = new Activity({
+    content: "User creates an activity for test",
+    creatorId: user.id,
+    boardId: board.id
   });
-
 
   beforeEach(function(done) {
     async.series([
@@ -52,6 +51,8 @@ describe("Test Activity Model", function() {
     });
   });
 
+  // FIXME: need afterEach to delete all data created in beforeEach
+
   it("Create Activity", function(done) {
     activity.save(function(err, db_activity) {
       assert.strictEqual(err, null);
@@ -70,10 +71,9 @@ describe("Test access activities from board", function() {
   var board = null;
   var testLengthOfActvities = 3;
 
-  user = new User({ username: "test_user",
-                      email: "test_user@example.com" });
+  user = new User({displayName: "test_user", email: "test_user@example.com"});
 
-  board = new Board({ title: "Test board", creatorId: user.id });
+  board = new Board({title: "Test board", creatorId: user.id});
 
   beforeEach(function(done) {
     async.series([
@@ -88,33 +88,36 @@ describe("Test access activities from board", function() {
       });
     },
     function(callback) {
-      var activity1 = new Activity({ content: "User creates an activity " + 1 + " for test",
-                                  creatorId: user.id,
-                                  boardId: board.id
+      var activity1 = new Activity({
+        content: "User creates an activity " + 1 + " for test",
+        creatorId: user.id,
+        boardId: board.id
       });
 
       activity1.save(function(err){
-        callback(err,activity1);
+        callback(err, activity1);
       });
     },
     function(callback) {
-      var activity2 = new Activity({ content: "User creates an activity " + 2 + " for test",
-                                  creatorId: user.id,
-                                  boardId: board.id
+      var activity2 = new Activity({
+        content: "User creates an activity " + 2 + " for test",
+        creatorId: user.id,
+        boardId: board.id
       });
 
       activity2.save(function(err){
-        callback(err,activity2);
+        callback(err, activity2);
       });
     },
     function(callback) {
-      var activity3 = new Activity({ content: "User creates an activity " + 3 + " for test",
-                                   creatorId: user.id,
-                                   boardId: board.id
+      var activity3 = new Activity({
+        content: "User creates an activity " + 3 + " for test",
+        creatorId: user.id,
+        boardId: board.id
       });
 
       activity3.save(function(err){
-        callback(err,activity3);
+        callback(err, activity3);
       });
     }
     ],
@@ -125,6 +128,8 @@ describe("Test access activities from board", function() {
         if(results.length) return done();
       });
   });
+
+  // FIXME: need afterEach to delete all data created in beforeEach
 
   it("Test to get board's activities.", function(done) {
     assert.notEqual(board.getActivities, undefined,

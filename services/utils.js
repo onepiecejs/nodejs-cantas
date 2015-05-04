@@ -24,10 +24,10 @@
 
   /*
    * Return user's principal name according to Kerberos v5 specification
-   * Format is username@REALM
+   * Format is kerberosName@REALM
    */
-  module.exports.build_krb5_user_principal = function(username, realm) {
-    return username + "@" + realm;
+  module.exports.build_krb5_user_principal = function(kerberosName, realm) {
+    return kerberosName + "@" + realm;
   };
 
   // Taken from https://github.com/mongodb/js-bson/blob/master/lib/bson/objectid.js

@@ -7,13 +7,48 @@ var assert = require('assert');
 var User = require('../../models/user');
 
 
+describe('Test User.exists', function() {
+
+  var displayName = 'test user1';
+  var email = 'test_user1@example.com';
+  var user = null;
+
+  beforeEach(function(done) {
+    user = new User({displayName: displayName, email: email});
+    user.save(function(err, savedUser) {
+      done();
+    });
+  });
+
+  afterEach(function(done) {
+    User.findOneAndRemove({email: email}, function() {
+      done();
+    });
+  });
+
+  it('to see whether an existent user exists', function(done) {
+    User.exists(email, function(exists) {
+      assert(exists, 'User ' + email + ' should exist, but failed.');
+      done();
+    });
+  });
+
+  it('to see whether a non-existent user exists', function(done) {
+    var nonexistent_email = 'unknown@example.com';
+    User.exists(nonexistent_email, function(exists) {
+      assert(exists === false, 'User ' + email + ' does not exists, but failed.');
+      done();
+    });
+  });
+});
+
 describe('Test operations against User\'s password', function() {
 
   var user = null;
   var password = 'it is a secret ;)';
 
   beforeEach(function(done) {
-    user = new User({username: 'cqi', email: 'cqi@example.com'});
+    user = new User({displayName: 'cqi', email: 'cqi@example.com'});
     user.save(function(err, savedUser) {
       if (err) throw err;
       done();

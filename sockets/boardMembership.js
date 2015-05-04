@@ -35,17 +35,17 @@
    */
   var taskEnsureUserExists = function(board, options, asyncCallback) {
     var invitation = options.invitation;
-    var username = invitation.invitee.split('@')[0];
-    var conditions = {$or: [{username: username}, {email: invitation.invitee}]};
+    var displayName = invitation.invitee.split('@')[0];
 
-    User.findOne(conditions, function(err, user) {
+    User.findOne({email: invitation.invitee}, function(err, user) {
       if (err) {
         asyncCallback(err, user);
       } else {
         if (user) {
           asyncCallback(null, board, user, options);
         } else {
-          User.create({username: username, email: invitation.invitee}, function(err, user) {
+          // FIXME: reuse user creation method defined in strategies module
+          User.create({displayName: displayName, email: invitation.invitee}, function(err, user) {
             if (err) {
               asyncCallback(err, user);
             } else {
@@ -105,12 +105,12 @@
     if (memberRelation) {
       var inviter = options.socket.handshake.user;
       var msg = util.format("%s invite you to join board [%s](%s)",
-                            inviter.username, board.title, board.url);
+                            inviter.displayName, board.title, board.url);
       notification.notify(options.socket, invitee, msg, notification.types.invitation);
       notification.mail(options.socket, invitee, msg, notification.types.invitation, {
         body: {
-          inviteeName: invitee.username,
-          inviterName: inviter.username,
+          inviteeName: invitee.displayName,
+          inviterName: inviter.displayName,
           boardTitle: board.title,
           boardUrl: Sites.currentSite() + board.url
         },
@@ -123,8 +123,9 @@
   var taskLogActivity = function(board, invitee, memberRelation, options, asyncCallback) {
     if (memberRelation) {
       var socket = options.socket;
-      var inviter = socket.handshake.user;
-      var content = util.format("%s invited %s to this board", inviter.username, invitee.username);
+      var content = util.format("%s invited %s to this board",
+                                options.invitation.inviter.displayName,
+                                invitee.displayName);
       var activity = new LogActivity({socket: socket, exceptMe: false});
       activity.log({content: content});
       asyncCallback(null, memberRelation, options);
@@ -177,13 +178,15 @@
     /*
      * Validate whether user with username in argument exists.
      */
+    // FIXME: although this piece of code can work, username still need to change to correct name
+    //        that is email.
     socket.on("user-exists", function(data) {
-      var username = data.username;
-      User.exists(username, function(exists) {
+      var email = data.username;
+      User.exists(email, function(exists) {
         var data = {
-          username: username,
+          username: email,
           exists: exists,
-          isEmailAddr: isValidEmailAddress(username)
+          isEmailAddr: isValidEmailAddress(email)
         };
         socket.emit("user-exists-resp", {ok: stdlib.RESP_SUCCESS, data: data});
       });
@@ -228,7 +231,6 @@
     socket.on("revoke-membership", function(data) {
       // Save reference to client socket
       var that = this;
-      data.username = data.username.split('@')[0];
 
       async.waterfall([
         // First, to check only board creator can revoke board member's membership
@@ -252,7 +254,7 @@
         // Second, ensure creator's membership is not being revoked currently.
         // Otherwise, terminate this operation immediately.
         function(creator, callback) {
-          if (creator.username === data.username) {
+          if (creator.email === data.username) {
             callback("Not allow to revoke creator's membership.", null);
           } else {
             callback(null);
@@ -261,7 +263,7 @@
         // Third, I have to get user's Id by its username whose membership
         // will be revoked.
         function(callback) {
-          User.findOne({ username: data.username }, function(err, user) {
+          User.findOne({email: data.username}, function(err, user) {
             if (err) {
               callback(err, null, null);
             } else {
@@ -290,7 +292,7 @@
           //create activity log
           var creator = socket.handshake.user;
           var content = util.format("%s removed %s from this board",
-            creator.username, data.username);
+                                    creator.displayName, data.username);
           var activity = new LogActivity({socket: socket, exceptMe: false});
           activity.log({content: content});
 

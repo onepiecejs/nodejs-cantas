@@ -26,7 +26,7 @@
 
   CardCRUD.prototype.generateActivityContent = function(model, action, data, callback) {
     var content = null;
-    var username = this.handshake.user.username;
+    var displayName = this.handshake.user.displayName;
     async.waterfall([
       function(callback) {
         var listId = null;
@@ -47,29 +47,30 @@
         if (action === 'create') {
           var createdObject = data.createdObject;
           var sourceObject = data.sourceObject;
-          content = util.format('%s added %s "%s" in list "%s"', username, model,
+          content = util.format('%s added %s "%s" in list "%s"', displayName, model,
             createdObject.title, list.title);
           if (sourceObject) {
             content = util.format('%s converted %s "%s" to %s "%s" in list "%s"',
-              username, sourceObject.model, sourceObject.title,
-              model, createdObject.title, list.title);
+                                  displayName, sourceObject.model, sourceObject.title,
+                                  model, createdObject.title, list.title);
           }
           callback(null, content);
         }
         if (action === 'update') {
-          content = util.format('%s changed %s of %s "%s" from "%s" to "%s"', username, data.field,
+          content = util.format('%s changed %s of %s "%s" from "%s" to "%s"',
+                                displayName, data.field,
                                 model, data.changedData.title, data.originData[data.field],
                                 data.changedData[data.field]);
 
           if (data.field === 'isArchived') {
             if (data.changedData[data.field] === true) {
               content = util.format('%s archived %s "%s" from list "%s"',
-                        username, model, data.changedData.title, list.title);
+                                    displayName, model, data.changedData.title, list.title);
               callback(null, content);
             }
             if (data.changedData[data.field] === false) {
               content = util.format('%s unarchived %s "%s" to list "%s"',
-                        username, model, data.changedData.title, list.title);
+                                    displayName, model, data.changedData.title, list.title);
               callback(null, content);
             }
           }
@@ -80,7 +81,8 @@
                 return callback(err, null);
               }
               content = util.format('%s moved %s "%s" from list "%s" to list "%s"',
-                          username, model, data.changedData.title, fromList.title, list.title);
+                                    displayName, model, data.changedData.title,
+                                    fromList.title, list.title);
               callback(null, content);
             });
           }
@@ -227,13 +229,13 @@
               users.forEach(function(assignee) {
                 var safeTitle = cantasUtils.safeMarkdownString(updatedCard.title);
                 var msg = util.format("%s assigned card [%s](%s) to you.",
-                  assigner.username, safeTitle, updatedCard.url);
-                if (assigner.username !== assignee.username) {
+                                      assigner.displayName, safeTitle, updatedCard.url);
+                if (assigner.id.toString() !== assignee.id.toString()) {
                   notification.notify(self.socket, assignee, msg, notification.types.information);
                   notification.mail(self.socket, assignee, msg, notification.types.information, {
                     body: {
-                      assigner: assigner.username,
-                      assignee: assignee.username,
+                      assigner: assigner.displayName,
+                      assignee: assignee.displayName,
                       cardTitle: updatedCard.title,
                       cardUrl: Sites.currentSite() + updatedCard.url
                     },
@@ -243,13 +245,14 @@
                 // send notification to subscribers.
                 updatedCard.getSubscribeUsers(function(err, subscribeUsers) {
                   var notifyMsg = util.format("%s assigned card [%s](%s) to %s.",
-                    assigner.username, safeTitle, updatedCard.url, assignee.username);
+                                              assigner.displayName, safeTitle, updatedCard.url,
+                                              assignee.displayName);
                   subscribeUsers.forEach(function(subscriber) {
-                    if (assigner.username === subscriber.username) {
-                      notifyMsg = util.format("you assigned card [%s](%s) to %s.",
-                        safeTitle, updatedCard.url, assignee.username);
+                    if (assigner.id.toString() === subscriber.id.toString()) {
+                      notifyMsg = util.format("You assigned card [%s](%s) to %s.",
+                                              safeTitle, updatedCard.url, assignee.displayName);
                     }
-                    if (assignee.username !== subscriber.username) {
+                    if (assignee.id.toString() !== subscriber.id.toString()) {
                       notification.notify(self.socket, subscriber, notifyMsg,
                                           notification.types.information);
                     }
@@ -263,13 +266,13 @@
               users.forEach(function(assignee) {
                 var safeTitle = cantasUtils.safeMarkdownString(updatedCard.title);
                 var msg = util.format("%s cancel assignment of card [%s](%s) to you.",
-                  assigner.username, safeTitle, updatedCard.url);
-                if (assigner.username !== assignee.username) {
+                                      assigner.displayName, safeTitle, updatedCard.url);
+                if (assigner.id.toString() !== assignee.id.toString()) {
                   notification.notify(self.socket, assignee, msg, notification.types.information);
                   notification.mail(self.socket, assignee, msg, notification.types.information, {
                     body: {
-                      assigner: assigner.username,
-                      assignee: assignee.username,
+                      assigner: assigner.displayName,
+                      assignee: assignee.displayName,
                       cardTitle: updatedCard.title,
                       cardUrl: Sites.currentSite() + updatedCard.url
                     },
@@ -279,13 +282,14 @@
                 // send notification to subscribers.
                 updatedCard.getSubscribeUsers(function(err, subscribeUsers) {
                   var notifyMsg = util.format("%s cancelled assignment of card [%s](%s) to %s.",
-                    assigner.username, safeTitle, updatedCard.url, assignee.username);
+                                              assigner.displayName, safeTitle, updatedCard.url,
+                                              assignee.displayName);
                   subscribeUsers.forEach(function(subscriber) {
-                    if (assigner.username === subscriber.username) {
-                      notifyMsg = util.format("you cancelled assignment of card [%s](%s) to %s.",
-                        safeTitle, updatedCard.url, assignee.username);
+                    if (assigner.id.toString() === subscriber.id.toString()) {
+                      notifyMsg = util.format("You cancelled assignment of card [%s](%s) to %s.",
+                                              safeTitle, updatedCard.url, assignee.displayName);
                     }
-                    if (assignee.username !== subscriber.username) {
+                    if (assignee.id.toString() !== subscriber.id.toString()) {
                       notification.notify(self.socket, subscriber, notifyMsg,
                                           notification.types.information);
                     }
@@ -310,55 +314,53 @@
         }
       });
     } else {
-      this.modelClass.findByIdAndUpdate(_id,
-                                        {$set : data},
-                                        function (err, updatedData) {
-          if (err) {
-            callback(err, updatedData);
-          } else {
-            if (changeFields.length >= 1) {
-              async.map(changeFields, function(changeField, cb) {
-                var changeInfo = {
-                  field: changeField,
-                  originData: originData,
-                  changedData: updatedData
-                };
-
-                // create activity log
-                self.generateActivityContent(self.key, 'update', changeInfo,
-                  function(err, content) {
-                    if (err) {
-                      cb(err, updatedData);
-                    } else {
-                      if (content) {
-                        self.logActivity(content);
-                      }
-                    }
-                  });
-              }, function(err, results) {
-                if (err) {
-                  callback(err, updatedData);
-                }
-              });
-            }
-            updatedData.populate("assignees", function(err, updatedData) {
-              self.emitMessage(name, updatedData);
-
-              signals.post_patch.send(updatedData, {
-                instance: updatedData,
-                changeFields: changeFields,
+      this.modelClass.findByIdAndUpdate(_id, {$set : data}, function (err, updatedData) {
+        if (err) {
+          callback(err, updatedData);
+        } else {
+          if (changeFields.length >= 1) {
+            async.map(changeFields, function(changeField, cb) {
+              var changeInfo = {
+                field: changeField,
                 originData: originData,
-                socket: self.socket
-              }, function(err, result) {});
-            });
+                changedData: updatedData
+              };
 
-            // findByIdAndUpdate skips mongoose middleware
-            // calling save again will updated the created date on the card/board
-            self.modelClass.findOne({ _id: _id }, function(err, model) {
-              model.save();
+              // create activity log
+              self.generateActivityContent(self.key, 'update', changeInfo,
+                function(err, content) {
+                  if (err) {
+                    cb(err, updatedData);
+                  } else {
+                    if (content) {
+                      self.logActivity(content);
+                    }
+                  }
+                });
+            }, function(err, results) {
+              if (err) {
+                callback(err, updatedData);
+              }
             });
           }
-        });
+          updatedData.populate("assignees", function(err, updatedData) {
+            self.emitMessage(name, updatedData);
+
+            signals.post_patch.send(updatedData, {
+              instance: updatedData,
+              changeFields: changeFields,
+              originData: originData,
+              socket: self.socket
+            }, function(err, result) {});
+          });
+
+          // findByIdAndUpdate skips mongoose middleware
+          // calling save again will updated the created date on the card/board
+          self.modelClass.findOne({_id: _id}, function(err, model) {
+            model.save();
+          });
+        }
+      });
     }
   };
 

@@ -498,7 +498,7 @@
       var data = {
         boardId: curBoardModel.id,
         boardUrl: _.result(curBoardModel, 'url'),
-        inviter: cantas.user.username,
+        inviter: cantas.user,
         invitees: invitees
       };
       sock.emit("invite-board-member", data);
@@ -619,10 +619,10 @@
     revokeMembershipResp: function(data) {
       if (data.ok === 0) {
         var lis = this.$el.find(".invite-member li");
-        var username = data.data.username;
+        var email = data.data.username;
         lis.each(function(index, li) {
-          var _liTextContent = li.firstChild.textContent.split('@')[0];
-          if (_liTextContent === username) {
+          var inviteeEmail = li.firstChild.textContent;
+          if (inviteeEmail === email) {
             $(li).remove();
             return true;
           }

@@ -103,7 +103,7 @@
                 result = {ok: 1, message: 'confirmInvitation failed'};
                 return callback(result, null);
               }
-              var content = user.username + ' has accepted invitation and joined the board.';
+              var content = user.displayName + ' has accepted invitation and joined the board.';
               var activity = new LogActivity({socket: socket, exceptMe: false});
               activity.log({
                 content: content,

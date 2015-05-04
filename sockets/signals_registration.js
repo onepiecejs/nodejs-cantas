@@ -75,13 +75,13 @@
       var notifyMsg = null;
       if (args.changeFields.indexOf('title') >= 0) {
         notifyMsg = util.format("%s changed card from '%s' to [%s](%s)",
-          user.username, args.originData.title,
+          user.displayName, args.originData.title,
           safeTitle, card.url);
       }
       if (args.changeFields.indexOf('description') >= 0) {
         notifyMsg = util.format("%s changed description from '%s'" +
           " " + "to '%s' in card [%s](%s)",
-          user.username, args.originData.description,
+          user.displayName, args.originData.description,
           args.instance.description, safeTitle, card.url);
       }
       if (args.changeFields.indexOf('subscribeUserIds') >= 0) {
@@ -89,10 +89,10 @@
         var originIndex = args.originData.subscribeUserIds.indexOf(user.id);
         if (updatedIndex === -1 && originIndex >= 0) {
           notifyMsg = util.format("%s unsubscribed card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         } else if (updatedIndex >= 0 && originIndex === -1) {
           notifyMsg = util.format("%s subscribed card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         }
       }
       card.getSubscribeUsers(function(err, subscribeUsers) {
@@ -119,7 +119,7 @@
               var user = args.socket.getCurrentUser();
               var safeTitle = cantasUtils.safeMarkdownString(card.title);
               var notifyMsg = util.format("%s added a comment in card [%s](%s).",
-                user.username, safeTitle, card.url);
+                user.displayName, safeTitle, card.url);
               card.getSubscribeUsers(function(err, subscribers) {
                 if (subscribers) {
                   subscribers.forEach(function(subscriber) {
@@ -128,8 +128,8 @@
                     notification.mail(args.socket, subscriber, notifyMsg,
                                       notification.types.information, {
                         body: {
-                          sender: user.username,
-                          receiver: subscriber.username,
+                          sender: user.displayName,
+                          receiver: subscriber.displayName,
                           cardTitle: card.title,
                           cardUrl: Sites.currentSite() + card.url,
                           comment: args.instance.content
@@ -158,7 +158,7 @@
           var originContent = args.originData.content;
           var currentContent = args.instance.content;
           var notifyMsg = util.format("%s edited a comment in card [%s](%s).",
-                          user.username, safeTitle, card.url);
+                          user.displayName, safeTitle, card.url);
 
           card.getSubscribeUsers(function(err, subscribers) {
             if (subscribers) {
@@ -168,8 +168,8 @@
                 notification.mail(args.socket, subscriber, notifyMsg,
                                   notification.types.information, {
                     body: {
-                      sender: user.username,
-                      receiver: subscriber.username,
+                      sender: user.displayName,
+                      receiver: subscriber.displayName,
                       cardTitle: card.title,
                       cardUrl: Sites.currentSite() + card.url,
                       originComment: originContent,
@@ -194,7 +194,7 @@
         var user = args.socket.getCurrentUser();
         var safeTitle = cantasUtils.safeMarkdownString(card.title);
         var notifyMsg = util.format("%s added a checklist '%s' in card [%s](%s).",
-          user.username, args.instance.title, safeTitle, card.url);
+          user.displayName, args.instance.title, safeTitle, card.url);
         card.getSubscribeUsers(function(err, subscribers) {
           if (subscribers) {
             subscribers.forEach(function(subscriber) {
@@ -224,7 +224,7 @@
                   var safeTitle = cantasUtils.safeMarkdownString(card.title);
                   var notifyMsg = util.format("%s added a checklistItem to" +
                                   " " + "checklist '%s' in card [%s](%s).",
-                      user.username, checklist.title, safeTitle, card.url);
+                      user.displayName, checklist.title, safeTitle, card.url);
 
                   card.getSubscribeUsers(function(err, subscribers) {
                     if (subscribers) {
@@ -266,19 +266,19 @@
                 if (args.instance.checked && !args.originData.checked) {
                   notifyMsg = util.format("%s checked checklistItem '%s'" +
                     " " + "from checklist '%s' in card [%s](%s)",
-                    user.username, args.instance.content, checklist.title,
+                    user.displayName, args.instance.content, checklist.title,
                     safeTitle, card.url);
                 } else if (!args.instance.checked && args.originData.checked) {
                   notifyMsg = util.format("%s unChecked checklistItem '%s'" +
                     " " + "from checklist '%s' in card [%s](%s)",
-                    user.username, args.instance.content, checklist.title,
+                    user.displayName, args.instance.content, checklist.title,
                     safeTitle, card.url);
                 }
               }
               if (args.changeFields.indexOf('content') >= 0) {
                 notifyMsg = util.format("%s changed checklistItem '%s' to '%s'" +
                   " " + "from checklist '%s' in card [%s](%s)",
-                  user.username, args.originData.content,
+                  user.displayName, args.originData.content,
                   args.instance.content, checklist.title,
                   safeTitle, card.url);
               }
@@ -306,7 +306,7 @@
         var user = args.socket.getCurrentUser();
         var safeTitle = cantasUtils.safeMarkdownString(card.title);
         var notifyMsg = util.format("%s updated labels in card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         card.getSubscribeUsers(function(err, subscribers) {
           if (subscribers) {
             subscribers.forEach(function(subscriber) {
@@ -337,7 +337,7 @@
               var safeTitle = cantasUtils.safeMarkdownString(card.title);
               var notifyMsg = util.format("%s deleted checklistItem '%s'" +
                   " " + "from checklist '%s' in card [%s](%s).",
-                  user.username, args.instance.content,
+                  user.displayName, args.instance.content,
                   checklist.title, safeTitle, card.url);
               card.getSubscribeUsers(function(err, subscribers) {
                 if (subscribers) {
@@ -362,7 +362,7 @@
         var user = args.socket.getCurrentUser();
         var safeTitle = cantasUtils.safeMarkdownString(card.title);
         var notifyMsg = util.format("%s deleted checklist '%s' from card [%s](%s).",
-            user.username, args.instance.title, safeTitle, card.url);
+            user.displayName, args.instance.title, safeTitle, card.url);
         card.getSubscribeUsers(function(err, subscribers) {
           if (subscribers) {
             subscribers.forEach(function(subscriber) {
@@ -389,7 +389,7 @@
             var fileName = handledFileName.slice(handledFileName.indexOf('-') + 1);
             var safeTitle = cantasUtils.safeMarkdownString(card.title);
             var notifyMsg = util.format("%s uploaded attachment '%s' to card [%s](%s).",
-                user.username, fileName, safeTitle, card.url);
+                user.displayName, fileName, safeTitle, card.url);
             card.getSubscribeUsers(function(err, subscribers) {
               if (subscribers) {
                 subscribers.forEach(function(subscriber) {
@@ -419,7 +419,7 @@
             var handledFileName = args.instance.name;
             var fileName = handledFileName.slice(handledFileName.indexOf('-') + 1);
             var notifyMsg = util.format("%s deleted attachment '%s' from card [%s](%s).",
-                user.username, fileName, safeTitle, card.url);
+                user.displayName, fileName, safeTitle, card.url);
             card.getSubscribeUsers(function(err, subscribers) {
               if (subscribers) {
                 subscribers.forEach(function(subscriber) {
@@ -464,10 +464,10 @@
           if (args.changeFields.indexOf('isCover') >= 0) {
             if (args.instance.isCover && !args.originData.isCover) {
               notifyMsg = util.format("%s set attachment '%s' as cover of card [%s](%s)",
-                user.username, fileName, safeTitle, card.url);
+                user.displayName, fileName, safeTitle, card.url);
             } else if (!args.instance.isCover && args.originData.isCover) {
               notifyMsg = util.format("%s cancelled cover '%s' from card [%s](%s).",
-                user.username, fileName, safeTitle, card.url);
+                user.displayName, fileName, safeTitle, card.url);
             }
           }
           card.getSubscribeUsers(function(err, subscribers) {
@@ -509,10 +509,10 @@
         var notifyMsg = null;
         if (args.instance.yesOrNo) {
           notifyMsg = util.format("%s voted agree to card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         } else {
           notifyMsg = util.format("%s voted disagree to card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         }
         card.getSubscribeUsers(function(err, subscribers) {
           if (subscribers) {
@@ -538,10 +538,10 @@
         var notifyMsg = null;
         if (args.instance.yesOrNo) {
           notifyMsg = util.format("%s changed vote to agree to card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         } else {
           notifyMsg = util.format("%s changed vote to disagree to card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         }
         card.getSubscribeUsers(function(err, subscribers) {
           if (subscribers) {
@@ -567,10 +567,10 @@
         var notifyMsg = null;
         if (args.instance.yesOrNo) {
           notifyMsg = util.format("%s cancelled vote agree to card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         } else {
           notifyMsg = util.format("%s changed vote disagree to card [%s](%s).",
-            user.username, safeTitle, card.url);
+            user.displayName, safeTitle, card.url);
         }
         card.getSubscribeUsers(function(err, subscribers) {
           if (subscribers) {

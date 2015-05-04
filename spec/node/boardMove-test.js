@@ -133,8 +133,8 @@ describe('Test cardMove', function(){
           var eventName = '/card/' + cardOne.id + ':update';
            sio.on('connection', function(s){
              s.room = new Room(s);
-             //mock a username,board, and patch a getCurrentUser
-             s.handshake.user = {username: 'test'};
+             //mock a user, board, and patch a getCurrentUser
+             s.handshake.user = {displayName: 'test', email: 'test_user@example.com'};
              s.room.board = 'board:' + boardOne.id;
              SocketPatch.patch(s);
 

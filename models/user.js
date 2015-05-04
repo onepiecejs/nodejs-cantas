@@ -12,8 +12,7 @@
   var MAX_PASSWORD_LENGTH = 64;
 
   UserSchema = new Schema({
-    username: { type: String, required: true, lowercase: true, unique: true },
-    fullname: { type: String, default: '' },
+    displayName: { type: String, required: true, match: /^[\w ]+$/ },
     password: { type: String, default: '', select: false },
     email: { type: String, required: true, lowercase: true, unique: true },
     joined: { type: Date, default: Date.now },
@@ -23,14 +22,8 @@
 
   // static method
 
-  UserSchema.statics.getByUsername = function(identity, callback) {
-    var condition = { username: identity };
-    this.findOne(condition, callback);
-  };
-
-  UserSchema.statics.exists = function(identity, callback) {
-    var conditions = { $or: [{ username: identity }, { email: identity }] };
-    this.findOne(conditions, "username", function(err, user) {
+  UserSchema.statics.exists = function(email, callback) {
+    this.findOne({email: email}, '_id', function(err, user) {
       callback(user !== undefined && user !== null);
     });
   };

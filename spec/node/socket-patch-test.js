@@ -3,17 +3,23 @@
 
 var assert = require("assert");
 var SocketPatch = require("../../sockets/patch_socket");
+var EventEmitter = process.EventEmitter;
+
+// Mock the real Socket class
+var Socket = function() {};
+
+Socket.prototype.__proto__ = EventEmitter.prototype;
+
+Socket.prototype.__defineGetter__('handshake', function () {
+  return {user: {displayName: "socket user"}};
+});
+
 
 describe("Test socket patch", function() {
 
   var socket = null;
 
   beforeEach(function() {
-    var Socket = function() {
-      this.handshake = {
-        user: {username: "socket user"}
-      };
-    };
     socket = new Socket();
   });
 
@@ -22,13 +28,13 @@ describe("Test socket patch", function() {
   });
 
   it("Test patch getCurrentUser", function() {
-    // SocketPatch.patch(socket);
+     SocketPatch.patch(socket);
 
-    // var getCurrentUser = socket.getCurrentUser;
-    // assert.notEqual(getCurrentUser, undefined,
-    //   "getCurrentUser method should exist.");
-    // assert.equal(socket.handshake.user.username, getCurrentUser().username,
-    //   "User's username does not equal to the one within socket.");
+     assert.notEqual(socket.getCurrentUser, undefined,
+                     "getCurrentUser method should exist.");
+     assert.equal(socket.handshake.user.displayName,
+                  socket.getCurrentUser().displayName,
+                  "User's display name does not equal to the one within socket.");
   });
 
 });

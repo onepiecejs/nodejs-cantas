@@ -36,19 +36,23 @@
    */
   var CantasDummyStrategy = new LocalStrategy(function(email, password, done) {
     // As the description, argument email and password are not used.
-    var _username = 'admin';
+    var _displayName = 'Admin';
     var _email = 'admin@example.com';
 
     process.nextTick(function() {
       User.findOne({email: _email}, function(err, user) {
-        if (err) throw err;
+        if (err) {
+          throw err;
+        }
 
         var dummyUser = user;
         console.log(dummyUser);
         if (dummyUser === null) {
-          dummyUser = new User({username: _username, email: _email});
+          dummyUser = new User({displayName: _displayName, email: _email});
           dummyUser.save(function(err, savedUser) {
-            if (err) throw err;
+            if (err) {
+              throw err;
+            }
             done(null, dummyUser);
           });
         } else {
@@ -58,22 +62,21 @@
     });
   });
 
-  var CantasKerberosStrategy = new LocalStrategy(function(username, password, done) {
+  var CantasKerberosStrategy = new LocalStrategy(function(kerberosName, password, done) {
     // asynchronous verification, for performance concern.
     process.nextTick(function() {
       // IMPORTANT! NEVER store or log password here. It violates infosec policy!
-      var principal = utils.build_krb5_user_principal(username, settings.realm);
+      var principal = utils.build_krb5_user_principal(kerberosName, settings.realm);
+      var email = principal.toLowerCase();
+
       krb5.authenticate(principal, password, function (err) {
         if (err) {
-          done(null, false, {message: 'Invalid Kerberos username or password.'});
+          done(null, false, {message: 'Invalid Kerberos name or password.'});
         } else {
-          User.findOne({username: username}, function (err, user) {
+          User.findOne({email: email}, function (err, user) {
             if (user === null) {
               // A new user
-              var newUser = new User({
-                username: username,
-                email: username + '@' + settings.realm.toLowerCase()
-              });
+              var newUser = new User({displayName: kerberosName, email: email});
               newUser.save(function(err, savedUser) {
                 savedUser.setUnusablePassword(function(result) {
                   done(null, savedUser);
@@ -93,18 +96,16 @@
    * REMOTE_USER strategy use
    */
   var findByToken = function(token, fn) {
-    var username = token.split('@')[0];
-    User.findOne({username: username}, function (err, user) {
+    var email = token.toLowerCase();
+
+    User.findOne({email: email}, function (err, user) {
       if (err) {
-        fn(new Error('User ' + token + ' does not exist'));
+        fn(new Error('User ' + email + ' does not exist'));
       }
 
       if (user === null) {
         // A new user
-        var newUser = new User({
-          username: username,
-          email: username + '@' + settings.realm.toLowerCase()
-        });
+        var newUser = new User({displayName: email.split('@')[0], email: email});
         newUser.save(function (err, savedUser) {
           savedUser.setUnusablePassword(function(result) {
             fn(null, newUser);
@@ -138,18 +139,15 @@
     CantasGoogleStrategy = new GoogleStrategy({
       clientID: settings.auth.google.clientID,
       clientSecret: settings.auth.google.clientSecret,
-      callbackURL: settings.auth.google.callbackURL ||
-        sites.currentSite() + 'auth/google/callback'
+      callbackURL: settings.auth.google.callbackURL || sites.currentSite() + 'auth/google/callback'
     },
       function(accessToken, refreshToken, profile, done) {
         process.nextTick(function () {
           User.findOne({'email': profile.emails[0].value}, function (err, user) {
             if (err) { return done(err); }
             if (user === null) {
-              var newUser = new User({
-                username: profile.emails[0].value,
-                email: profile.emails[0].value
-              });
+              var email = profile.emails[0].value;
+              var newUser = new User({displayName: email.split('@')[0], email: email});
               newUser.save(function(err, userSaved) {
                 return done(null, newUser);
               });

@@ -86,6 +86,7 @@
   };
 
   var onConnection = function (socket) {
+    console.log('>>>#', socket.handshake.user);
     // Let us patch socket first to add our custom and useful behaviors,
     // which will be used in the whole life of Cantas.
     SocketPatch.patch(socket);

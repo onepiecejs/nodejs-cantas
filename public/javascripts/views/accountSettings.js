@@ -20,7 +20,7 @@
 
       this.$el.html(this.template({
         header: this.options.title,
-        username: cantas.user.username
+        displayName: cantas.user.displayName
       }));
 
       return this;

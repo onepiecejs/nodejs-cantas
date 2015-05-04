@@ -21,31 +21,31 @@ describe("Test board member relation", function() {
   beforeEach(function(done) {
     async.series([
       function(callback) {
-        user1 = new User({username: "user1", email: "user1@redhat.com"});
+        user1 = new User({displayName: "user1", email: "user1@redhat.com"});
         user1.save(function(err, user) {
           callback(err || null, err !== null);
         });
       },
       function(callback) {
-        user2 = new User({username: "user2", email: "user2@redhat.com"});
+        user2 = new User({displayName: "user2", email: "user2@redhat.com"});
         user2.save(function(err, user) {
           callback(err || null, err !== null);
         });
       },
       function(callback) {
-        user3 = new User({username: "user3", email: "user3@redhat.com"});
+        user3 = new User({displayName: "user3", email: "user3@redhat.com"});
         user3.save(function(err, user) {
           callback(err || null, err !== null);
         });
       },
       function(callback) {
-        user4 = new User({username: "user4", email: "user4@redhat.com"});
+        user4 = new User({displayName: "user4", email: "user4@redhat.com"});
         user4.save(function(err, user) {
           callback(err || null, err !== null);
         });
       },
       function(callback) {
-        boardCreator1 = new User({username: "bcUser1", email: "bcuser1@redhat.com"});
+        boardCreator1 = new User({displayName: "bcUser1", email: "bcuser1@redhat.com"});
         boardCreator1.save(function(err, user) {
           board1 = new Board({title: "Test board1", creatorId: user._id});
           board1.save(function(err, user) {
@@ -54,7 +54,7 @@ describe("Test board member relation", function() {
         });
       },
       function(callback) {
-        boardCreator2 = new User({username: "bcUser2", email: "bcuser2@redhat.com"});
+        boardCreator2 = new User({displayName: "bcUser2", email: "bcuser2@redhat.com"});
         boardCreator2.save(function(err, user) {
           board2 = new Board({title: "Test board2", creatorId: user._id});
           board2.save(function(err, user) {
@@ -133,15 +133,15 @@ describe("Test board member relation", function() {
     BoardMemberRelation.getBoardMembers(board1._id, function(err, memberRelations) {
       async.map(memberRelations,
         function(item, callback) {
-          callback(null, item.userId.username);
+          callback(null, item.userId.email);
         },
         function(err, results) {
           // results contains all users within member relations returned by
           // getBoardMembers
-          assert(results.indexOf(user1.username) >= 0,
+          assert(results.indexOf(user1.email) >= 0,
              "user1 should be a member of board \"" + board1.title +
              "\", whose status is inviting.");
-          assert(results.indexOf(user2.username) >= 0,
+          assert(results.indexOf(user2.email) >= 0,
             "user2 should be a member of board \"" + board1.title +
             "\", whose status is available.");
 
@@ -167,7 +167,7 @@ describe("Test board member relation", function() {
           var result = results[i];
           var expected = expectedResults[i];
           assert.equal(result, expected,
-            userToCheck.username + "'s member relation should be " + expected);
+            userToCheck.displayName + "'s member relation should be " + expected);
         }
         done();
       });
@@ -212,7 +212,7 @@ describe("Test board member relation", function() {
   it("Test revoke board membership from a user", function(done) {
     BoardMemberRelation.revoke(user1._id, board1._id, function(err, relation) {
       assert(!err,
-        "Revoke board membership of user " + user1.username +
+        "Revoke board membership of user " + user1.displayName +
         " from board " + board1 + " should succeed.");
 
       var condition = {userId: user1._id, boardId: board1._id};

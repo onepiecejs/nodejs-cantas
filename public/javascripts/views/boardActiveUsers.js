@@ -16,7 +16,7 @@
 
     render: function() {
       var role = this.model.get('role');
-      var nickname = "<p>" + this.model.get('username') +
+      var nickname = "<p>" + this.model.get('displayName') +
         '</p><div class="role-' + role.name +
         '" title="' + role.desc + '"></div>';
       this.el.innerHTML = nickname;

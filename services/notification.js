@@ -20,18 +20,20 @@ var NotificationTypes = require("../models/notificationType");
  *  - body: string or hash, content of email, required
  *  - template: string, template file name
  */
+// TODO: use options instead of positional parameters to introduce flexibility.
 function sendmail(from, to, subject, body, template) {
   if (template) {
     var filename = path.resolve(__dirname + "/../views/email/" + template);
     if (fs.existsSync(filename)) {
       try {
         var content = fs.readFileSync(filename, "utf8");
+        // TODO: cache this compiled template body
         var bodyTemplate = jade.compile(content, {filename: filename});
         var context = {};
         if (typeof body === "object") {
           context = body;
         } else {
-          context.username = to.split('@')[0];
+          context.displayName = to.split('@')[0];
           context.message = body;
         }
         body = bodyTemplate(context);

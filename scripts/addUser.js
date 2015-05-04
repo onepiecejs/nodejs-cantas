@@ -5,7 +5,7 @@
  *
  * Usage:
  *
- * ./scripts/addUser.js username password
+ * ./scripts/addUser.js displayName password
  */
 
 (function(module) {
@@ -18,14 +18,14 @@
   var settings = require('../settings');
   var User = require('../models/user');
 
-  var username = null, password = null;
+  var displayName = null, password = null;
   var argv = process.argv;
 
   if (argv.length < 3) {
-    console.log('You have to provide username and password.');
+    console.log('You have to provide displayName and password.');
     process.exit(1);
   } else {
-    username = argv[2];
+    displayName = argv[2];
     password = argv[3];
     if (password === undefined) {
       console.log('Miss password');
@@ -41,7 +41,11 @@
     });
   });
 
-  var user = new User({username: username, email: username + '@' + settings.realm});
+  var user = new User({
+    displayName: displayName,
+    email: displayName.replace(' ', '_') + '@' + settings.realm
+  });
+
   user.save(function(err, savedUser) {
     if (err) {
       console.log(err.message);
@@ -50,7 +54,7 @@
 
     savedUser.setPassword(password, function(result) {
       if (!result) {
-        console.log('Failed to add user', username);
+        console.error('Failed to add user ', displayName);
       }
       process.exit(0);
     });

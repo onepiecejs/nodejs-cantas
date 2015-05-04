@@ -82,7 +82,7 @@
     app.get('/api/new', checkForSessionTimeout, ensureAuthenticated, function(req, res) {
       var boardId = boardHandler.createBoard(req.user, function(err, boardId) {
         var activitData = {
-          'content': "This board is created by " + req.user.username,
+          'content': "This board is created by " + req.user.displayName,
           'creatorId': req.user.id,
           'boardId': boardId
         };

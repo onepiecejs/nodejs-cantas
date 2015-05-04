@@ -28,22 +28,25 @@ describe('BoardHandler', function() {
 
   beforeEach(function(done) {
     member = new User({
-      username: 'dxiao',
+      displayName: 'dxiao',
       email: 'dxiao@redhat.com'
     });
     member.save(function(err) {
+      if (err) throw err;
       done();
     });
   });
 
-  it('#createBoard with nonexistent username, it should return a invalid boardId', function(done) {
+  // FIXME: add afterEach to delete data created in beforeEach
+
+  it('#createBoard with nonexistent user, it should return a invalid boardId', function(done) {
     boardHandler.createBoard('test', function(err, board) {
-      expect(null).to.be(board)
+      expect(null).to.be(board);
       done();
     });
   });
 
-  it('#createBoard with valid username, it should return a valid boardId', function(done) {
+  it('#createBoard with existent user, it should return a valid boardId', function(done) {
     boardHandler.createBoard(member, function(err, idBoard) {
       var isValid = utils.checkForHexRegExp.test(idBoard);
       expect(isValid).to.be(true);
@@ -60,10 +63,7 @@ describe("BoardHandler API", function() {
 
     async.series([
     function(callback){
-      member = new User({
-        username: 'dxiao',
-        email: 'dxiao@redhat.com'
-      });
+      member = new User({displayName: 'dxiao', email: 'dxiao@redhat.com'});
       member.save(function(err){
         callback(err, member);
       });
@@ -151,6 +151,7 @@ describe("BoardHandler API", function() {
       });
   });
 
+  // FIXME: add afterEach to delete data created in beforeEach
 
   it('#listMyBoards should return my boards list', function(done) {
     boardHandler.listMyBoards(member, function(err, boards) {

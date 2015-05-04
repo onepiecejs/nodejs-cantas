@@ -89,7 +89,7 @@
   CardSchema.method('getSubscribeUsers', function(callback) {
     var cardId = this._id;
     var subscribeUserIds = this.subscribeUserIds;
-    User.find({_id: {$in: subscribeUserIds}}, 'username email', function(err, subscribeUsers) {
+    User.find({_id: {$in: subscribeUserIds}}, 'displayName email', function(err, subscribeUsers) {
       callback(err, subscribeUsers);
     });
   });

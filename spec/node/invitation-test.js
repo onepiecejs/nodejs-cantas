@@ -1,6 +1,7 @@
 
 "use strict";
 
+var async = require("async");
 var assert = require("assert");
 var User = require("../../models/user");
 var Board = require("../../models/board");
@@ -19,8 +20,8 @@ describe("Test board member invitation", function() {
     async.series([
       function(callback){
         invitee = new User({
-          username: "test_user1",
-                email: "test_user1@example.com"
+          displayName: "test_user1",
+          email: "test_user1@example.com"
         });
         invitee.save(function(err){
           callback(err,invitee);
@@ -28,8 +29,8 @@ describe("Test board member invitation", function() {
       },
       function(callback){
         inviter = new User({
-          username: "test_user2",
-        email: "test_user2@example.com"
+          displayName: "test_user2",
+          email: "test_user2@example.com"
         });
         inviter.save(function(err){
           callback(err,inviter);
@@ -37,8 +38,8 @@ describe("Test board member invitation", function() {
       },
       function(callback){
         user3 = new User({
-          username: "test_user3",
-        email: "test_user3@example.com"
+          displayName: "test_user3",
+          email: "test_user3@example.com"
         });
         user3.save(function(err){
           callback(err,user3);
@@ -62,35 +63,7 @@ describe("Test board member invitation", function() {
       });
   });
 
+  // FIXME: add afterEach to delete data created in beforeEach
 
   // it("Test invite a board member");
-
-  // it("Test find an exist user via username", function(done) {
-  //   User.exists('test_user1', function(existence) {
-  //     assert.equal(existence, true);
-  //     done();
-  //   });
-  // });
-
-  // it("Test find an non-exist user via username", function(done) {
-  //   User.exists("xxx", function(existence) {
-  //     assert.equal(existence, false);
-  //     done();
-  //   });
-  // });
-
-  // it("Test get an exist user via username", function(done) {
-  //   User.exists("test_user1", function(err, user) {
-  //     assert.equal(user.username === invitee.username);
-  //     done();
-  //   });
-  // });
-
-  // it("Test get an non-exist user via username", function(done) {
-  //   User.exists("xxx", function(err, user) {
-  //     assert.equal(user == null);
-  //     done();
-  //   });
-  // });
-
 });

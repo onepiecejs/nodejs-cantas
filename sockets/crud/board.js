@@ -26,25 +26,25 @@
 
   BoardCRUD.prototype.generateActivityContent = function(model, action, data, callback) {
     var content = null;
-    var username = this.handshake.user.username;
+    var displayName = this.handshake.user.displayName;
     if (action === 'create') {
       var createdObject = data.createdObject;
       var sourceObject = data.sourceObject;
-      content = util.format('%s added %s "%s"', username, model, createdObject.title);
+      content = util.format('%s added %s "%s"', displayName, model, createdObject.title);
       if (sourceObject) {
-        content = util.format('%s converted %s "%s" to %s "%s"', username, sourceObject.model,
-                  sourceObject.title, model, createdObject.title);
+        content = util.format('%s converted %s "%s" to %s "%s"', displayName, sourceObject.model,
+                              sourceObject.title, model, createdObject.title);
       }
     }
     if (action === 'update') {
-      content = util.format('%s changed %s %s from "%s" to "%s"', username, model,
+      content = util.format('%s changed %s %s from "%s" to "%s"', displayName, model,
                 data.field, data.originData[data.field], data.changedData[data.field]);
       if (data.field === 'isPublic') {
         if (data.changedData[data.field] === true) {
-          content = util.format('%s set this board to public', username);
+          content = util.format('%s set this board to public', displayName);
         }
         if (data.changedData[data.field] === false) {
-          content = util.format('%s set this board to private', username);
+          content = util.format('%s set this board to private', displayName);
         }
 
       }
@@ -53,13 +53,17 @@
         origin_config = data.originData[data.field];
         changed_config = data.changedData[data.field];
         content = util.format('%s changed vote permission from "%s" to "%s"',
-                  username, configDescription[origin_config], configDescription[changed_config]);
+                              displayName,
+                              configDescription[origin_config],
+                              configDescription[changed_config]);
       }
       if (data.field === 'commentStatus') {
         origin_config = data.originData[data.field];
         changed_config = data.changedData[data.field];
         content = util.format('%s changed comment permission from "%s" to "%s"',
-                  username, configDescription[origin_config], configDescription[changed_config]);
+                              displayName,
+                              configDescription[origin_config],
+                              configDescription[changed_config]);
       }
     }
     callback(null, content);
@@ -164,15 +168,19 @@
           var message = '', email_message = '';
           if (board.isClosed === true) {
             message = util.format('Board [%s](%s) is closed by %s',
-                          board.title, board.url, user.username);
+                                  board.title, board.url, user.displayName);
             email_message = util.format('Board %s(%s) is closed by %s',
-                          board.title, Sites.currentSite() + board.url, user.username);
+                                        board.title,
+                                        Sites.currentSite() + board.url,
+                                        user.displayName);
           }
           if (board.isClosed === false) {
             message = util.format('Board [%s](%s) is opened by %s',
-                          board.title, board.url, user.username);
+                                  board.title, board.url, user.displayName);
             email_message = util.format('Board %s(%s) is opened by %s',
-                          board.title, Sites.currentSite() + board.url, user.username);
+                                        board.title,
+                                        Sites.currentSite() + board.url,
+                                        user.displayName);
           }
           var numberOfRelations = memberRelations.length;
           var i;
@@ -183,7 +191,7 @@
             if (!isWhoClosing) {
               var emailContext = {
                 body: {
-                  username: memberRelation.userId.username,
+                  displayName: memberRelation.userId.displayName,
                   message: email_message
                 },
                 template: "notification.jade"
@@ -198,13 +206,13 @@
 
     BoardCRUD.prototype._logActivityWhenCloseOpen = function(board) {
       var self = this;
-      var username = this.handshake.user.username;
+      var displayName = this.handshake.user.displayName;
       var content = '';
       if (board.isClosed) {
-        content = util.format('Board "%s" is closed by %s', board.title, username);
+        content = util.format('Board "%s" is closed by %s', board.title, displayName);
       }
       if (board.isClosed === false) {
-        content = util.format('Board "%s" is opened by %s', board.title, username);
+        content = util.format('Board "%s" is opened by %s', board.title, displayName);
       }
       var activity = new LogActivity({
         socket: self.socket,

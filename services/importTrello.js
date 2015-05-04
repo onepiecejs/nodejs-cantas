@@ -61,7 +61,7 @@
           comment = comments[count];
 
           var newComment = new Comment({
-            'content': '[' + comment.memberCreator.username + ']' + comment.data.text,
+            'content': '[' + comment.memberCreator.displayName + ']' + comment.data.text,
             'cardId': cardId,
             'authorId': userId,
             'createdOn': new Date(comment.date)
@@ -69,7 +69,7 @@
           newComment.save(function(err, createdComment) {
             if (err) {
               callback('Creating the comment presented by ' +
-                        comment.memberCreator.username + ' failed');
+                        comment.memberCreator.displayName + ' failed');
             } else {
               callback(null);
               cb(null);
@@ -79,7 +79,7 @@
         function (err) {
           if (err) {
             callback('Creating the comment presented by ' +
-                      comment.memberCreator.username + ' failed');
+                      comment.memberCreator.displayName + ' failed');
           }
         }
       );
