@@ -39,7 +39,6 @@ describe('BoardHandler', function() {
   });
 
   afterEach(function(done) {
-    console.log('remove', member);
     member.remove(function(err) {
       if (err) { throw err; }
       done();
