@@ -51,7 +51,19 @@ describe("Test Activity Model", function() {
     });
   });
 
-  // FIXME: need afterEach to delete all data created in beforeEach
+  afterEach(function(done) {
+    async.eachSeries([activity, board, user],
+      function(obj, callback) {
+        obj.remove(function(err) {
+          if (err) { throw err; }
+          callback(null);
+        });
+      },
+      function(err) {
+        if (err) { throw err; }
+        done();
+      });
+  });
 
   it("Create Activity", function(done) {
     activity.save(function(err, db_activity) {
@@ -70,6 +82,7 @@ describe("Test access activities from board", function() {
   var user = null;
   var board = null;
   var testLengthOfActvities = 3;
+  var activity1 = null, activity2 = null, activity3 = null;
 
   user = new User({displayName: "test_user", email: "test_user@example.com"});
 
@@ -88,7 +101,7 @@ describe("Test access activities from board", function() {
       });
     },
     function(callback) {
-      var activity1 = new Activity({
+      activity1 = new Activity({
         content: "User creates an activity " + 1 + " for test",
         creatorId: user.id,
         boardId: board.id
@@ -99,7 +112,7 @@ describe("Test access activities from board", function() {
       });
     },
     function(callback) {
-      var activity2 = new Activity({
+      activity2 = new Activity({
         content: "User creates an activity " + 2 + " for test",
         creatorId: user.id,
         boardId: board.id
@@ -110,7 +123,7 @@ describe("Test access activities from board", function() {
       });
     },
     function(callback) {
-      var activity3 = new Activity({
+      activity3 = new Activity({
         content: "User creates an activity " + 3 + " for test",
         creatorId: user.id,
         boardId: board.id
@@ -129,7 +142,20 @@ describe("Test access activities from board", function() {
       });
   });
 
-  // FIXME: need afterEach to delete all data created in beforeEach
+  afterEach(function(done) {
+    var objs = [activity1, activity2, activity3, board, user];
+    async.eachSeries(objs,
+      function(obj, callback) {
+        obj.remove(function(err) {
+          if (err) { throw err; }
+          callback(null);
+        });
+      },
+      function(err) {
+        if (err) { throw err; }
+        done();
+      });
+  });
 
   it("Test to get board's activities.", function(done) {
     assert.notEqual(board.getActivities, undefined,

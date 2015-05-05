@@ -63,7 +63,22 @@ describe("Test board member invitation", function() {
       });
   });
 
-  // FIXME: add afterEach to delete data created in beforeEach
+  afterEach(function(done) {
+    async.eachSeries([board, inviter, invitee, user3],
+      function(obj, callback) {
+        obj.remove(function(err) {
+          if (err) { throw err; }
+          else { callback(null); }
+        });
+      },
+      function(err) {
+        if (err) {
+          throw err;
+        } else {
+          done();
+        }
+      });
+  });
 
   // it("Test invite a board member");
 });

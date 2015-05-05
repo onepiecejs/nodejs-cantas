@@ -21,7 +21,8 @@ var myBoard = null;
 var invitedBoard = null;
 var publicBoard = null;
 var closedBoard = null;
-var boardMemberRelation = null;
+var invitedBoardMemberRelation = null;
+var closedBoardMemberRelation = null;
 
 
 describe('BoardHandler', function() {
@@ -37,7 +38,13 @@ describe('BoardHandler', function() {
     });
   });
 
-  // FIXME: add afterEach to delete data created in beforeEach
+  afterEach(function(done) {
+    console.log('remove', member);
+    member.remove(function(err) {
+      if (err) { throw err; }
+      done();
+    });
+  });
 
   it('#createBoard with nonexistent user, it should return a invalid boardId', function(done) {
     boardHandler.createBoard('test', function(err, board) {
@@ -94,14 +101,14 @@ describe("BoardHandler API", function() {
     },
 
     function(callback) {
-      boardMemberRelation = new BoardMemberRelation({
+      invitedBoardMemberRelation = new BoardMemberRelation({
         boardId: invitedBoard.id,
         userId: member.id,
         status: BoardMemberStatus.available
       });
 
-      boardMemberRelation.save(function(err){
-        callback(err,boardMemberRelation);
+      invitedBoardMemberRelation.save(function(err){
+        callback(err, invitedBoardMemberRelation);
       });
     },
 
@@ -132,14 +139,14 @@ describe("BoardHandler API", function() {
     },
 
     function(callback) {
-      boardMemberRelation = new BoardMemberRelation({
+      closedBoardMemberRelation = new BoardMemberRelation({
         boardId: closedBoard.id,
         userId: member.id,
         status: BoardMemberStatus.available
       });
 
-      boardMemberRelation.save(function(err){
-        callback(err,boardMemberRelation);
+      closedBoardMemberRelation.save(function(err){
+        callback(err, closedBoardMemberRelation);
       });
     }
     ],
@@ -151,7 +158,25 @@ describe("BoardHandler API", function() {
       });
   });
 
-  // FIXME: add afterEach to delete data created in beforeEach
+  afterEach(function(done) {
+    var objs = [
+      invitedBoardMemberRelation,
+      closedBoardMemberRelation,
+      invitedBoard, publicBoard, closedBoard, myBoard,
+      member
+    ];
+    async.eachSeries(objs,
+      function(obj, callback) {
+        obj.remove(function(err) {
+          if (err) { throw err; }
+          callback(null);
+        });
+      },
+      function(err) {
+        if (err) { throw err; }
+        done();
+      });
+  });
 
   it('#listMyBoards should return my boards list', function(done) {
     boardHandler.listMyBoards(member, function(err, boards) {
