@@ -25,6 +25,7 @@
   var settings = require('../../settings');
   var User = require('../../models/user');
   var utils = require('../utils');
+  var authUtils = require('./utils');
   var sites = require('../sites');
 
   /*
@@ -73,15 +74,10 @@
         if (err) {
           done(null, false, {message: 'Invalid Kerberos name or password.'});
         } else {
-          User.findOne({email: email}, function (err, user) {
-            if (user === null) {
-              // A new user
-              var newUser = new User({displayName: kerberosName, email: email});
-              newUser.save(function(err, savedUser) {
-                savedUser.setUnusablePassword(function(result) {
-                  done(null, savedUser);
-                });
-              });
+          authUtils.createUserIfNotExist(kerberosName, email, function(err, user) {
+            if (err) {
+              done(null, false,
+                   {message: 'Login failed. Please check your kerberos name and password'});
             } else {
               done(null, user);
             }
@@ -92,43 +88,35 @@
   });
   CantasKerberosStrategy.name = 'kerberos';
 
-  /**
-   * REMOTE_USER strategy use
-   */
-  var findByToken = function(token, fn) {
-    var email = token.toLowerCase();
-
-    User.findOne({email: email}, function (err, user) {
-      if (err) {
-        fn(new Error('User ' + email + ' does not exist'));
-      }
-
-      if (user === null) {
-        // A new user
-        var newUser = new User({displayName: email.split('@')[0], email: email});
-        newUser.save(function (err, savedUser) {
-          savedUser.setUnusablePassword(function(result) {
-            fn(null, newUser);
-          });
-        });
-      } else {
-        fn(null, user);
-      }
-    });
-  };
-
   var CantasRemoteUserStrategy = new RemoteUserStrategy({}, function(token, done) {
     // asynchronous validation, for effect...
     process.nextTick(function() {
-      // Find the user by token.  If there is no user with the given token, set
-      // the user to `false` to indicate failure.  Otherwise, return the
-      // authenticated `user`.
-      findByToken(token, function(err, user) {
-        if (err) { return done(err); }
-        if (user) {
-          done(null, user);
+      // Curious, why token here can be converted to an email? Look like I
+      // should inspect the source code from the backend strategy.
+      var email = token.toLowerCase();
+      var displayName = email.split('@')[0];
+      authUtils.createUserIfNotExist(displayName, email, function(err, user) {
+        if (err) {
+          /*
+           * When remote strategy is enabled, user does not talk with Cantas
+           * directly to accomplish the authentication, because usually a third
+           * party authentication service serving in the front of Cantas within
+           * Web server container is responsible for the authentiation. That
+           * is, user will interact with Web browser directly, and Cantas does
+           * not show any "login page" to gather credential and it treats the
+           * user along with HTTP request is a valid one.
+           *
+           * So, in this use case, if any error occurs here, how to deal with
+           * it? It is difficult to tell user something is going wrong in a
+           * proper way.
+           *
+           * TODO: One way is to display a general error page to tell user why
+           * login failed, and what next could be done to fix or request help.
+           */
+          console.error('Login view remote strategy failed.');
+          console.error(err);
         } else {
-          done(null, false);
+          done(null, user);
         }
       });
     });
@@ -143,16 +131,12 @@
     },
       function(accessToken, refreshToken, profile, done) {
         process.nextTick(function () {
-          User.findOne({'email': profile.emails[0].value}, function (err, user) {
-            if (err) { return done(err); }
-            if (user === null) {
-              var email = profile.emails[0].value;
-              var newUser = new User({displayName: email.split('@')[0], email: email});
-              newUser.save(function(err, userSaved) {
-                return done(null, newUser);
-              });
+          var email = profile.emails[0].value;
+          authUtils.createUserIfNotExist(profile.displayName, email, function(err, user) {
+            if (err) {
+              done(null, false, {message: 'Failed to login with Google account ' + email});
             } else {
-              return done(null, user);
+              done(null, user);
             }
           });
         });
