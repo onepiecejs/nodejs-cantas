@@ -116,7 +116,7 @@
           console.error('Login via remote strategy failed.');
           console.error(err);
 
-          done(null, fales, {message: 'Authentication cannot complete.'});
+          done(null, false, {message: 'Authentication cannot complete.'});
         } else {
           done(null, user);
         }
