@@ -113,8 +113,10 @@
            * TODO: One way is to display a general error page to tell user why
            * login failed, and what next could be done to fix or request help.
            */
-          console.error('Login view remote strategy failed.');
+          console.error('Login via remote strategy failed.');
           console.error(err);
+
+          done(null, fales, {message: 'Authentication cannot complete.'});
         } else {
           done(null, user);
         }
