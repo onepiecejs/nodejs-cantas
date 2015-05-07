@@ -7,6 +7,7 @@ var List = require('../../models/list');
 var BoardMemberRelation = require('../../models/boardMemberRelation');
 var BoardMemberStatus = require('../../models/boardMemberStatus');
 var User = require('../../models/user');
+var testUtils = require('./utils');
 
 var boardHandler = require('../../services/boardHandler.js');
 var async = require('async');
@@ -39,10 +40,7 @@ describe('BoardHandler', function() {
   });
 
   afterEach(function(done) {
-    member.remove(function(err) {
-      if (err) { throw err; }
-      done();
-    });
+    testUtils.removeEachSeries([member], done);
   });
 
   it('#createBoard with nonexistent user, it should return a invalid boardId', function(done) {
@@ -164,17 +162,7 @@ describe("BoardHandler API", function() {
       invitedBoard, publicBoard, closedBoard, myBoard,
       member
     ];
-    async.eachSeries(objs,
-      function(obj, callback) {
-        obj.remove(function(err) {
-          if (err) { throw err; }
-          callback(null);
-        });
-      },
-      function(err) {
-        if (err) { throw err; }
-        done();
-      });
+    testUtils.removeEachSeries(objs, done);
   });
 
   it('#listMyBoards should return my boards list', function(done) {

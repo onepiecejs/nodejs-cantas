@@ -7,6 +7,7 @@ var Board = require("../../models/board")
 var User = require("../../models/user");
 var dbinit = require('./dbinit');
 var async = require('async');
+var utils = require('./utils');
 
 describe("Test Activity Model", function() {
   var user = null;
@@ -52,17 +53,7 @@ describe("Test Activity Model", function() {
   });
 
   afterEach(function(done) {
-    async.eachSeries([activity, board, user],
-      function(obj, callback) {
-        obj.remove(function(err) {
-          if (err) { throw err; }
-          callback(null);
-        });
-      },
-      function(err) {
-        if (err) { throw err; }
-        done();
-      });
+    utils.removeEachSeries([activity, board, user], done);
   });
 
   it("Create Activity", function(done) {
@@ -144,17 +135,7 @@ describe("Test access activities from board", function() {
 
   afterEach(function(done) {
     var objs = [activity1, activity2, activity3, board, user];
-    async.eachSeries(objs,
-      function(obj, callback) {
-        obj.remove(function(err) {
-          if (err) { throw err; }
-          callback(null);
-        });
-      },
-      function(err) {
-        if (err) { throw err; }
-        done();
-      });
+    utils.removeEachSeries(objs, done);
   });
 
   it("Test to get board's activities.", function(done) {

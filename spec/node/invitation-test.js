@@ -5,6 +5,7 @@ var async = require("async");
 var assert = require("assert");
 var User = require("../../models/user");
 var Board = require("../../models/board");
+var utils = require("./utils");
 
 var mongoose = require('mongoose');
 var dbinit = require('./dbinit');
@@ -64,20 +65,7 @@ describe("Test board member invitation", function() {
   });
 
   afterEach(function(done) {
-    async.eachSeries([board, inviter, invitee, user3],
-      function(obj, callback) {
-        obj.remove(function(err) {
-          if (err) { throw err; }
-          else { callback(null); }
-        });
-      },
-      function(err) {
-        if (err) {
-          throw err;
-        } else {
-          done();
-        }
-      });
+    utils.removeEachSeries([board, inviter, invitee, user3], done);
   });
 
   // it("Test invite a board member");
