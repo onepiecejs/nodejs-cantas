@@ -47,7 +47,6 @@
         }
 
         var dummyUser = user;
-        console.log(dummyUser);
         if (dummyUser === null) {
           dummyUser = new User({displayName: _displayName, email: _email});
           dummyUser.save(function(err, savedUser) {
@@ -62,6 +61,7 @@
       });
     });
   });
+  CantasDummyStrategy.name = 'dummy';
 
   var CantasKerberosStrategy = new LocalStrategy(function(kerberosName, password, done) {
     // asynchronous verification, for performance concern.
