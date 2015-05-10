@@ -36,7 +36,17 @@ rhc app restart -a cantas
 > Please update your settings value in .openshift/lib/init_settings before push
 > to Openshift Online service.
 
-## Setup development environment
+## Setup development environment in one-click way
+
+Installing [Vagrant](https://www.vagrantup.com) with your package manager,
+
+    sudo yum install vagrant
+
+then simply in the root of project's directory,
+
+    vagrant up
+
+## Setup development environment manually
 
 - RPM requirements:
 
