@@ -12,7 +12,8 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
-    sudo yum install ack make gcc gcc-c++ git npm wget krb5-devel \
+    sudo yum install ack make gcc gcc-c++ git npm wget \
+        krb5-workstation krb5-devel \
         mongodb mongodb-server redis tmux \
         rpmlint rpm-build \
         fontconfig-devel -y
