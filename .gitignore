@@ -13,3 +13,4 @@ redhat
 settings.json
 .tags
 tags
+.vagrant/
