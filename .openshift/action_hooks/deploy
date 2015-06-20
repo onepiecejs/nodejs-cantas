@@ -20,4 +20,4 @@ node "$OPENSHIFT_REPO_DIR/.openshift/lib/init_settings"
 
 
 # Seed the label metadata
-node "$OPENSHIFT_REPO_DIR/scripts/db_init_label_metadata.js"
+node "$OPENSHIFT_REPO_DIR/scripts/migrations/initLabelMetadata.js"
