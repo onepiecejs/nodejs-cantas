@@ -18,10 +18,8 @@
 
   'use strict';
 
-  var krb5 = require('node-krb5');
   var LocalStrategy = require('passport-local').Strategy;
   var RemoteUserStrategy = require('./remoteUserStrategy');
-  var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
   var settings = require('../../settings');
   var User = require('../../models/user');
   var utils = require('../utils');
@@ -66,6 +64,8 @@
   var CantasKerberosStrategy = new LocalStrategy(function(kerberosName, password, done) {
     // asynchronous verification, for performance concern.
     process.nextTick(function() {
+      var krb5 = require('node-krb5');
+
       // IMPORTANT! NEVER store or log password here. It violates infosec policy!
       var principal = utils.build_krb5_user_principal(kerberosName, settings.realm);
       var email = principal.toLowerCase();
@@ -126,6 +126,8 @@
 
   var CantasGoogleStrategy;
   if (settings.auth.google && settings.auth.google.clientID && settings.auth.google.clientSecret) {
+    var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
     CantasGoogleStrategy = new GoogleStrategy({
       clientID: settings.auth.google.clientID,
       clientSecret: settings.auth.google.clientSecret,
