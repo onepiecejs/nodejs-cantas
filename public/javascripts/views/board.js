@@ -597,6 +597,9 @@
       this.model.on('change:isPublic', this.resetVisibility, this);
       this.model.on("change:isClosed", this.onBoardClosed, this);
 
+      // Update view when the permission for managing lists changes
+      this.listenTo(this.model, 'change:listStatus', this.permissionChange);
+
       this.memberCollection = new cantas.models.BoardMemberCollection();
       this.activityCollection = new cantas.models.ActivityCollection();
 
@@ -826,9 +829,7 @@
         }
       );
 
-      if (!window.cantas.isBoardMember) {
-        this.disableEvents();
-      }
+      this.permissionChange();
 
       var currentUserRole = this.getCurrentUserRole();
       if (currentUserRole !== 'admin') {
@@ -853,14 +854,48 @@
       return currentUserRole;
     },
 
-    disableEvents: function() {
-      this.$el.find('button.js-add-list').hide();
-      this.$el.find('a.js-select-private').hide();
-      this.$el.find('a.js-toggleInvite').hide();
-      this.$el.find('a.js-toggle-board-menu').hide();
-      this.$el.find('a.board-info').hide();
-      this.$el.undelegate('.board-content', 'dblclick');
-      this.boardTitleView.undelegateEvents();
+    /**
+     * When permissions change make sure the view is updated
+     * (need to enable/disabled events for lists)
+     */
+    permissionChange: function() {
+      if (window.cantas.isBoardMember) {
+        this.$el.find('a.js-toggle-board-menu').show();
+        this.$el.find('a.js-select-private').show();
+        this.$el.find('a.js-toggleInvite').show();
+        this.$el.find('a.board-info').show();
+      } else {
+        this.$el.find('a.js-toggle-board-menu').hide();
+        this.$el.find('a.js-select-private').hide();
+        this.$el.find('a.js-toggleInvite').hide();
+        this.$el.find('a.board-info').hide();
+        this.boardTitleView.undelegateEvents();
+      }
+
+      if (this.canManageLists()) {
+        this.delegateEvents();
+        if ($('.board').data('ui-sortable')) {
+          $('.board').sortable('enable');
+        }
+        this.$el.find('button.js-add-list').show();
+      } else {
+        if ($('.board').data('ui-sortable')) {
+          $('.board').sortable('disable');
+        }
+        this.$el.undelegate('.board-content', 'dblclick');
+        this.$el.find('button.js-add-list').hide();
+      }
+    },
+
+    canManageLists: function() {
+      var status = this.model.get('listStatus');
+      var allow = true;
+      if (status === 'disabled') {
+        allow = false;
+      } else if (status === 'enabled' && !window.cantas.isBoardMember) {
+        allow = false;
+      }
+      return allow;
     },
 
     addAll: function() {
@@ -870,7 +905,7 @@
       this.switchScrollButton();
 
       //disable sort function of lists if user is not board member.
-      if (!window.cantas.isBoardMember) {
+      if (!this.canManageLists()) {
         $('.board').sortable('disable');
       }
     },
@@ -880,6 +915,7 @@
       // while for manually added list, `context` would be an object.
       var thatListView = new cantas.views.ListView({
         model: list,
+        boardModel: this.model,
         attributes: {
           expandedViewChain: this._expandedViewChain
         }

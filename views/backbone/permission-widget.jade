@@ -1,0 +1,31 @@
+script#template-permission-widget-view(type="text/template")
+  |if selected == 'opened'
+  |  a.checked.js-option.all(data-permission="opened")
+  |    span
+  |    span
+  |    span Public for Every User
+  |else
+  |  a.js-option.all(data-permission="opened")
+  |    span
+  |    span
+  |    span Public for Every User
+  |if selected == 'enabled'
+  |  a.checked.js-option.part(data-permission="enabled")
+  |    span
+  |    span
+  |    span Public for Board Members
+  |else
+  |  a.js-option.part(data-permission="enabled")
+  |    span
+  |    span
+  |    span Public for Board Members
+  |if selected == 'disabled'
+  |  a.checked.js-option.none(data-permission="disabled")
+  |    span
+  |    span
+  |    span Disable
+  |else
+  |  a.js-option.none(data-permission="disabled")
+  |    span
+  |    span
+  |    span Disable

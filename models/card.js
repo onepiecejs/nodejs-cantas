@@ -173,7 +173,7 @@
 
     requireBoard().findOne({
       _id: this.boardId
-    }, 'title isPublic isClosed', callback);
+    }, 'title isPublic isClosed voteStatus commentStatus listStatus cardStatus', callback);
   });
 
 

@@ -3429,6 +3429,9 @@ card{
 
 
 /*==================Admin Permission Configuration=================*/
+.modal-config .modal.fade.in {
+    top: 35%;
+}
 .admin-config dd a{
     display: block;
     margin: 18px 0 0 18px;
