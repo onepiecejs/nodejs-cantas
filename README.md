@@ -10,13 +10,13 @@ Thanks for [all Contributors](AUTHORS.md)
 
 # Getting started
 
-## Demo Site
+## Demo Site - Deployed on OpenShift
 
 http://cantas-onepiecejs.rhcloud.com/
 
 Login with your Google account.
 
-## Deploy to OpenShift
+## Deploy to OpenShift.
 
 ```bash
 rhc domain create <yournamespace>
@@ -36,7 +36,7 @@ rhc app restart -a cantas
 > Please update your settings value in .openshift/lib/init_settings before push
 > to Openshift Online service.
 
-## Setup development environment in one-click way
+## Setup development environment with one-click.
 
 Installing [Vagrant](https://www.vagrantup.com) with your package manager,
 
@@ -51,7 +51,7 @@ Then run the up command in the root of the project's directory,
 > dnf install libvirt vagrant-libvirt
 
 
-## Setup development environment manually
+## Setup development environment manually.
 
 - install [Nodejs][nodejs], [npm][npm], [MongoDB][MongoDB], [Redis][Redis].
 
@@ -82,18 +82,19 @@ Then run the up command in the root of the project's directory,
     NPM should be installed as part of the nodejs packages for Fedora, Red Hat, Centos and Ubuntu.
     ```
 
-- Kerberos requirements:
-
-> ***Note:***
-> If you plan to use Kerberos authentication also install the relevant kerberos libraries for your distro.
-
-    ```bash
-    sudo yum install -y krb5-devel krb5-libs krb5-workstation
-    ```
-
 > ***Note:***
 > If you got `g++: command not found` while installing nodejs,
 > you can install it by `sudo yum install gcc-c++`.
+
+
+
+- Kerberos requirements:
+
+> ***Note:***
+> If you plan to use Kerberos authentication install the relevant kerberos libraries for your distro.
+
+    sudo yum install -y krb5-devel krb5-libs krb5-workstation
+
 
 - checkout source code and update node packages via npm
 
