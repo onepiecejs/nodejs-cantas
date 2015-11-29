@@ -147,7 +147,7 @@ Then run the up command in the root of the project's directory,
 > To enable Google signin you will need to create a Client ID in the [Google Developer Console](https://console.developers.google.com).
 
 
-That's it. Open your browser at http://localhost:3000 and log into Cantas.
+That's it. Open your browser at `http://localhost:3000` and log into Cantas.
 
 
 ## Resources
