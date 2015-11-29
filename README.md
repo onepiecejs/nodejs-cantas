@@ -48,12 +48,6 @@ then simply in the root of project's directory,
 
 ## Setup development environment manually
 
-- RPM requirements:
-
-    ```bash
-    sudo yum install -y krb5-devel krb5-libs krb5-workstation
-    ```
-
 - install [Nodejs][nodejs], [npm][npm], [MongoDB][MongoDB], [Redis][Redis].
 
     ```bash
@@ -63,11 +57,35 @@ then simply in the root of project's directory,
     cd node-v0.10.22
     ./configure && make
     sudo make install
+    
     # mongo
     sudo yum install mongodb mongodb-server
     # redis
     sudo yum install redis
+
+    #Fedora 22
+    dnf install nodejs
+
+    #Ubuntu 14+ (Only tested against 14)
+    sudo apt-get install nodejs build-essential
+
+    #Red Hat 6+ and Centos 6+
+    yum install epel-release
+    yum install nodejs
+
+    #NPM
+    NPM should be installed as part of the nodejs packages for Fedora, Red Hat, Centos and Ubuntu.
     ```
+
+- Kerberos requirements:
+
+> ***Note:***
+> If you plan to use Kerberos authentication also install the relevant kerberos libraries for your distro.
+
+    ```bash
+    sudo yum install -y krb5-devel krb5-libs krb5-workstation
+    ```
+
 
 > ***Note:***
 > If you got `g++: command not found` while installing nodejs,
@@ -100,19 +118,20 @@ then simply in the root of project's directory,
 - start the app
 
     ```bash
-    # update settings values
+    # update 'settings.json' file
     cp settings.json.example settings.json
 
     # setup initalize data
-    node scripts/initLabelMetadata.js
+    node scripts/migrations/initLabelMetadata.js
 
     # start the app
     NODE_ENV=development node app.js
     ```
 
-- for your convenience, following steps will make login easily while you are developing
+- for your development convenience, following steps will make login easily while you are developing
 
-    Open `settings.json` with your favorite editor and change `auth.default` to `local`, then add an user
+    Edit `settings.json` and change `auth.default` to `local`, then add a user
+    If 'local' doesn't work try 'dummy' as the auth.default strategy and then add a user, using the script below.
 
     ```
     node scripts/addUser.js cantas cantas
@@ -122,7 +141,8 @@ then simply in the root of project's directory,
 > Make sure the `mongod` deamon is running before starting the app.
 > To enable Google signin you will need to create a Client ID in the [Google Developer Console](https://console.developers.google.com).
 
-That's it.
+
+That's it. Open your browser at http://localhost:3000 and log into Cantas.
 
 
 ## Resources
