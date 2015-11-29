@@ -46,6 +46,11 @@ then simply in the root of project's directory,
 
     vagrant up
 
+> ***Note:***
+> If you are on Fedora 22, you will need to install the "libvirt" lib's to run Vagrant from the "vagrantfile" supplied in the root of the Cantas app directory.
+> dnf install libvirt vagrant-libvirt
+
+
 ## Setup development environment manually
 
 - install [Nodejs][nodejs], [npm][npm], [MongoDB][MongoDB], [Redis][Redis].
@@ -85,7 +90,6 @@ then simply in the root of project's directory,
     ```bash
     sudo yum install -y krb5-devel krb5-libs krb5-workstation
     ```
-
 
 > ***Note:***
 > If you got `g++: command not found` while installing nodejs,
