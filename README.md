@@ -49,7 +49,7 @@ Then run the **up** command in the root of the project's directory,
 
 > ***Note:***
 > If you are on Fedora 22, you will need to install the "libvirt" lib's to run Vagrant from the "vagrantfile" supplied in the root of the Cantas app directory.
-> dnf install libvirt vagrant-libvirt
+> `dnf install libvirt vagrant-libvirt`
 
 
 ## Setup development environment manually.
