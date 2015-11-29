@@ -79,6 +79,9 @@ Then run the **up** command in the root of the project's directory,
     yum install epel-release
     yum install nodejs
 
+    #Run Cantas on a MAC
+    [MAC OSX Dev Install](https://github.com/onepiecejs/nodejs-cantas/wiki/Setup-development-environment-in-Mac-OS-X)
+
     #NPM
     NPM should be installed as part of the nodejs packages for Fedora, Red Hat, Centos and Ubuntu.
     ```
