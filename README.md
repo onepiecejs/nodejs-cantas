@@ -33,6 +33,7 @@ rhc app restart -a cantas
 ```
 
 > ***Note:***
+> **Openshift instructions need updating**
 > Please update your settings value in .openshift/lib/init_settings before push
 > to Openshift Online service.
 
