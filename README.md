@@ -96,7 +96,7 @@ Then run the up command in the root of the project's directory,
     sudo yum install -y krb5-devel krb5-libs krb5-workstation
 
 
-- checkout source code and update node packages via npm
+- checkout cantas source code and update node packages via npm
 
     ```bash
     git clone git@github.com:onepiecejs/nodejs-cantas.git
@@ -133,10 +133,10 @@ Then run the up command in the root of the project's directory,
     NODE_ENV=development node app.js
     ```
 
-- for your development convenience, following steps will make login easily while you are developing
+- for development convenience the following steps will make logging in easy while you are developing
 
-    Edit `settings.json` and change `auth.default` to `local`, then add a user
-    If 'local' doesn't work try 'dummy' as the auth.default strategy and then add a user, using the script below.
+    Edit `settings.json` and change `auth.default` to `local`, then add a user.
+    If `local` doesn't work try `dummy` as the `auth.default` strategy and then add a user.
 
     ```
     node scripts/addUser.js cantas cantas
