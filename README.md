@@ -43,7 +43,7 @@ Installing [Vagrant](https://www.vagrantup.com) with your package manager,
 
     sudo yum install vagrant
 
-Then run the up command in the root of the project's directory,
+Then run the **up** command in the root of the project's directory,
 
     vagrant up
 
