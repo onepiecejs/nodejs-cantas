@@ -7,7 +7,7 @@
         "port": 3000
     },
     "auth": {
-        "default": "kerberos",
+        "default": "dummy",
         "strategy": "remote_user",
         "googleOAuth": {
             "clientID": "",
