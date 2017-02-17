@@ -1,13 +1,13 @@
 {
     "app": {
         "host": "0.0.0.0",
-        "port": 3000
+        "port": 30000
     },
     "socketIO": {
-        "port": 3000
+        "port": 30000
     },
     "auth": {
-        "default": "kerberos",
+        "default": "dummy",
         "strategy": "remote_user",
         "googleOAuth": {
             "clientID": "",
@@ -60,7 +60,7 @@
         "currentPhase": "product",
         "phases": {
             "devel": "",
-            "local": "http://localhost:3000",
+            "local": "http://localhost:30000",
             "product": "",
             "stage": "",
             "test": ""
